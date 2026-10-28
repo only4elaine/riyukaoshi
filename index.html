@@ -530,10 +530,22 @@ function allItems(){var out=[];for(var k in SETS)SETS[k].items.forEach(function(
 
 // ---- TTS
 var ttsTimer=null;
+var jaVoice=null;
+function pickVoice(){if(!window.speechSynthesis)return null;var vs=speechSynthesis.getVoices()||[];
+ jaVoice=vs.filter(function(v){return /^ja/i.test(v.lang.replace('_','-'));})[0]||null;return jaVoice;}
+if(window.speechSynthesis){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function ttsOK(){return !!window.speechSynthesis&&!!(jaVoice||pickVoice());}
+function ttsWarn(){
+ if(ttsOK())return '';
+ return '<div class=noteb>⚠️ 这台手机/浏览器没有可用的日语语音，所以听不到声音。<br>iPhone：请用 Safari 打开（不要在微信里打开），并在 设置→辅助功能→朗读内容→声音→日语 下载一个声音。<br>安卓：请用 Chrome，并在 系统设置→文字转语音 里安装日语语音数据。<br>装好后重新打开本页。有真题 mp3 的话，可以改用录音播放。</div>';}
 function speak(txt,done){
- if(!window.speechSynthesis){if(done)done();return;}
+ var fired=false;function fin(){if(fired)return;fired=true;if(done)done();}
+ if(!window.speechSynthesis){fin();return;}
+ try{speechSynthesis.resume();}catch(e){}
  var u=new SpeechSynthesisUtterance(txt);u.lang='ja-JP';u.rate=0.95;
- u.onend=function(){if(done)done();};u.onerror=function(){if(done)done();};
+ var v=jaVoice||pickVoice();if(v)u.voice=v;
+ u.onend=fin;u.onerror=fin;
+ setTimeout(fin,Math.max(3000,txt.length*450));
  speechSynthesis.speak(u);}
 function speakSeq(arr,done){if(window.speechSynthesis)speechSynthesis.cancel();var i=0;
  (function next(){if(i>=arr.length){if(done)done();return;}
@@ -565,7 +577,7 @@ function cards(k){
   if(!q.length){render('<h1>'+d.name+'</h1><p>今天完成了 ✓</p><a class=btn href="#/home">返回</a>');return;}
   cur=q.shift();
   var h='<h1>'+d.name+' <small>剩 '+(q.length+1)+'</small></h1><div class=flash><div class=front>'+esc(d.front(cur))+'</div><div id=back class=hide>'+d.back(cur)+'</div></div>'+
-   '<div id=ctl><button id=sp class=btn>🔊 发音</button> <button id=show class=btn>显示答案</button></div>';
+   ''+ttsWarn()+'<div id=ctl><button id=sp class=btn>🔊 发音</button> <button id=show class=btn>显示答案</button></div>';
   render(h);
   var say=cur.line||cur.ctx||cur.ex||cur.r||cur.w;
   $('#sp').onclick=function(){speak(cur.r&&cur.r.indexOf('↔')<0?cur.r:cur.w,function(){if(say&&$('#back').className==='')speak(say);});};
@@ -601,13 +613,13 @@ function quiz(setKey,ids){
   if(it.type==='build'){buildView(it,h);return;}
   var opts=it.o.map(function(x,i){return {t:x,i:i};});
   if(!it.fixed&&!it.listen)opts=shuffle(opts);
-  if(it.listen){h+='<button id=play class=btn>🔊 播放</button><p class=note>先听，再作答；答完看原文。</p><div id=txt class=hide>'+esc(it.q)+'</div>';}
+  if(it.listen){h+='<button id=play class=btn>🔊 播放</button><p class=note>点“播放”听，再作答；答完看原文。</p>'+ttsWarn()+'<div id=txt class=hide>'+esc(it.q)+'</div>';}
   else h+='<p class=q>'+esc(it.q).replace(/\n/g,'<br>')+'</p>';
   h+='<div class=opts>';
   opts.forEach(function(o,n){h+='<button class=opt data-i="'+o.i+'">'+(n+1)+'. '+(it.listen&&!it.fixed?'选项 '+(n+1):esc(o.t))+'</button>';});
   h+='</div><div id=fb></div>';
   render(h);
-  if(it.listen){var pl=$('#play');pl.onclick=function(){speakSeq(it.tts);};setTimeout(function(){pl.onclick();},300);}
+  if(it.listen){var pl=$('#play');pl.onclick=function(){speakSeq(it.tts);};}
   [].forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){answer(it,+b.getAttribute('data-i'),b);};});}
  function finish(it,ok,fbHtml){
   if(ok){ if(!failed[it.id])score++; } else { failed[it.id]=true; q.splice(Math.min(3,q.length),0,it); }
@@ -625,7 +637,7 @@ function quiz(setKey,ids){
  function buildView(it,h){
   var pool=shuffle(it.tk.concat(it.x||[])).map(function(t,i){return {t:t,i:i};});
   var picked=[];
-  h+=(it.pre!==undefined?'<p class=q>'+esc(it.pre)+' <span class=gap>＿＿＿＿</span> '+esc(it.post)+'</p><p class=note>提示：'+esc(it.zh)+'</p><button id=play class=btn>🔊 听整句</button>':it.dict?'<button id=play class=btn>🔊 播放</button><p class=note>听写：听完把句子拼出来（参考：'+esc(it.zh)+'）</p>':'<p class=q>'+esc(it.zh)+'</p><button id=play class=btn>🔊 听日语</button>')+
+  h+=(it.pre!==undefined?'<p class=q>'+esc(it.pre)+' <span class=gap>＿＿＿＿</span> '+esc(it.post)+'</p><p class=note>提示：'+esc(it.zh)+'</p><button id=play class=btn>🔊 听整句</button>':it.dict?'<button id=play class=btn>🔊 播放</button>'+ttsWarn()+'<p class=note>点播放，听完把句子拼出来（参考：'+esc(it.zh)+'）</p>':'<p class=q>'+esc(it.zh)+'</p><button id=play class=btn>🔊 听日语</button>')+
    '<div id=ans class=ans></div><div id=bank class=bank></div><button id=chk class=btn>检查</button> <button id=clr class=btn>清空</button><div id=fb></div>';
   render(h);
   function draw(){
@@ -636,7 +648,7 @@ function quiz(setKey,ids){
   draw();
   var full=it.tk.join(''),spoken=(it.pre||'')+full+(it.post||'');
   $('#play').onclick=function(){speak(spoken);};
-  if(it.dict)setTimeout(function(){speak(full);},300);
+  
   $('#clr').onclick=function(){picked=[];draw();};
   $('#chk').onclick=function(){
    var ok=picked.map(function(p){return p.t;}).join('')===full;
