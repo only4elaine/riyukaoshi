@@ -624,11 +624,13 @@ function cards(k,extra){
   if(!list.length){doneN+=0;next();return;}
   var c=list.shift();
   var o=shuffle([ans(c)].concat(distract(c)));
-  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+frontHtml(c)+'</div><p class=note>'+(k==='read'?'选出正确读音':'选出正确意思')+'</p><div class=opts>';
+  var LISTEN=(k==='lexp'||k==='lwords');
+  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>先听，再选意思</p>':frontHtml(c))+'</div><p class=note>'+(k==='read'?'选出正确读音':'选出正确意思')+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div>');
   var rp=document.createElement('button');rp.className='btn';rp.id='sp2';rp.textContent='🔊 重听';rp.onclick=function(){speak(speakable(c));};
   document.querySelector('.flash').appendChild(rp);
+  if(LISTEN)speak(speakable(c));
   [].forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){
    var ok=b.getAttribute('data-v')===ans(c);
    [].forEach.call(document.querySelectorAll('.opt'),function(x){x.disabled=true;if(x.getAttribute('data-v')===ans(c))x.className+=' right';});
@@ -638,9 +640,10 @@ function cards(k,extra){
    if(ok){ if(first){s.box=Math.min(s.box+1,INT.length-1);s.due=t+INT[s.box];} else {s.box=0;s.due=t+1;} doneN++; }
    else{c._fail=true;s.box=0;s.due=t;list.splice(Math.min(3,list.length),0,c);}
    S.cards[key]=s;bump();save();
+   if(LISTEN){var fl=document.querySelector('.flash');fl.innerHTML=frontHtml(c);fl.appendChild(rp);}
    $('#fb').innerHTML=(ok?'<p class=ok>✔ 正确</p>':'<p class=ng>✘ 正确答案：'+esc(ans(c))+'（稍后重测）</p>')+'<div class=ex>'+d.back(c)+'</div><button id=nx2 class=btn>继续</button>';
    $('#nx2').onclick=function(){ test(list,n); };
-   speak(speakable(c));
+   if(!LISTEN)speak(speakable(c));
   };});}
  function next(){
   if(!queue.length){render('<h1>'+d.name+'</h1><p>今天的学习和测试完成 ✓</p><p class=note>答错的会按记忆曲线再次出现。</p><a class=btn href="#/home">返回</a>');return;}
