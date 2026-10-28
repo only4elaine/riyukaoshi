@@ -30,6 +30,7 @@ h1{font-size:24px;margin:8px 0}h2{font-size:18px;margin:24px 0 8px}small{color:v
 textarea,input{font:inherit;width:100%;background:var(--card);color:var(--fg);border:1px solid var(--bd);border-radius:8px;padding:8px}
 .tile{font:inherit;padding:8px 12px;margin:4px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg);cursor:pointer}
 .ans{min-height:56px;border-bottom:2px solid var(--bd);margin:12px 0;padding:4px}.bank{margin:12px 0}
+.gap{border-bottom:2px solid var(--ac);padding:0 4px}
 </style></head>
 <body><div id="app"></div>
 <script>window.DATA = window.DATA || {};
@@ -396,6 +397,43 @@ DATA.sent = [
 {id:'s38', zh:'使用时请阅读条款。', tk:['ご利用','に際して','は','、','規約','を','お読み','ください'], x:['に対して'], s:'に際して'}
 ];
 window.DATA = window.DATA || {};
+// 真题排序：pre/post 为题干固定部分，tk 为按正确顺序排好的四个选项
+DATA.sort = [
+{id:'so1', src:'2017.12 #45', pre:'生徒「これからご紹介するのは、私が新しい単語を覚える', tk:['のに','いい方法はないか','とあれこれ考えた','末に'], post:'思いついた方法です。」', zh:'苦思“有没有好办法”之后想到的方法', s:'末に'},
+{id:'so2', src:'2017.12 #46', pre:'片付けが苦手という話をよく聞きますが、それは', tk:['決して','性格や能力の問題','ではなく','やり方を知らない'], post:'だけなので、やり方を身につければ必ず片付けられるようになります。', zh:'并不是性格能力问题，只是不知道方法（老师给的 1432）', s:'決して〜ではなく'},
+{id:'so3', src:'2017.12 #47', pre:'X市には、市民のための文化施設が', tk:['二つあり','音楽コンサートを','はじめとした','さまざまな催しを'], post:'行っている。', zh:'有两处文化设施，举办以音乐会为首的各种活动', s:'をはじめ'},
+{id:'so4', src:'2017.12 #48', pre:'おなかがすいている', tk:['わけ','でもないのに','おなかが鳴るのは','どうして'], post:'だろう。', zh:'并不是饿了，为什么肚子会叫呢', s:'わけでもない'},
+{id:'so5', src:'2017.12 #49', pre:'', tk:['出張に行く','たびに','泊まっている','Yホテルが'], post:'先週から工事で休業中なので、今回は別のホテルに泊まることにした。', zh:'每次出差都住的Y酒店', s:'たびに'},
+{id:'so6', src:'2018.7 #45', pre:'どんなスポーツでも、日々の練習が', tk:['上達に','欠かせないのは','もちろんだが','間違った方法で'], post:'行うと時間をかけてもなかなか上達しない。', zh:'练习对进步不可缺少固然，但方法错的话', s:'もちろんだが'},
+{id:'so7', src:'2018.7 #46', pre:'姉は歌手の赤川ケイの大ファンで、彼女の', tk:['ことなら','どんなに','小さな','ことでも'], post:'知りたいと言っている。', zh:'只要是她的事，再小的事也想知道', s:'ことなら'},
+{id:'so8', src:'2018.7 #47', pre:'明日の夕方が締め切りのレポートがまだ終わっていない。明日は一日中授業があって時間がとれないので、今晩', tk:['徹夜して','でも','終わらせて','しまわないと'], post:'いけない。', zh:'今晚就算熬夜也得写完', s:'でも'},
+{id:'so9', src:'2018.7 #48', pre:'田中さんは', tk:['みかんが好きらしく','一度','食べだすと','止まらないほど'], post:'、冬はいつもみかんを大量に買うそうだ。', zh:'似乎很爱吃橘子，一吃就停不下来', s:'ほど'},
+{id:'so10', src:'2018.7 #49', pre:'私は、中学生になったころから', tk:['次第に','医学に興味を持ち始め','高校に入ったときには','将来'], post:'医者になろうと決めていた。', zh:'渐渐对医学产生兴趣，上高中时就决定将来当医生', s:'次第に'},
+{id:'so11', src:'2019.7 #43', pre:'料理の面白いところは、安い材料でも', tk:['工夫','次第で','豪華な','ごちそう'], post:'ができるところです。', zh:'取决于用心，也能做出丰盛大餐', s:'次第で'},
+{id:'so12', src:'2019.7 #44', pre:'田中「昨日は、息子の高校の入学式だったんですよ。」 山田「田中さんの', tk:['息子さん','も','もう','高校生'], post:'ですか。早いですね。」', zh:'您儿子都已经是高中生了啊', s:'もう'},
+{id:'so13', src:'2019.7 #45', pre:'世界各国の国会議員選挙における投票率を世代ごとに見ると、若い世代の', tk:['投票率は','我が国に限らず','相対的に低い','傾向がある'], post:'ことがわかる。', zh:'年轻一代投票率不只我国，普遍偏低', s:'に限らず'},
+{id:'so14', src:'2019.7 #46', pre:'5歳の娘は、私と同じ警察官になりたいと言っている。本当に将来', tk:['なるかどうかは','別として','そんなことを','言ってくれたことに'], post:'感激した。', zh:'将来能不能当上先不说，她这么说让我感动', s:'は別として'},
+{id:'so15', src:'2019.7 #47', pre:'試合に負けて本当は', tk:['悔しいはずの','選手たちが','なぜか','明るい'], post:'表情だったのは、「つらいときこそ明るく」というのが監督の方針だからだそうだ。', zh:'本该懊悔的选手们不知为何神情开朗', s:'はずの'},
+{id:'so16', src:'2022.7 #43', pre:'この歌を聞く', tk:['たびに','思い出す','のは','高校時代の友人の'], post:'ことだ。彼はカラオケに行くと必ずこの歌を歌っていた。', zh:'每次听这首歌想起的是高中朋友', s:'たびに'},
+{id:'so17', src:'2022.7 #44', pre:'昨日、アルバイトに遅刻しそうだったので', tk:['急ごうと思って','タクシーに乗ったら','道が渋滞していたせいで','かえって時間がかかり'], post:'結局遅刻してしまった。', zh:'想赶时间打车，结果堵车反而更慢', s:'せいで'},
+{id:'so18', src:'2022.7 #45', pre:'来月結婚する友人に結婚式のスピーチを頼まれた。大勢の前で話すのは', tk:['苦手なので','悩んだのだが','どうしても','と言われて'], post:'、引き受けることにした。', zh:'不擅长，犹豫但被说“无论如何”就答应了', s:'と言われて'},
+{id:'so19', src:'2022.7 #46', pre:'先日の政治家A氏の発言はあまりに無責任だ。', tk:['自分の立場をよく考えた','うえで','政治家としての','発言しなければならなかった'], post:'と思う。', zh:'应先想清楚自己的立场再发言', s:'うえで'},
+{id:'so20', src:'2022.7 #47', pre:'食事や睡眠などの生活習慣は一度乱れてしまうと、', tk:['戻そうとしても','なかなか戻せないので','規則正しい生活を','普段から意識することが'], post:'大切だ。', zh:'乱了就很难恢复，所以平时就要有意识', s:'ても'},
+{id:'so21', src:'2016.12 #45', pre:'結婚生活を送る', tk:['うえで','何が','大切か','といえば'], post:'、相手への思いやりの気持ちを持つことだと思う。', zh:'要说婚姻生活中什么最重要', s:'うえで・といえば'},
+{id:'so22', src:'2016.12 #46', pre:'就職したときに', tk:['買って以来','ずっと','使っていた','かばんが'], post:'とうとう壊れたので、買い換えることにした。', zh:'入职时买来一直用的包终于坏了', s:'以来'},
+{id:'so23', src:'2016.12 #47', pre:'登山には不思議な魅力がある。登っているときはこんなに', tk:['苦しいことは','二度としたくないと','思うのに','山を下りて何日かすると'], post:'なぜかまた登りたくなる。', zh:'明明觉得再也不想这么苦，下山几天又想爬', s:'のに'},
+{id:'so24', src:'2016.12 #48', pre:'彫刻家川村たけるが作る動物の彫刻作品は、形はシンプル', tk:['ながら','今にも','動き出し','そうな'], post:'生命力にあふれている。', zh:'形状简单却充满仿佛要动起来的生命力', s:'ながら'},
+{id:'so25', src:'2016.7 #46', pre:'このお菓子はとても簡単に作れるから初心者でも失敗する', tk:['ことは','まず','ない','という'], post:'友人の話を聞いて、作ってみようと思った。', zh:'朋友说新手几乎不会失败', s:'ことはない'},
+{id:'so26', src:'2016.7 #47', pre:'近所のスーパーの隣にはクリーニング屋がある。スーパーもクリーニング屋も私が', tk:['仕事から帰る時間でも','開いていて','買い物するついでに','預けた服を取りに行けるのが'], post:'助かる。', zh:'下班晚也开着，买东西顺便取衣服', s:'ついでに'},
+{id:'so27', src:'2016.7 #48', pre:'薬は正しく', tk:['飲まないと','得られるはずの','効果が','得られないだけでなく'], post:'状態を悪化させてしまう危険もある。', zh:'不正确服用，不仅得不到该有的效果', s:'だけでなく'},
+{id:'so28', src:'2016.7 #49', pre:'いつ行っても長い行列ができているラーメン屋なのに', tk:['今回あまり並ばないで済んだのは','何時ごろがすいているか','事前に確認してから','行ったから'], post:'だ。', zh:'这次没怎么排队，是因为事先确认了人少的时段', s:'のは〜からだ'},
+{id:'so29', src:'2018.12 #43', pre:'山や植物の写真家', tk:['として','有名な','岩本まさき氏','の'], post:'写真展が15日からABCデパートで開催される。', zh:'作为山与植物摄影家而闻名的岩本氏的摄影展', s:'として'},
+{id:'so30', src:'2018.12 #44', pre:'子供のころは、1年が長く感じられたのに、年をとる', tk:['につれて','短く感じるようになる','のは','なぜ'], post:'だろうか。', zh:'随着年龄增长，为什么觉得一年变短', s:'につれて'},
+{id:'so31', src:'2018.12 #45', pre:'情報をどのような', tk:['順番で','提示するか','によって','相手の受け止め方'], post:'が変わってくるので、順番を意識して話す必要がある。', zh:'按什么顺序提示，对方理解会变', s:'によって'},
+{id:'so32', src:'2018.12 #46', pre:'日本では、99歳のお祝いを「白寿」と言います。「百」の字から「一」をとる', tk:['と','「白」という','字になる','ことから'], post:'そう呼ばれています。', zh:'“百”去掉“一”变成“白”字', s:'ことから'},
+{id:'so33', src:'2018.12 #47', pre:'講師「最初は', tk:['全く興味がなかった','商品なのに','CMなどで何度か見ている','うちに'], post:'気になってくるということはありませんか。」', zh:'一开始完全没兴趣，看了几次广告渐渐在意', s:'うちに'}
+];
+window.DATA = window.DATA || {};
 DATA.lessons = [
 {id:'L1', title:'自动词 / 他动词', sub:'看助词，不看动词', blocks:[
  {t:'h', x:'一个判断口诀'},
@@ -471,7 +509,7 @@ function buildSets(){
   return {id:x.id,q:x.q,o:x.o,a:x.a,e:x.e,s:x.s,listen:true,tts:[x.q].concat(x.o.map(function(t,i){return (i+1)+'番。'+t;})),fixed:false};})};
  sets.qL1={name:'听力・课题理解（行动判断）',listen:true,items:DATA.qL1.map(function(x){
   return {id:x.id,q:x.q,o:DATA.qL1opts,a:x.a,e:x.e,s:x.s,listen:true,tts:[x.q],fixed:true};})};
- sets.sBuild={name:'造句（看中文拼日语）',items:DATA.sent.map(function(x){return {id:x.id,type:'build',zh:x.zh,tk:x.tk,x:x.x,s:x.s};})};
+ sets.sBuild={name:'造句・排序（真题+补充）',items:DATA.sort.map(function(x){return {id:x.id,type:'build',zh:x.zh,tk:x.tk,x:[],pre:x.pre,post:x.post,s:x.src+' · '+x.s};}).concat(DATA.sent.map(function(x){return {id:x.id,type:'build',zh:x.zh,tk:x.tk,x:x.x,s:x.s};}))};
  sets.sDict={name:'听写造句（听音拼句）',listen:true,items:DATA.sent.map(function(x){return {id:'d'+x.id,type:'build',dict:true,zh:x.zh,tk:x.tk,x:x.x,s:x.s,listen:true};})};
  sets.qKeigo={name:'敬语',items:DATA.qKeigo};
  sets.qJita={name:'自他动词',items:DATA.qJita};
@@ -577,7 +615,7 @@ function quiz(setKey,ids){
  function buildView(it,h){
   var pool=shuffle(it.tk.concat(it.x||[])).map(function(t,i){return {t:t,i:i};});
   var picked=[];
-  h+=(it.dict?'<button id=play class=btn>🔊 播放</button><p class=note>听写：听完把句子拼出来（参考：'+esc(it.zh)+'）</p>':'<p class=q>'+esc(it.zh)+'</p><button id=play class=btn>🔊 听日语</button>')+
+  h+=(it.pre!==undefined?'<p class=q>'+esc(it.pre)+' <span class=gap>＿＿＿＿</span> '+esc(it.post)+'</p><p class=note>提示：'+esc(it.zh)+'</p><button id=play class=btn>🔊 听整句</button>':it.dict?'<button id=play class=btn>🔊 播放</button><p class=note>听写：听完把句子拼出来（参考：'+esc(it.zh)+'）</p>':'<p class=q>'+esc(it.zh)+'</p><button id=play class=btn>🔊 听日语</button>')+
    '<div id=ans class=ans></div><div id=bank class=bank></div><button id=chk class=btn>检查</button> <button id=clr class=btn>清空</button><div id=fb></div>';
   render(h);
   function draw(){
@@ -586,15 +624,15 @@ function quiz(setKey,ids){
    [].forEach.call(document.querySelectorAll('#bank .tile'),function(b){b.onclick=function(){var p=pool.filter(function(x){return x.i===+b.getAttribute('data-i');})[0];picked.push(p);draw();};});
    [].forEach.call(document.querySelectorAll('#ans .tile'),function(b){b.onclick=function(){picked.splice(+b.getAttribute('data-n'),1);draw();};});}
   draw();
-  var full=it.tk.join('');
-  $('#play').onclick=function(){speak(full);};
+  var full=it.tk.join(''),spoken=(it.pre||'')+full+(it.post||'');
+  $('#play').onclick=function(){speak(spoken);};
   if(it.dict)setTimeout(function(){speak(full);},300);
   $('#clr').onclick=function(){picked=[];draw();};
   $('#chk').onclick=function(){
    var ok=picked.map(function(p){return p.t;}).join('')===full;
    $('#chk').disabled=true;$('#clr').disabled=true;
-   finish(it,ok,(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正确：'+esc(full)+'（稍后会再出现）</p>')+'<p class=note>'+esc(it.zh)+' · '+esc(it.s)+'</p>');
-   speak(full);};}
+   finish(it,ok,(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正确：'+esc(full)+'（稍后会再出现）</p>')+'<p class=note>'+esc((it.pre||'')+'【'+full+'】'+(it.post||''))+'<br>'+esc(it.zh)+' · '+esc(it.s)+'</p>');
+   speak(spoken);};}
  show();}
 
 function wrongView(){
