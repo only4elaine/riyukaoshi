@@ -785,7 +785,7 @@ function cards(k,extra){
  if(!batch.length){render('<h1>'+d.name+'</h1><p>今天没有要学的 ✓</p>'+MORE);wireMore();return;}
  next();}
 
-function explHtml(id){var x=window.DATA&&DATA.expl&&DATA.expl[id];return x?'<div class=noteb><b>讲解：</b>'+esc(x)+'</div>':'';}
+function explHtml(id){var x=window.DATA&&DATA.expl&&(DATA.expl[id]||DATA.expl[String(id).replace(/^d(?=s\d)/,'')]);return x?'<div class=noteb><b>讲解：</b>'+esc(x)+'</div>':'';}
 function wrongDue(){var t=dayNum();return Object.keys(S.wrong).filter(function(k){var w=S.wrong[k];return k.indexOf('au:')!==0&&w&&w.box<5&&w.due<=t;});}
 function wrongOpen(){return Object.keys(S.wrong).filter(function(k){var w=S.wrong[k];return k.indexOf('au:')!==0&&w&&w.box<5;});}
 function auDue(){var t=dayNum();return Object.keys(S.wrong).filter(function(k){var w=S.wrong[k];return k.indexOf('au:')===0&&w&&w.box<5&&w.due<=t;});}
