@@ -494,7 +494,7 @@ DATA.lessons = [
 var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15;
 var S;
 function load(){try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){S=null;}
- if(!S)S={cards:{},wrong:{},log:{},exam:'2026-12-06'};S.stat=S.stat||{};
+ if(!S)S={cards:{},wrong:{},log:{},exam:'2026-12-06'};S.stat=S.stat||{};S.rate=S.rate||0.8;
  S.cards=S.cards||{};S.wrong=S.wrong||{};S.log=S.log||{};S.exam=S.exam||'2026-12-06';}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function dayNum(){var d=new Date();return Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000);}
@@ -558,7 +558,7 @@ function speak(txt,done){
    if(!AUD)AUD=new Audio();
    AUD.onended=fin;
    AUD.onerror=function(){browserSpeak(txt,fin);};
-   AUD.src=f;AUD.currentTime=0;
+   AUD.src=f;AUD.currentTime=0;AUD.playbackRate=S.rate||0.8;AUD.defaultPlaybackRate=S.rate||0.8;try{AUD.preservesPitch=true;AUD.webkitPreservesPitch=true;}catch(e){}
    var pr=AUD.play();
    if(pr&&pr.catch)pr.catch(function(){browserSpeak(txt,fin);});
    return;
@@ -568,7 +568,7 @@ function speak(txt,done){
 function browserSpeak(txt,fin){
  if(!window.speechSynthesis){fin();return;}
  try{speechSynthesis.cancel();speechSynthesis.resume();}catch(e){}
- var u=new SpeechSynthesisUtterance(txt);u.lang='ja-JP';u.rate=0.95;
+ var u=new SpeechSynthesisUtterance(txt);u.lang='ja-JP';u.rate=(S.rate||0.8)*0.95;
  var v=jaVoice||pickVoice();if(v)u.voice=v;
  u.onend=fin;u.onerror=fin;
  setTimeout(fin,Math.max(3000,txt.length*450));
@@ -579,8 +579,9 @@ function speakSeq(arr,done){if(window.speechSynthesis)speechSynthesis.cancel();v
 function stopTTS(){clearTimeout(ttsTimer);if(AUD){try{AUD.pause();}catch(e){}}if(window.speechSynthesis)speechSynthesis.cancel();}
 
 // ---- views
-function nav(){return '<nav><a href="#/home">首页</a><a href="#/audio">听力</a><a href="#/lessons">课程</a><a href="#/wrong">错题本</a><a href="#/settings">设置</a></nav>';}
-function render(h){stopTTS();app.innerHTML=nav()+'<main>'+h+'</main>';window.scrollTo(0,0);}
+function nav(){return '<nav><a href="#/home">首页</a><a href="#/audio">听力</a><a href="#" id=rate></a><a href="#/lessons">课程</a><a href="#/wrong">错题本</a><a href="#/settings">设置</a></nav>';}
+function render(h){stopTTS();app.innerHTML=nav()+'<main>'+h+'</main>';window.scrollTo(0,0);
+ var r=document.getElementById('rate');if(r){r.textContent='🐢 '+(S.rate||0.8)+'×';r.onclick=function(e){e.preventDefault();var o=[0.6,0.8,1.0],i=(o.indexOf(S.rate||0.8)+1)%3;S.rate=o[i];save();r.textContent='🐢 '+S.rate+'×';};}}
 
 function home(){
  var d=Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000);
