@@ -595,10 +595,10 @@ function home(){
  render(h);}
 
 function speakable(c){return String(c.r&&c.r.indexOf('↔')<0&&c.r.indexOf('／')<0?c.r:(c.w||c.expr||'')).replace(/[〜～（）()「」\/／↔]/g,' ');}
-function cards(k){
- var d=DECKS[k],t=dayNum(),due=[],nw=[];
- d.list.forEach(function(c){var s=S.cards[k+':'+c.id];if(!s)nw.push(c);else if(s.due<=t)due.push(c);});
- var batch=shuffle(due).concat(nw.slice(0,NEW_PER_DAY));
+function cards(k,extra){
+ var d=DECKS[k],t=dayNum(),due=[],nw=[],seen=[];
+ d.list.forEach(function(c){var s=S.cards[k+':'+c.id];if(!s)nw.push(c);else{seen.push(c);if(s.due<=t)due.push(c);}});
+ var batch=extra==='review'?seen.sort(function(a,b){return S.cards[k+':'+a.id].box-S.cards[k+':'+b.id].box;}).slice(0,NEW_PER_DAY):shuffle(due).concat(nw.slice(0,NEW_PER_DAY));
  var BS=5,queue=[],total=batch.length,doneN=0;
  function front(c){return d.front(c);}
  function ans(c){return k==='read'?c.r:(c.zh||c.r||'');}
@@ -606,6 +606,8 @@ function cards(k){
   if(k==='read')return shuffle(c.ds).slice(0,3);
   var pool=shuffle(d.list.filter(function(x){return x.id!==c.id&&ans(x)&&ans(x)!==ans(c);}));
   return pool.slice(0,3).map(ans);}
+ var MORE="<p><a class=btn href=\"#/home\">返回</a> <button id=m1 class=btn>再学 15 个新的</button> <button id=m2 class=btn>加练已学过的</button></p>";
+ function wireMore(){var a=$('#m1'),b=$('#m2');if(a)a.onclick=function(){cards(k);};if(b)b.onclick=function(){cards(k,'review');};}
  function frontHtml(c){return '<div class=front>'+esc(front(c))+'</div>'+(c.r&&k!=='read'?'<div class=rd>'+esc(c.r)+'</div>':'');}
  function learn(items){
   var i=0;
@@ -647,8 +649,8 @@ function cards(k){
  var groups=[];for(var j=0;j<batch.length;j+=BS)groups.push(batch.slice(j,j+BS));
  // 每组：学 5 个 -> 测这 5 个 -> 下一组
  var gi=0;
- next=function(){ if(gi>=groups.length){render('<h1>'+d.name+'</h1><p>今天的学习和测试完成 ✓</p><p class=note>答错的会按记忆曲线再次出现。</p><a class=btn href="#/home">返回</a>');return;} var g=groups[gi++]; learn(g); };
- if(!batch.length){render('<h1>'+d.name+'</h1><p>今天没有要学的 ✓</p><a class=btn href="#/home">返回</a>');return;}
+ next=function(){ if(gi>=groups.length){render('<h1>'+d.name+'</h1><p>今天的学习和测试完成 ✓</p><p class=note>答错的会按记忆曲线再次出现。</p>'+MORE+'');wireMore();return;} var g=groups[gi++]; learn(g); };
+ if(!batch.length){render('<h1>'+d.name+'</h1><p>今天没有要学的 ✓</p>'+MORE);wireMore();return;}
  next();}
 
 function wrongDue(){var t=dayNum();return Object.keys(S.wrong).filter(function(k){var w=S.wrong[k];return k.indexOf('au:')!==0&&w&&w.box<5&&w.due<=t;});}
