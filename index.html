@@ -808,7 +808,7 @@ function home(){
  var d=Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000);
  var wdue=wrongDue().length,G=globalProg();
  var TL=taskList(),TD=TL.filter(function(x){return x.done;}).length,left=TL.length-TD;
- var h='<h1>N2 冲刺</h1><p class=sub>距离考试（'+esc(S.exam)+'）还有 <b>'+(isFinite(d)?d:'?')+'</b> 天'+(S.aheadTotal?' · 已提前做了 <b>'+S.aheadTotal+'</b> 天的量':'')+'</p>';
+ var h='<h1>N2 冲刺 <button id=howb class="btn small" style="vertical-align:middle;margin-left:8px">每天怎么用</button></h1><div id=howbox class=hide><div class=noteb>1. 打开首页，点“今天要做”；<br>2. 按清单从上往下做：先背卡片 → 做新题 → 做到期复习 → 听录音；<br>3. 清单全部打勾就可以收工；想多做，在今日清单里点“提前做 1 天的量”（每点一次＝多做一天的新内容）；<br>4. 听力/阅读里遇到不会的词，划选加入生词本，到生词本里复习。</div></div><p class=sub>距离考试（'+esc(S.exam)+'）还有 <b>'+(isFinite(d)?d:'?')+'</b> 天'+(S.aheadTotal?' · 已提前做了 <b>'+S.aheadTotal+'</b> 天的量':'')+'</p>';
  h+='<a class=card style="border-color:var(--ac)" href="#/today"><b>① 今天要做：'+(left?'还剩 '+left+' 项（共 '+TL.length+' 项）':'今天的任务已全部完成 🎉')+'</b><span>'+(left?'点这里进入今日清单，从上往下做完即可 · 约 '+estMin()+' 分钟':'想多做可以进去点“提前做 1 天的量”')+'</span></a>';
  if(wdue)h+='<a class=card href="#/wrongquiz"><b>错题到期复习：'+wdue+' 题</b><span>按记忆曲线安排，也包含在今日清单里</span></a>';
  h+='<h2>② 全局进度</h2><div class=noteb>';
@@ -816,15 +816,15 @@ function home(){
  var eta=new Date(Date.now()+G.need*86400000);
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
- h+='<div class=grid><a class=card href="#/vb"><b>生词本（'+vbList().length+'）</b><span>划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:'')+'</span></a><a class=card href="#/wrong"><b>错题本</b><span>'+wrongOpen().length+' 题待攻克</span></a><a class=card href="#/audio"><b>听力真题（原录音）</b><span>可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:'')+'</span></a><a class=card href="#/lessons"><b>引导型课程</b><span>自他动词 · 敬语 · 动词变形</span></a></div>';
- h+='<details><summary><b>自由练习（想单独刷某一类时再用）</b></summary>';
- h+='<h2>每天怎么用</h2><div class=noteb>1. 打开首页，点“今天要做”；<br>2. 按清单从上往下做：先背卡片 → 做新题 → 做到期复习 → 听录音；<br>3. 清单全部打勾就可以收工；想多做，在今日清单里点“提前做 1 天的量”（每点一次＝多做一天的新内容）。<br>4. 听力/阅读里遇到不会的词，划选加入生词本，到生词本里复习。</div>';
- h+='<h2>先背（卡片）</h2><div class=grid>';
+ h+='<div class=grid><a class=card href="#/free"><b>③ 自由练习</b><span>想单独刷某一类卡片或某一套题时用</span></a><a class=card href="#/vb"><b>生词本（'+vbList().length+'）</b><span>划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:'')+'</span></a><a class=card href="#/wrong"><b>错题本</b><span>'+wrongOpen().length+' 题待攻克</span></a><a class=card href="#/audio"><b>听力真题（原录音）</b><span>可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:'')+'</span></a><a class=card href="#/lessons"><b>引导型课程</b><span>自他动词 · 敬语 · 动词变形</span></a></div>';
+ render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
+function freeView(){
+ var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
  ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){var s=deckStat(k);
   h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>待复习 '+s.due+' · 还没学 '+s.nw+' / '+s.total+'</span></a>';});
  h+='</div><h2>再做（测验，全部题）</h2><div class=grid>';
  for(var k in SETS)h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>共 '+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';
- h+='</div></details>';
+ h+='</div><p><a class=btn href="#/home">回首页</a></p>';
  render(h);}
 
 function TESTSAY(c){return (c.line&&window.DATA&&DATA.tts&&DATA.tts[c.line])?c.line:speakable(c);}
@@ -1383,6 +1383,7 @@ function route(){
  else if(v==='wrongquiz'){var ids=wrongDue();if(ids.length)quiz(null,ids);else wrongView();}
  else if(v==='wrongall'){var ids2=wrongOpen();if(ids2.length)quiz(null,ids2);else wrongView();}
  else if(v==='vb')vbView();
+ else if(v==='free')freeView();
  else if(v==='lessons')lessonsView();
  else if(v==='lesson')lessonView(p[1]);
  else if(v==='settings')settings();
