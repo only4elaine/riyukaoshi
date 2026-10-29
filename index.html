@@ -778,16 +778,52 @@ function nav(){return '<nav><a href="#/home">首页</a><a href="#/audio">听力<
 function render(h){stopTTS();app.innerHTML=nav()+'<main>'+h+'</main>';window.scrollTo(0,0);
  var r=document.getElementById('rate');if(r){r.textContent='🐢 '+(S.rate||1.0)+'×';r.onclick=function(e){e.preventDefault();var o=[0.6,0.8,1.0],i=(o.indexOf(S.rate||1.0)+1)%3;S.rate=o[i];save();r.textContent='🐢 '+S.rate+'×';};}}
 
+function aheadN(){var t=dayNum();return S.ahead&&S.ahead.day===t?S.ahead.n:0;}
+function bar(p,col){return '<div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden;margin:4px 0 10px"><div style="height:8px;width:'+Math.max(0,Math.min(100,Math.round(p)))+'%;background:'+(col||'var(--ok)')+'"></div></div>';}
+function globalProg(){
+ var ps=planStats(),t=dayNum(),rows=[],stableQ=0;
+ Object.keys(S.q).forEach(function(i){if(DAILY_IDS[i]&&S.q[i].box>=4)stableQ++;});
+ rows.push({n:'真题错题原题（含听力错题、阅读）',a:ps.done,b:ps.total,s:stableQ,sn:'已稳定（间隔≥7天）'});
+ var cl=0,cs=0,ct=0,cst=0;
+ ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);ct+=st.total;cl+=st.total-st.nw;
+  DECKS[k].list.forEach(function(c){var x=S.cards[k+':'+c.id];if(x&&x.box>=4)cst++;});});
+ rows.push({n:'背诵卡片（表达·词汇·读音·语法·敬语·自他动词）',a:cl,b:ct,s:cst,sn:'已稳定'});
+ var log=S.aulog||{},tot=0,hd=0;DATA.audio.forEach(function(p){p.clips.forEach(function(c){tot++;if(log[p.id+':'+c.k])hd++;});});
+ rows.push({n:'听真题录音（已听）',a:hd,b:tot});
+ var ls=DATA.lessons||[],lsd=ls.filter(function(x){return S.ls&&S.ls[x.id];}).length;
+ rows.push({n:'引导型课程',a:lsd,b:ls.length});
+ var deckDays=0;['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(DECKS[k])deckDays=Math.max(deckDays,Math.ceil(deckStat(k).nw/NEW_PER_DAY));});
+ var qDays=ps.quota?Math.ceil(ps.unseen.length/ps.quota):0,need=Math.max(deckDays,qDays);
+ return {rows:rows,need:need,days:ps.days,ps:ps};}
+function estMin(){var P=todayParts(),m=P.nw.length*0.8+P.due.length*0.5,t=0;
+ ['lexp','lwords','vocab','read','gram','keigo','jita'].forEach(function(k){if(DECKS[k])t+=deckNeed(k);});
+ var cl=(S.td&&S.td.clips||[]).length;return Math.round(m+t*0.4+8*0.6+cl*4);}
+function aheadAdd(){
+ var t=dayNum(),st=planStats();todayView();
+ S.ahead={day:t,n:aheadN()+1};S.aheadTotal=(S.aheadTotal||0)+1;
+ var more=st.unseen.filter(function(i){return S.todayNew.ids.indexOf(i)<0;}).slice(0,st.quota);S.todayNew.ids=S.todayNew.ids.concat(more);
+ var f=tdState().f;Object.keys(f).forEach(function(k){if(k==='new'||/^c:/.test(k))delete f[k];});
+ save();}
 function home(){
  var d=Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000);
- var wcount=wrongOpen().length,wdue=wrongDue().length;var ps=planStats();
- var h='<h1>N2 冲刺</h1><p class=sub>距离考试还有 <b>'+(isFinite(d)?d:'?')+'</b> 天 · 今日已答 '+(S.log[dayNum()]||0)+' 次</p>';
- var TL=taskList(),TD=TL.filter(function(x){return x.done;}).length;h+='<a class=card style="border-color:var(--ac)" href="#/today"><b>今日任务清单（'+TD+'/'+TL.length+'）</b><span>学习 · 做题 · 听力　已引入原题 '+ps.done+'/'+ps.total+'</span></a>';h+=(wdue?'<a class=card style="border-color:var(--ac)" href="#/wrongquiz"><b>今日错题复习：'+wdue+' 题</b><span>按记忆曲线到期的错题</span></a>':'')+'<h2>① 先背（卡片）</h2><div class=grid>';
+ var wdue=wrongDue().length,G=globalProg();
+ var TL=taskList(),TD=TL.filter(function(x){return x.done;}).length,left=TL.length-TD;
+ var h='<h1>N2 冲刺</h1><p class=sub>距离考试（'+esc(S.exam)+'）还有 <b>'+(isFinite(d)?d:'?')+'</b> 天'+(S.aheadTotal?' · 已提前做了 <b>'+S.aheadTotal+'</b> 天的量':'')+'</p>';
+ h+='<a class=card style="border-color:var(--ac)" href="#/today"><b>① 今天要做：'+(left?'还剩 '+left+' 项（共 '+TL.length+' 项）':'今天的任务已全部完成 🎉')+'</b><span>'+(left?'点这里进入今日清单，从上往下做完即可 · 约 '+estMin()+' 分钟':'想多做可以进去点“提前做 1 天的量”')+'</span></a>';
+ if(wdue)h+='<a class=card href="#/wrongquiz"><b>错题到期复习：'+wdue+' 题</b><span>按记忆曲线安排，也包含在今日清单里</span></a>';
+ h+='<h2>② 全局进度</h2><div class=noteb>';
+ G.rows.forEach(function(r){var p=100*r.a/Math.max(1,r.b);h+='<div><b>'+esc(r.n)+'</b>　'+r.a+' / '+r.b+(r.s!=null?'　<span class=note>'+esc(r.sn)+' '+r.s+'</span>':'')+bar(p)+'</div>';});
+ var eta=new Date(Date.now()+G.need*86400000);
+ h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
+ h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个（旅行期间 11/21–29 自动降到约三成）。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
+ h+='<h2>③ 每天怎么用</h2><div class=noteb>1. 打开首页，点“今天要做”；<br>2. 按清单从上往下做：先背卡片 → 做新题 → 做到期复习 → 听录音；<br>3. 清单全部打勾就可以收工；想多做，在今日清单里点“提前做 1 天的量”（每点一次＝多做一天的新内容）。<br>4. 听力/阅读里遇到不会的词，划选加入生词本，到生词本里复习。</div>';
+ h+='<div class=grid><a class=card href="#/vb"><b>生词本（'+vbList().length+'）</b><span>划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:'')+'</span></a><a class=card href="#/wrong"><b>错题本</b><span>'+wrongOpen().length+' 题待攻克</span></a><a class=card href="#/audio"><b>听力真题（原录音）</b><span>可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:'')+'</span></a><a class=card href="#/lessons"><b>引导型课程</b><span>自他动词 · 敬语 · 动词变形</span></a></div>';
+ h+='<details><summary><b>自由练习（想单独刷某一类时再用）</b></summary><h2>先背（卡片）</h2><div class=grid>';
  ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){var s=deckStat(k);
-  h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>待复习 '+s.due+' · 新 '+s.nw+' / '+s.total+'</span></a>';});
- h+='</div><h2>② 再做（测验）</h2><div class=grid>';
- for(var k in SETS)h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>'+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';
- h+='</div><h2>③ 听真题录音</h2><div class=grid><a class=card href="#/vb"><b>生词本（'+vbList().length+'）</b><span>听力/阅读里划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:'')+'</span></a><a class=card href="#/audio"><b>听力真题（原录音）</b><span>可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:'')+'</span></a></div><h2>④ 补课</h2><div class=grid><a class=card href="#/lessons"><b>引导型课程</b><span>自他动词・敬语・动词变形</span></a><a class=card href="#/wrong"><b>错题本</b><span>'+wcount+' 题待攻克</span></a></div>';
+  h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>待复习 '+s.due+' · 还没学 '+s.nw+' / '+s.total+'</span></a>';});
+ h+='</div><h2>再做（测验，全部题）</h2><div class=grid>';
+ for(var k in SETS)h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>共 '+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';
+ h+='</div></details>';
  render(h);}
 
 function TESTSAY(c){return (c.line&&window.DATA&&DATA.tts&&DATA.tts[c.line])?c.line:speakable(c);}
@@ -795,7 +831,7 @@ function speakable(c){return String(c.r&&c.r.indexOf('↔')<0&&c.r.indexOf('／'
 function cards(k,extra){
  var d=DECKS[k],t=dayNum(),due=[],nw=[],seen=[];
  d.list.forEach(function(c){var s=S.cards[k+':'+c.id];if(!s)nw.push(c);else{seen.push(c);if(s.due<=t)due.push(c);}});
- var batch=extra==='review'?seen.sort(function(a,b){return S.cards[k+':'+a.id].box-S.cards[k+':'+b.id].box;}).slice(0,NEW_PER_DAY):shuffle(due).concat(nw.slice(0,NEW_PER_DAY));
+ var batch=extra==='review'?seen.sort(function(a,b){return S.cards[k+':'+a.id].box-S.cards[k+':'+b.id].box;}).slice(0,NEW_PER_DAY):shuffle(due).concat(nw.slice(0,NEW_PER_DAY*(1+aheadN())));
  var BS=5,queue=[],total=batch.length,doneN=0;
  function front(c){return d.front(c);}
  function ans(c){return k==='read'?c.r:(c.zh||c.r||'');}
@@ -919,12 +955,12 @@ function pickSb(){
  if(!td.sb){td.sb=shuffle(SETS.sBuild.items.map(function(i){return i.id;})).slice(0,8);save();}
  return td.sb;}
 function wrongOther(){return wrongDue().filter(function(i){return !DAILY_IDS[i];});}
-function deckNeed(k){var s=deckStat(k);return s.due+Math.min(s.nw,NEW_PER_DAY);}
+function deckNeed(k){var s=deckStat(k);return s.due+Math.min(s.nw,NEW_PER_DAY*(1+aheadN()));}
 function taskList(){
  var P=todayParts(),L=[],t=dayNum();
  var log=S.aulog||{};
  // 学习
- [['lexp','听力表达'],['lwords','听力词汇'],['vocab','词汇'],['read','汉字读音']].forEach(function(a){
+ [['lexp','听力表达'],['lwords','听力词汇'],['vocab','词汇'],['read','汉字读音'],['gram','语法句型'],['keigo','敬语'],['jita','自他动词']].forEach(function(a){
   var n=deckNeed(a[0]);if(!DECKS[a[0]])return;
   L.push({g:'学习',id:'c:'+a[0],title:'背 · '+DECKS[a[0]].name,sub:n?('今天 '+n+' 个（先学再测）'):'今天没有要学的',href:'#/cards/'+a[0],done:isF('c:'+a[0])||n===0});});
  var ls=(DATA.lessons||[]).filter(function(x){return !(S.ls&&S.ls[x.id]);})[0];
@@ -952,14 +988,14 @@ function runTask(id){
  else today();}
 function today(){
  var L=taskList(),dn=L.filter(function(x){return x.done;}).length,st=planStats();
- var h='<h1>今日任务</h1><p class=sub>完成 <b>'+dn+' / '+L.length+'</b> · 距考试 '+st.days+' 天 · 原题已引入 '+st.done+'/'+st.total+'</p><div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden"><div style="height:8px;width:'+Math.round(100*dn/Math.max(1,L.length))+'%;background:var(--ok)"></div></div>';
+ var h='<h1>今日任务</h1><p class=sub>完成 <b>'+dn+' / '+L.length+'</b> · 约 '+estMin()+' 分钟 · 距考试 '+st.days+' 天 · 原题已引入 '+st.done+'/'+st.total+'（全局进度见首页）</p><div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden"><div style="height:8px;width:'+Math.round(100*dn/Math.max(1,L.length))+'%;background:var(--ok)"></div></div>';
  var cur='';
  L.forEach(function(x){
   if(x.g!==cur){cur=x.g;h+='<h2>'+x.g+'</h2>';}
   h+='<a class=card style="margin:6px 0;'+(x.done?'opacity:.6;':'border-color:var(--ac);')+'" href="'+x.href+'"><b>'+(x.done?'✅ ':'⬜ ')+esc(x.title)+'</b><span>'+esc(x.sub)+'</span></a>';});
- h+='<h2>还想多做</h2><div class=grid><a class=card href="#/t/more"><b>再多做 10 道原题</b><span>提前做明天的</span></a><a class=card href="#/cards/gram"><b>背 · 语法</b><span>'+deckStat('gram').due+' 待复习</span></a><a class=card href="#/cards/keigo"><b>背 · 敬语</b><span>'+deckStat('keigo').due+' 待复习</span></a><a class=card href="#/cards/jita"><b>背 · 自他动词</b><span>'+deckStat('jita').due+' 待复习</span></a><a class=card href="#/home"><b>全部内容</b><span>首页</span></a></div>';
+ h+='<h2>还想多做？</h2><p class=note>以“天”为单位：点一次＝提前做明天一天的新内容（新原题 '+st.quota+' 道 + 每类卡片 '+NEW_PER_DAY+' 个）。今天已提前 '+aheadN()+' 天，累计 '+(S.aheadTotal||0)+' 天。</p><p><button id=ahead class=btn>提前做 1 天的量</button> <a class=btn href="#/home">回首页看全局进度</a></p>';
  if(dn===L.length)h='<p class=ok style="font-size:20px">🎉 今天的任务全部完成！</p>'+h;
- render(h);}
+ render(h);if($('#ahead'))$('#ahead').onclick=function(){aheadAdd();today();};}
 function todayOld(extra){
  var ids=todayView(extra);
  if(!ids.length){var st=planStats();render('<h1>今日任务</h1><p>今天的新题和到期复习都做完了 ✓</p><p class=note>已引入 '+st.done+' / '+st.total+' 题，距考试 '+st.days+' 天。</p><p><button id=more class=btn>再多做 10 题新的</button> <a class=btn href="#/home">返回</a></p>');$('#more').onclick=function(){today(10);};return;}
