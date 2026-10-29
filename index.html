@@ -848,7 +848,7 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>③ 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1029-1421</p>';
+ h+='<p class=note style="margin-top:24px">版本 1029-1428</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -890,11 +890,11 @@ function cards(k,extra){
   var c=list.shift();
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':frontHtml(c))+'</div><p class=note>'+(k==='read'?'选出正确读音':'选出正确意思')+'</p><div class=opts>';
+  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':frontHtml(c)+(k==='gram'&&c.ex?'<div class=ex>'+esc(c.ex)+'</div>':''))+'</div><p class=note>'+(k==='read'?'选出正确读音':(k==='gram'&&c.ex?'看例句，选出这个句型的意思':'选出正确意思'))+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
   $('#skip').onclick=function(){test(list,n);};
-  var rp=document.createElement('button');rp.className='btn';rp.id='sp2';rp.textContent='🔊 重听';rp.onclick=function(){speak(TESTSAY(c));};
+  var rp=document.createElement('button');rp.className='btn';rp.id='sp2';rp.textContent='🔊 重听';rp.onclick=function(){speak(k==='gram'&&c.ex?c.ex:TESTSAY(c));};
   document.querySelector('.flash').appendChild(rp);
   if(LISTEN)speak(TESTSAY(c));
   [].forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){
