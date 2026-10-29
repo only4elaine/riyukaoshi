@@ -971,13 +971,22 @@ function audioPaper(id){
     var u=p.clips[n].f;
     ca.match(u).then(function(r){ if(r)return; return fetch(u).then(function(rs){if(rs.ok)return ca.put(u,rs);}); }).then(function(){n++;$('#dlst').textContent=n+' / '+p.clips.length;nx();}).catch(function(){$('#dlst').textContent='下载失败，请检查网络后重试（已下 '+n+'）';});
    })();});};}
+function splitOpts(c){
+ var L=(c.s||'').split('\n'),o=[],rest=[],i;
+ if(c.sec!==1&&c.sec!==2)return {o:[],s:c.s||''};
+ for(i=0;i<L.length;i++){
+  if(i<10&&/^\s*[1-4１-４][\.．]/.test(L[i])&&!/^\s*[1-4１-４][\.．]\s*$/.test(L[i]))o.push(L[i].replace(/([^\x00-\x7f])\s+(?=[^\x00-\x7f])/g,'$1').trim());
+  else if(i<10&&o.length&&o.length<4&&i>0&&/^\s*[1-4１-４][\.．]/.test(L[i-1]||'')===false&&o.length&&0){}
+  else rest.push(L[i]);}
+ if(!o.length)return {o:[],s:c.s||''};
+ return {o:o,s:rest.join('\n').replace(/^\s*\.\s*\n/,'')};}
 function clipView(id,k){
  var p=getPaper(id),i=p?p.clips.map(function(c){return c.k;}).indexOf(k):-1;
  if(i<0){audioHome();return;}
- var c=p.clips[i],prev=p.clips[i-1],next=p.clips[i+1];
+ var c=p.clips[i],prev=p.clips[i-1],next=p.clips[i+1],sp=splitOpts(c);
  var h='<h1>'+p.name+' '+SECN[c.sec]+' 第'+c.q+'题</h1><audio id=au controls preload=auto style="width:100%"></audio>'+
   '<p><button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button> <button class="btn small" id=f5>5秒 ⏩</button></p>'+
-  '<p><button id=sc class=btn>显示原文</button></p><div id=scb class=hide>'+(c.s?esc(c.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+'</div>'+
+  (sp.o.length?'<div class=noteb><b>试卷上的选项</b><br>'+sp.o.map(esc).join('<br>')+'</div>':'')+'<p><button id=sc class=btn>显示原文</button></p><div id=scb class=hide>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+'</div>'+
   '<p><button id=ok class="btn good">听懂了</button> <button id=no class="btn bad">没听懂，加入重听</button></p>'+
   '<p>'+(prev?'<a class=btn href="#/clip/'+id+'/'+prev.k+'">← 上一题</a>':'')+' <a class=btn href="#/audio/'+id+'">目录</a> '+(next?'<a class=btn href="#/clip/'+id+'/'+next.k+'">下一题 →</a>':'')+'</p>';
  render(h);
