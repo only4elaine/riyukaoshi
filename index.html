@@ -47,6 +47,9 @@ audio{width:100%}
 .frow{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin:8px 0 0;color:var(--fg);text-decoration:none}
 .frow:active{opacity:.6}
 .frow span{color:var(--mut);font-size:14px}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g2 .frow{margin:0}
 </style></head>
 <body><div id="app"></div>
 <script>window.DATA = window.DATA || {};
@@ -813,16 +816,16 @@ function aheadAdd(){
  save();}
 function freeRows(){
  function r(href,t,sub){return '<a class=frow href="'+href+'"><b>'+t+'</b>'+(sub?'<span class=note>'+sub+'</span>':'')+'</a>';}
- var h=r('#/vb','生词本（'+vbList().length+'）','划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:''));
+ var h='<div class=g2>'+r('#/vb','生词本（'+vbList().length+'）','划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:''));
  h+=r('#/wrong','错题本',wrongOpen().length+' 题待攻克');
  h+=r('#/audio','听力真题（原录音）','可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:''));
- h+=r('#/lessons','引导型课程','自他动词 · 敬语 · 动词变形');
- h+='<p class=note style="margin:14px 0 0">单独刷某一类卡片</p>';
+ h+=r('#/lessons','引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
+ h+='<p class=note style="margin:14px 0 0">单独刷某一类卡片</p><div class=g2>';
  ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
   h+=r('#/cards/'+k,esc(DECKS[k].name),(st.due?'待复习 '+st.due+' · ':'')+'还没学 '+st.nw+' / '+st.total);});
- h+='<p class=note style="margin:14px 0 0">单独做某一套题（全部题）</p>';
+ h+='</div><p class=note style="margin:14px 0 0">单独做某一套题（全部题）</p><div class=g2>';
  for(var k in SETS)h+=r('#/quiz/'+k,esc(SETS[k].name)+(SETS[k].listen?' 🔊':''),SETS[k].items.length+' 题');
- return h;}
+ return h+'</div>';}
 function home(){
  var d=Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000);
  var wdue=wrongDue().length,G=globalProg();
@@ -836,7 +839,7 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>③ 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1029-1344</p>';
+ h+='<p class=note style="margin-top:24px">版本 1029-1348</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
