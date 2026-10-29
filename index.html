@@ -699,7 +699,7 @@ var n=40;X['new'].forEach(function(x){var o=byOid[x.oid];if(!o)return;
  var ex=o.q.replace('（　）',o.o[o.a]);
  G.push({id:'g'+(n++),w:x.w,r:'',zh:x.zh,con:x.con,ex:ex,ext:DATA.qz[o.id]||'',note:x.note2,src:o.src.split(' ')[0],srcx:o.src+' 文法',o:1,oid:o.id});});
 G.forEach(function(c){if(c.oid){var o=byOid[c.oid];if(o&&o.pick){var t=(DATA.ox[o.id]||[])[o.pick-1]||'';c.my='你当时选了「'+o.o[o.pick-1]+'」（'+o.src+'）：'+t.replace(/^你选的「[^」]*」/,'').replace(/^[=，,、]/,'');}}});
-})();</script>
+})();(function(){DATA.extr={"高橋さんは、そんな卑怯なやり方はしませんよ。": "高桥才不会用那种卑鄙的手段呢。", "海外の生活では、習慣の違いから誤解が生じることがある。": "在国外生活，有时会因为习惯不同而产生误会。", "あの二人はさっきからひそひそ話している。": "那两个人从刚才起就一直在小声说话。", "もし資料に誤りがあったら知らせてください。": "如果资料里有错误，请告诉我。", "高橋さんならとっくに帰りましたよ。": "高桥的话，早就回去了哦。", "あの自転車は弟に譲りました。": "那辆自行车让给弟弟了。", "山に登り始めて5時間ぐらいして、ようやく頂上に着いた。": "开始爬山大约5个小时后，终于到了山顶。", "機械の調子が悪かったので、分解して部品の点検をした。": "因为机器状态不好，所以拆开检查了零件。", "私たちの団体は傷ついた動物を救う活動をしています。": "我们的团体在开展救助受伤动物的活动。", "CDの売れ行きは好調だ。": "CD的销售情况良好。", "この機械は永久に動くわけではない。": "这台机器并不是能永远运转的。", "全力で走ったので、息が荒くなった。": "因为拼命地跑，呼吸变得急促了。", "中村さんは不平ばかり言っている。": "中村总是在发牢骚。", "今回の件は、まれな例です。": "这次的事情是罕见的例子。", "係員が旗を上げたのを印に、選手たちは一斉に走り出した。": "以工作人员举起旗子为信号，选手们一齐跑了出去。", "このセミナーの目標は、「自分で考える力」を養うことです。": "这次研讨会的目标是培养“自己思考的能力”。", "ガラスの破片を踏まないように気をつけてください。": "请小心不要踩到玻璃碎片。", "時間がないので、詳しい説明は省きます。": "因为没有时间，详细的说明就省略了。", "大臣の下に二人の副大臣がいる。": "大臣之下有两位副大臣。", "その作家はあわれな人生を送った。": "那位作家度过了悲惨的一生。", "当分は使わない予定です。": "暂时打算不用。", "テストの前日になってじたばたしてもしかたない。": "到了考试前一天才手忙脚乱也没用。", "鈴木さんは石川さんからのデートの誘いをきっぱり断った。": "铃木干脆地拒绝了石川的约会邀请。", "青木さんはしばらく黙ってうつむいていた。": "青木沉默地低着头好一会儿。", "この犬は本当に利口な犬ですね。": "这只狗真是聪明啊。", "もう少し用心したほうがいいんじゃないですか。": "是不是再小心一点比较好呢？", "説明がくどくてすみません。": "不好意思，我说明得太啰嗦了。", "疲れているのか、彼はいつもより動きが鈍い。": "也许是累了，他的动作比平时迟钝。", "高橋氏は、小説家や画家として多彩な活動を行っている。": "高桥先生作为小说家、画家，开展着丰富多彩的活动。", "私の趣味はピアノをひくことだ。": "我的爱好是弹钢琴。", "彼はあいまいな返事をしていたから、パーティーに来るかどうかわからない。": "他的回答含糊不清，所以不知道会不会来参加派对。", "この辺りも物騒になってきた気がする。": "总觉得这一带也变得不太平了。", "その話を聞いて落ち込んだ。": "听了那件事，我情绪低落了。", "その話を聞いて、みんな同情した。": "听了那件事，大家都很同情。", "3年前に英語を初歩から始め、今では自由に話せるようになった。": "三年前从英语的入门开始学，现在已经能自如地说了。", "遊んでばかりのだらしない生活をしていた。": "过着只知道玩的散漫生活。", "先生は学生からの質問に即座に答えた。": "老师当场回答了学生的提问。", "いくら話しても話が尽きなかった。": "无论怎么聊，话题都没有聊完。", "昨日、書き直したい箇所があるっておっしゃってましたよね。": "您昨天说过有想重写的地方，对吧？", "わたくし、斎藤と申します。": "我叫斋藤。", "じゃ、京都へいらっしゃるのは全部で三名ですね。": "那么，去京都的一共是三位，对吧？", "では、次の日曜日に伺います。": "那么，下周日我去拜访您。", "川野さん、来週の土曜日、うちの新製品の発表会をやるので、ぜひ、お越しください。": "川野先生，下周六我们要举办新产品发布会，请务必光临。", "10人用の第二会議室でしたら、空いておりますが。": "10人用的第二会议室的话，是空着的。", "あっ、ご覧になったんですね。": "啊，您已经看过了啊。", "拝見したところ、どうもこちらでお願いしたものと内容が違うようで。": "我看了一下，好像和我们这边委托的东西内容不一样。", "ええ、ゴミ処理場建設の今後の方針をお話いたします。": "是的，我来介绍垃圾处理场建设今后的方针。", "あ、先輩、もう見てくださったんですか。": "啊，前辈，您已经帮我看过了吗？", "先週先輩から、来年部長にならないかってお話いただきましたけど。": "上周前辈跟我提起，问我明年要不要当部长。", "今日は今話題の作家山田はじめさんにお話を伺います。": "今天请教的是当下备受关注的作家山田一先生。", "うちの学校のコーラス部のことで、ご相談したいことがあるんです。": "关于我们学校合唱部的事，有些事想跟您商量。", "確か、資料を修正していただくようお願いしたと思うんですけど。": "我记得是拜托过您修改资料的。", "天気雨は雨の粒が雨雲から落ちた後に、雲が消えたり動いたりしたために発生します。": "太阳雨是因为雨滴从雨云落下之后，云消散或移动而产生的。", "佐藤君、さっき会議室出るとき、エアコンちゃんと消してくれた？": "佐藤，刚才离开会议室的时候，你有好好把空调关掉吗？", "午後の授業が始まるまで、まだ時間あるから、印刷してすぐ提出できる状態にしておいたら？": "离下午的课开始还有时间，要不先打印出来，做到随时可以提交的状态？", "このところ毎月売上が落ちている、客も減る一方だな。": "最近每个月销售额都在下降，客人也越来越少啊。", "そんなに成績落としちゃったら、まずいね。": "成绩掉得那么多，可不妙啊。", "ええ、それから以前よりも仕事を持つ女性のストレスが増えているということもわかりました。": "是的，另外还发现有工作的女性的压力比以前增加了。", "その後様子を見て、必要だったら、体力トレーニングを増やしたりしてもいいと思います。": "之后观察情况，如果有必要，我认为也可以增加体能训练。", "後半で見せる写真を少し減らそうか。": "把后半部分展示的照片减少一点吧？", "料理には自信を持ってるんですが、お客様の好みが変わってきたんでしょうか。": "我对做菜有信心，难道是客人的口味变了吗？", "確かに、でも店の中を大きく変えるためには結構長い間閉店しなくちゃいけないし、費用もかかりますよね。": "确实，不过要大幅改变店里的布置，得关店相当长时间，也要花钱呢。", "あ、メニューは決まった？": "啊，菜单决定好了吗？", "楽しい夏休みが台無しにならないよう、遊ぶときのルールを子供と一緒に決めるようにしてください。": "为了不让快乐的暑假被搞砸，请和孩子一起定好玩耍时的规则。", "沿線にも、その姿を一目見ようと、カメラを持った大勢の鉄道ファンや観光客が集まっています。": "沿线也聚集了许多带着相机的铁道迷和游客，想一睹它的身姿。", "誰よりも早く情報を集め、頑張りました。": "比谁都早地收集了信息，努力做了。", "どこで見つかったんですか。": "是在哪里找到的呢？", "これ、リサイクルショップで見つけてね。": "这个啊，是在二手店找到的。", "そうしたら、活動の様子が伝わりにくいことはない？": "这样的话，活动的情况会不会不容易传达出去？", "ほかの人に何かを伝えたいと思ったら、常に聞き手の様子を窺いながら、体を使って話すことが大切です。": "想向别人传达什么的时候，重要的是随时观察听者的反应，并用肢体来说话。", "僕も落し物拾って交番に届けたことはあるけど、そこまでしてくれるなんて。": "我也捡到过失物送去派出所，但没想到对方能做到那种地步。", "リーダーを中心に、話し合いを進めていただきます。": "请以组长为中心，推进讨论。", "しかし、これをきっかけに和紙の製造過程も機械化が進められた。": "不过，以此为契机，和纸的制作过程也推进了机械化。", "歯医者に行って虫歯の治療を受けた。": "去牙医那里治疗了蛀牙。", "私たちはテストのたびに学年でトップを競っていた。": "我们每次考试都在争年级第一。", "今月の雑誌に新しい映画の批評が掲載された。": "本月的杂志上登载了对新电影的评论。", "期日までに入学金を納めた。": "在截止日期前缴纳了入学费。", "A社の製品は他社のものより品質が劣る。": "A公司的产品品质比其他公司的差。", "青木さんってちょっと幼いところがあるよね。": "青木有点孩子气的地方呢。", "しっかり握ってください。": "请握紧。", "空気が入らないようにちゃんと密閉してください。": "请好好密封，不要让空气进去。", "かなりの時間をかけてテーマを絞った。": "花了相当多的时间把主题缩小范围。", "この線に対して垂直な線を引いてください。": "请画一条与这条线垂直的线。", "きれいに整えた髪が乱れてしまった。": "梳理得整整齐齐的头发乱了。", "係員は柔軟に対応してくれた。": "工作人员灵活地给予了处理。", "表面を強火で焼いてください。": "请用大火烤表面。", "それを一人で抱えるのは大変そうだ。": "一个人扛着那件事，看起来很辛苦。", "アルバイトの求人があったので、応募した。": "看到有兼职招聘，就应聘了。", "私は少し怖いと思いました。": "我觉得有点可怕。", "この食品は冷蔵庫で保存してください。": "这种食品请在冰箱里保存。", "今年の支出は総額で約5300万円だった。": "今年的支出总额约为5300万日元。", "まだ湿っているから、もう少し待ちましょう。": "还是湿的，再等一会儿吧。", "応募者には抽選でプレゼントが当たります。": "应征者可通过抽签获得礼品。", "二人は離れて座った。": "两个人隔开坐着。", "何か良い企画はありますか。": "有什么好的企划吗？", "再度確認をお願いします。": "请再确认一次。", "とても和やかなパーティーだった。": "那是一场非常融洽愉快的派对。", "コンピュータでデータを処理した。": "用电脑处理了数据。", "誰も憎んでなんていませんから、心配しないでください。": "我并没有恨任何人，所以请不要担心。", "偶然、駅で友達に会った。": "偶然在车站遇到了朋友。", "大学のゼミではいろいろな刺激を受けた。": "在大学的研讨课上受到了各种各样的刺激（启发）。", "失敗して恥をかいたが、先輩の優しい一言に慰められた。": "失败出了丑，但前辈温柔的一句话给了我安慰。", "彼の強さは圧倒的だ。": "他的实力是压倒性的。"};})();</script>
 <script>(function(){
 'use strict';
 var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15;
@@ -720,7 +720,7 @@ var app=document.getElementById('app');
 
 // ---- decks
 var DECKS={
- read:{name:'读音（错题）',list:DATA.readings,front:function(c){return c.w;},back:function(c){return '<div class=big>'+esc(c.r)+'</div><div class=ex>'+esc(c.ctx)+'</div><div class=note>'+esc(c.note)+'</div>';}},
+ read:{name:'读音（错题）',list:DATA.readings,front:function(c){return c.w;},back:function(c){return '<div class=big>'+esc(c.r)+'</div>'+exHtml(c,c.ctx)+'<div class=note>'+esc(c.note)+'</div>';}},
  vocab:{name:'近义词・词汇',list:DATA.vocab,front:function(c){return c.w;},back:cardBack},
  lexp:{name:'听力表达（先背）',list:DATA.lexp,front:function(c){return c.expr;},back:function(c){return '<div class=big>'+esc(c.zh)+'</div><div class=ex>'+esc(c.line)+'</div>'+(c.lzh?'<div class=note>译：'+esc(c.lzh)+'</div>':'')+'<div class=note>'+(c.o?'📌 真题原句 · '+esc(c.srcx):'✏️ 示例句（非真题原句，是按常见用法编的）')+'</div>'+(c.opts?'<div class=note>原题选项：'+esc(c.opts)+'</div>'+(c.ozh?'<div class=note>译：'+esc(c.ozh)+'</div>':''):'')+'<div>✅ '+esc(c.right)+'</div>'+(c.trap?'<div class=note>⚠️ '+esc(c.trap)+'</div>':'')+(c.tip?'<div class=note>'+esc(c.tip)+'</div>':'');}},
  lwords:{name:'听力词汇',list:DATA.lwords,front:function(c){return c.w;},back:cardBack},
@@ -728,7 +728,10 @@ var DECKS={
  keigo:{name:'敬语对照',list:DATA.keigo,front:function(c){return c.w;},back:cardBack},
  jita:{name:'自他动词',list:DATA.jita,front:function(c){return c.w;},back:cardBack}
 };
-function cardBack(c){return (c.r?'<div class=big>'+esc(c.r)+'</div>':'')+'<div>'+esc(c.zh)+'</div>'+(c.con?'<div class=note>接续：'+esc(c.con)+'</div>':'')+(c.ex?'<div class=ex>'+esc(c.ex)+'</div>':'')+(c.ext?'<div class=note>译：'+esc(c.ext)+'</div>':'')+(c.o&&c.ex?'<div class=note>📌 真题原句 · '+esc(c.srcx||c.src||'')+'</div>':'')+(c.note?'<div class=note>'+esc(c.note)+'</div>':'')+(c.my?'<div class=note>❌ '+esc(c.my)+'</div>':'');}
+function exTr(seg){var n=nz(seg),X=window.DATA&&DATA.extr;if(X&&X[n])return X[n];
+ var O=window.DATA&&DATA.orig||[],i,o,f;for(i=0;i<O.length;i++){o=O[i];f=nz(o.q.replace('（　）',o.o[o.a]));if(f===n||(n.length>8&&(f.indexOf(n)>=0||n.indexOf(f)>=0&&f.length>8))){return (DATA.qz&&DATA.qz[o.id])||'';}}return '';}
+function exHtml(c,src){var segs=String(src||'').split('／'),h='';segs.forEach(function(g){if(!g)return;var z=(segs.length===1&&c.ext)?c.ext:exTr(g);h+='<div class=ex>'+esc(g)+'</div>'+(z?'<div class=note>译：'+esc(z)+'</div>':'');});return h;}
+function cardBack(c){return (c.r?'<div class=big>'+esc(c.r)+'</div>':'')+'<div>'+esc(c.zh)+'</div>'+(c.con?'<div class=note>接续：'+esc(c.con)+'</div>':'')+exHtml(c,c.ex)+(c.o&&c.ex?'<div class=note>📌 真题原句 · '+esc(c.srcx||c.src||'')+'</div>':'')+(c.note?'<div class=note>'+esc(c.note)+'</div>':'')+(c.my?'<div class=note>❌ '+esc(c.my)+'</div>':'');}
 function gramHtml(id){var c=null;(DATA.gram||[]).forEach(function(g){if(g.oid===id)c=g;});if(!c)return '';return '<div class=noteb><b>📘 语法要点：'+esc(c.w)+'</b><br>'+esc(c.zh)+(c.con?'<br><span class=note>接续：'+esc(c.con)+'</span>':'')+(c.note?'<br><span class=note>'+esc(c.note)+'</span>':'')+'</div>';}
 function deckStat(k){var d=DECKS[k],t=dayNum(),due=0,nw=0;
  d.list.forEach(function(c){var s=S.cards[k+':'+c.id];if(!s)nw++;else if(s.due<=t)due++;});
@@ -848,7 +851,7 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>③ 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1029-1428</p>';
+ h+='<p class=note style="margin-top:24px">版本 1029-1430</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -885,16 +888,17 @@ function cards(k,extra){
    $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
    $('#nx').onclick=function(){i++;one();};
   })();}
+ function stemEx(c){if(k==='lexp'||k==='lwords')return '';var e=c.ex||c.ctx;return e?String(e).split('／').map(function(x){return '<div class=ex>'+esc(x)+'</div>';}).join(''):'';}
  function test(list,n){
   if(!list.length){doneN+=0;next();return;}
   var c=list.shift();
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':frontHtml(c)+(k==='gram'&&c.ex?'<div class=ex>'+esc(c.ex)+'</div>':''))+'</div><p class=note>'+(k==='read'?'选出正确读音':(k==='gram'&&c.ex?'看例句，选出这个句型的意思':'选出正确意思'))+'</p><div class=opts>';
+  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':frontHtml(c)+stemEx(c))+'</div><p class=note>'+(k==='read'?'选出正确读音':(stemEx(c)?'看例句，选出正确意思':'选出正确意思'))+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
   $('#skip').onclick=function(){test(list,n);};
-  var rp=document.createElement('button');rp.className='btn';rp.id='sp2';rp.textContent='🔊 重听';rp.onclick=function(){speak(k==='gram'&&c.ex?c.ex:TESTSAY(c));};
+  var rp=document.createElement('button');rp.className='btn';rp.id='sp2';rp.textContent='🔊 重听';rp.onclick=function(){var e=stemEx(c);speak(e?(c.ex||c.ctx).split('／')[0]:TESTSAY(c));};
   document.querySelector('.flash').appendChild(rp);
   if(LISTEN)speak(TESTSAY(c));
   [].forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){
