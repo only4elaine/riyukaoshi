@@ -1194,7 +1194,7 @@ function vbBar(){var b=document.getElementById('vbbar');if(b)return b;
  $('#vbadd',b).onclick=function(){
   if(!vbCur)return;
   var isNew=vbAdd(vbCur.w,vbCur.ctx,'',vbCur.src,vbCur.tr);
-  vbToast((isNew?'已加入生词本：':'已更新：')+vbCur.w+'（共 '+vbList().length+' 个）');vbHide();vbHL();};
+  vbToast((isNew?'已加入生词本：':'已更新：')+vbCur.w+'（共 '+vbList().length+' 个）');vbHide();vbHL();setTimeout(function(){vbAuto();},300);};
  return b;}
 function vbHide(){var b=document.getElementById('vbbar');if(b)b.style.display='none';vbPin=false;vbCur=null;try{window.getSelection().removeAllRanges();}catch(e){}}
 function vbToast(t){var d=document.createElement('div');d.className='vbtoast';d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove();},2200);}
@@ -1229,6 +1229,36 @@ function vbHL(){
  if(obs)obs.observe(app,{childList:true,subtree:true});}
 var obs=null,obsT=null;
 function vbInit(){if(!window.MutationObserver)return;obs=new MutationObserver(function(){clearTimeout(obsT);obsT=setTimeout(vbHL,60);});obs.observe(app,{childList:true,subtree:true});}
+
+function wkParse(txt,w){
+ var parts=txt.split(/^==\s*([^=\n]+?)\s*==\s*$/m),sec='';
+ for(var i=1;i<parts.length;i+=2){if(/^日[語语本]/.test(parts[i].trim())){sec=parts[i+1]||'';break;}}
+ if(!sec)return '';
+ var lines=sec.split('\n'),out=[],on=false;
+ for(var k=0;k<lines.length;k++){var l=lines[k].trim();if(!l)continue;
+  if(/^=+\s*(名詞|名词|動詞|动词|形容詞|形容词|形容動詞|形容动词|副詞|副词|連體詞|连体词|接續詞|接续词|感嘆詞|感叹词|擬聲詞|拟声词|接頭|接头|接尾|助詞|助词|慣用|惯用|成語|成语|詞組|词组|短語|短语)/.test(l)){on=true;continue;}
+  if(/^=+/.test(l)){if(on&&out.length)break;continue;}
+  if(!on)continue;
+  if(/[\u4e00-\u9fff]/.test(l)&&l.length<=70&&!(w&&l.indexOf(w)===0&&l.length<=w.length+3)&&!/^(發音|发音|讀音|音讀|訓讀|參見|参见|另見|相關|派生|同義|反義|詞源|词源|漢字)/.test(l)&&!/[ぁ-ん]{4,}.*[ぁ-ん]{4,}/.test(l.replace(/[\u4e00-\u9fff]/g,'')))out.push(l.replace(/^\d+[.、]\s*/,''));
+  if(out.length>=2)break;}
+ return out.join('；').slice(0,60);}
+function wkLookup(w,cb){
+ var cands=[w],i;
+ for(i=1;i<=2&&w.length-i>=2;i++)cands.push(w.slice(0,w.length-i));
+ if(/^[おご]/.test(w)&&w.length>2)cands.push(w.slice(1));
+ (function nx(){
+  if(!cands.length){cb('');return;}
+  var c=cands.shift(),ac=window.AbortController?new AbortController():null,tm=setTimeout(function(){if(ac)ac.abort();},8000);
+  fetch('https://zh.wiktionary.org/w/api.php?action=query&prop=extracts&explaintext=1&format=json&origin=*&titles='+encodeURIComponent(c),ac?{signal:ac.signal}:{})
+   .then(function(r){return r.json();}).then(function(j){clearTimeout(tm);var pg=j&&j.query&&j.query.pages,t='';
+    if(pg)Object.keys(pg).forEach(function(k){if(pg[k].extract)t=wkParse(pg[k].extract,c);});
+    if(t){cb(t,c);}else nx();}).catch(function(){clearTimeout(tm);if(navigator.onLine===false)cb('');else nx();});})();}
+function vbAuto(done){
+ var need=vbList().filter(function(e){return !e.m&&!e.nf;});
+ if(!need.length||navigator.onLine===false||!window.fetch){if(done)done(0);return;}
+ var n=0;(function nx(){
+  var e=need.shift();if(!e){save();if(done)done(n);return;}
+  wkLookup(e.w,function(m,c){if(m){e.m=m+(c&&c!==e.w?'（'+c+'）':'');e.auto=1;n++;}else e.nf=1;save();nx();});})();}
 function vbPool(kind,exclude){
  var out=[];vbList().forEach(function(e){var v=kind==='w'?e.w:e.m;if(v&&v!==exclude&&out.indexOf(v)<0)out.push(v);});
  (DATA.vocab||[]).forEach(function(v){var x=kind==='w'?v.w:(v.zh||'').replace(/（.*$/,'');if(x&&x.indexOf('〜')<0&&x!==exclude&&out.indexOf(x)<0)out.push(x);});
@@ -1264,17 +1294,19 @@ function vbReview(list){
    [].forEach.call(document.querySelectorAll('.opt'),function(x){x.disabled=true;if(+x.getAttribute('data-i')===Q.a)x.className+=' right';});if(!ok)b.className+=' wrong';reveal(ok);};});}
  }
  step();}
-function vbView(){
+function vbView(auto){
  var L=vbList().slice().sort(function(a,b){return b.add-a.add;}),due=vbDue();
  var h='<h1 data-nohl=1>生词本</h1><div data-nohl=1><p>共 <b>'+L.length+'</b> 个，今天到期 <b>'+due.length+'</b> 个。</p><p class=note>在听力原文、阅读文章或讲解里，用手指划选一个词/表达，底部会出现“加入生词本”。已加入的词会在文中划线。复习是选择题：有出处句时考“填空”，写了意思时考“选意思”，交替出现。</p>';
  if(due.length)h+='<a class=btn id=vgo href="#">复习今天到期的（'+Math.min(due.length,20)+'）</a> ';
  if(L.length)h+='<a class=btn id=vall href="#">随机练习（最多20）</a>';
- if(L.length)h+='<p><button id=vexp class="btn small">复制没有释义的词（发给 Claude 补）</button> <button id=vimp class="btn small">粘贴导入释义</button></p><textarea id=vta rows=4 style="display:none;width:100%" placeholder="粘贴 Claude 给的“词=意思”，每行一个"></textarea><p><button id=vimp2 class="btn small" style="display:none">导入</button></p>';
+ if(L.length)h+='<p><button id=vnet class="btn small">联网补释义</button> <span id=vnst class=note></span></p><p><button id=vexp class="btn small">复制没有释义的词（发给 Claude 补）</button> <button id=vimp class="btn small">粘贴导入释义</button></p><textarea id=vta rows=4 style="display:none;width:100%" placeholder="粘贴 Claude 给的“词=意思”，每行一个"></textarea><p><button id=vimp2 class="btn small" style="display:none">导入</button></p>';
  h+='<div id=vlist>';
- L.forEach(function(e){h+='<div class=noteb><b>'+esc(e.w)+'</b>'+(e.m?'　'+esc(e.m):'')+'<br><span class=note>'+esc(e.ctx)+(e.tr?'<br>译：'+esc(e.tr):'')+(e.src?' · '+esc(e.src):'')+'</span><br><button class="btn small" data-m="'+e.id+'">补意思</button> <button class="btn small" data-d="'+e.id+'">删除</button></div>';});
+ L.forEach(function(e){h+='<div class=noteb><b>'+esc(e.w)+'</b>'+(e.m?'　'+esc(e.m)+(e.auto?' <span class=note>（在线）</span>':''):'')+'<br><span class=note>'+esc(e.ctx)+(e.tr?'<br>译：'+esc(e.tr):'')+(e.src?' · '+esc(e.src):'')+'</span><br><button class="btn small" data-m="'+e.id+'">补意思</button> <button class="btn small" data-d="'+e.id+'">删除</button></div>';});
  h+='</div></div>';
  if(!L.length)h+='<p data-nohl=1>还没有生词。</p>';
  render(h);
+ if($('#vnet'))$('#vnet').onclick=function(){var L2=vbList();L2.forEach(function(e){if(!e.m)delete e.nf;});$('#vnst').textContent='查询中…';vbAuto(function(n){$('#vnst').textContent='补上了 '+n+' 个';setTimeout(function(){vbView();},700);});};
+ if(auto&&navigator.onLine!==false&&vbList().some(function(e){return !e.m&&!e.nf;}))setTimeout(function(){if($('#vnet'))$('#vnet').click();},200);
  if($('#vexp'))$('#vexp').onclick=function(){
   var need=vbList().filter(function(e){return !e.m;}).map(function(e){return e.w+' ｜ '+e.ctx;}).join('\n');
   if(!need){vbToast('所有词都有释义了');return;}
@@ -1302,7 +1334,7 @@ function route(){
  else if(v==='wrong')wrongView();
  else if(v==='wrongquiz'){var ids=wrongDue();if(ids.length)quiz(null,ids);else wrongView();}
  else if(v==='wrongall'){var ids2=wrongOpen();if(ids2.length)quiz(null,ids2);else wrongView();}
- else if(v==='vb')vbView();
+ else if(v==='vb')vbView(true);
  else if(v==='lessons')lessonsView();
  else if(v==='lesson')lessonView(p[1]);
  else if(v==='settings')settings();
