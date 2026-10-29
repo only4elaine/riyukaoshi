@@ -765,6 +765,7 @@ function home(){
  h+='</div><h2>③ 听真题录音</h2><div class=grid><a class=card href="#/audio"><b>听力真题（原录音）</b><span>可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:'')+'</span></a></div><h2>④ 补课</h2><div class=grid><a class=card href="#/lessons"><b>引导型课程</b><span>自他动词・敬语・动词变形</span></a><a class=card href="#/wrong"><b>错题本</b><span>'+wcount+' 题待攻克</span></a></div>';
  render(h);}
 
+function TESTSAY(c){return (c.line&&window.DATA&&DATA.tts&&DATA.tts[c.line])?c.line:speakable(c);}
 function speakable(c){return String(c.r&&c.r.indexOf('↔')<0&&c.r.indexOf('／')<0?c.r:(c.w||c.expr||'')).replace(/[〜～（）()「」\/／↔]/g,' ');}
 function cards(k,extra){
  var d=DECKS[k],t=dayNum(),due=[],nw=[],seen=[];
@@ -795,12 +796,12 @@ function cards(k,extra){
   var c=list.shift();
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>先听，再选意思</p>':frontHtml(c))+'</div><p class=note>'+(k==='read'?'选出正确读音':'选出正确意思')+'</p><div class=opts>';
+  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':frontHtml(c))+'</div><p class=note>'+(k==='read'?'选出正确读音':'选出正确意思')+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div>');
-  var rp=document.createElement('button');rp.className='btn';rp.id='sp2';rp.textContent='🔊 重听';rp.onclick=function(){speak(speakable(c));};
+  var rp=document.createElement('button');rp.className='btn';rp.id='sp2';rp.textContent='🔊 重听';rp.onclick=function(){speak(TESTSAY(c));};
   document.querySelector('.flash').appendChild(rp);
-  if(LISTEN)speak(speakable(c));
+  if(LISTEN)speak(TESTSAY(c));
   [].forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){
    var ok=b.getAttribute('data-v')===ans(c);
    [].forEach.call(document.querySelectorAll('.opt'),function(x){x.disabled=true;if(x.getAttribute('data-v')===ans(c))x.className+=' right';});
