@@ -1045,7 +1045,7 @@ function quiz(setKey,ids,fk){
  function buildView(it,h){
   var pool=shuffle(it.tk.concat(it.x||[])).map(function(t,i){return {t:t,i:i};});
   var picked=[];
-  h+=(it.pre!==undefined?'<p class=q>'+esc(it.pre)+' <span class=gap>＿＿＿＿</span> '+esc(it.post)+'</p><p class=note>提示：'+esc(it.zh)+'</p><button id=play class=btn>🔊 听整句</button>':it.dict?'<button id=play class=btn>🔊 播放</button>'+ttsWarn()+'<p class=note>点播放，听完把句子拼出来（参考：'+esc(it.zh)+'）</p>':'<p class=q>'+esc(it.zh)+'</p><button id=play class=btn>🔊 听日语</button>')+
+  h+=(it.pre!==undefined?'<p class=q>'+esc(it.pre)+' <span class=gap>＿＿＿＿</span> '+esc(it.post)+'</p><button id=play class=btn>🔊 听整句</button>':it.dict?'<button id=play class=btn>🔊 播放</button>'+ttsWarn()+'<p class=note>点播放，听完把句子拼出来</p>':'<p class=q>'+esc(it.zh)+'</p><button id=play class=btn>🔊 听日语</button>')+
    '<div id=ans class=ans></div><div id=bank class=bank></div><button id=chk class=btn>检查</button> <button id=clr class=btn>清空</button><div id=fb></div>';
   render(h);
   function draw(){
@@ -1061,7 +1061,7 @@ function quiz(setKey,ids,fk){
   $('#chk').onclick=function(){
    var ok=picked.map(function(p){return p.t;}).join('')===full;
    $('#chk').disabled=true;$('#clr').disabled=true;
-   finish(it,ok,(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正确：'+esc(full)+'（稍后会再出现）</p>')+'<p class=note>'+esc((it.pre||'')+'【'+full+'】'+(it.post||''))+'<br>'+esc(it.zh)+' · '+esc(it.s)+'</p>'+explHtml(it.id));
+   finish(it,ok,(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正确：'+esc(full)+'（稍后会再出现）</p>')+'<div class=noteb><b>整句：</b>'+esc((it.pre||'')+'【'+full+'】'+(it.post||''))+'<br><b>提示・大意：</b>'+esc(it.zh)+' · '+esc(it.s)+'</div>'+explHtml(it.id));
    speak(spoken);};}
  show();}
 
