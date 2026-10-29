@@ -33,6 +33,13 @@ textarea,input{font:inherit;width:100%;background:var(--card);color:var(--fg);bo
 .gap{border-bottom:2px solid var(--ac);padding:0 4px}
 .rd{font-size:20px;color:var(--ac);margin-top:4px}
 audio{width:100%}
+
+#vbbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--ac);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:none;z-index:50;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
+#vbbar .vbrow{display:flex;gap:8px;align-items:center;margin:4px 0}
+#vbbar input{flex:1;min-width:0;padding:8px;font-size:16px;border:1px solid var(--bd);border-radius:6px}
+#vbbar button,.opt{-webkit-user-select:none;user-select:none}
+.vbu{text-decoration:underline;text-decoration-color:var(--ac);text-decoration-thickness:2px;text-underline-offset:3px}
+.vbtoast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:#333;color:#fff;padding:8px 14px;border-radius:8px;z-index:60;font-size:14px}
 </style></head>
 <body><div id="app"></div>
 <script>window.DATA = window.DATA || {};
@@ -757,7 +764,7 @@ function speakSeq(arr,done){if(window.speechSynthesis)speechSynthesis.cancel();v
 function stopTTS(){clearTimeout(ttsTimer);if(AUD){try{AUD.pause();}catch(e){}}if(window.speechSynthesis)speechSynthesis.cancel();}
 
 // ---- views
-function nav(){return '<nav><a href="#/home">首页</a><a href="#/audio">听力</a><a href="#" id=rate></a><a href="#/lessons">课程</a><a href="#/wrong">错题本</a><a href="#/settings">设置</a></nav>';}
+function nav(){return '<nav><a href="#/home">首页</a><a href="#/audio">听力</a><a href="#" id=rate></a><a href="#/lessons">课程</a><a href="#/wrong">错题本</a><a href="#/vb">生词本</a><a href="#/settings">设置</a></nav>';}
 function render(h){stopTTS();app.innerHTML=nav()+'<main>'+h+'</main>';window.scrollTo(0,0);
  var r=document.getElementById('rate');if(r){r.textContent='🐢 '+(S.rate||1.0)+'×';r.onclick=function(e){e.preventDefault();var o=[0.6,0.8,1.0],i=(o.indexOf(S.rate||1.0)+1)%3;S.rate=o[i];save();r.textContent='🐢 '+S.rate+'×';};}}
 
@@ -770,7 +777,7 @@ function home(){
   h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>待复习 '+s.due+' · 新 '+s.nw+' / '+s.total+'</span></a>';});
  h+='</div><h2>② 再做（测验）</h2><div class=grid>';
  for(var k in SETS)h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>'+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';
- h+='</div><h2>③ 听真题录音</h2><div class=grid><a class=card href="#/audio"><b>听力真题（原录音）</b><span>可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:'')+'</span></a></div><h2>④ 补课</h2><div class=grid><a class=card href="#/lessons"><b>引导型课程</b><span>自他动词・敬语・动词变形</span></a><a class=card href="#/wrong"><b>错题本</b><span>'+wcount+' 题待攻克</span></a></div>';
+ h+='</div><h2>③ 听真题录音</h2><div class=grid><a class=card href="#/vb"><b>生词本（'+vbList().length+'）</b><span>听力/阅读里划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:'')+'</span></a><a class=card href="#/audio"><b>听力真题（原录音）</b><span>可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:'')+'</span></a></div><h2>④ 补课</h2><div class=grid><a class=card href="#/lessons"><b>引导型课程</b><span>自他动词・敬语・动词变形</span></a><a class=card href="#/wrong"><b>错题本</b><span>'+wcount+' 题待攻克</span></a></div>';
  render(h);}
 
 function TESTSAY(c){return (c.line&&window.DATA&&DATA.tts&&DATA.tts[c.line])?c.line:speakable(c);}
@@ -1136,6 +1143,120 @@ function settings(){
  $('#rep').onclick=function(){var r=report();$('#ta').value=r;try{navigator.clipboard.writeText(r);}catch(e){}$('#ta').select();};
  $('#rst').onclick=function(){if(confirm('确定重置？')){S=null;try{localStorage.removeItem(KEY);}catch(e){}load();save();route();}};}
 
+/* ===== 生词本 ===== */
+function vbList(){S.vb=S.vb||{list:[]};S.vb.list=S.vb.list||[];return S.vb.list;}
+function vbDue(){var t=dayNum();return vbList().filter(function(e){return e.due<=t;});}
+function vbFind(w){var L=vbList();for(var i=0;i<L.length;i++)if(L[i].w===w)return L[i];return null;}
+function vbAdd(w,ctx,m,src){
+ var e=vbFind(w),t=dayNum();
+ if(e){if(m)e.m=m;if(ctx&&ctx.length>(e.ctx||'').length&&ctx.indexOf(w)>=0)e.ctx=ctx;save();return false;}
+ vbList().push({id:'w'+Date.now()+Math.floor(Math.random()*1000),w:w,ctx:ctx||w,m:m||'',src:src||'',add:t,box:0,due:t,n:0,wr:0});save();return true;}
+function ctxOf(range,txt){
+ var node=range.commonAncestorContainer,el=node.nodeType===3?node.parentNode:node,mn=document.querySelector('main');
+ while(el&&el!==mn&&/^(B|U|I|SPAN|A|SMALL|EM|STRONG)$/.test(el.tagName))el=el.parentNode;
+ var full=(el&&(el.innerText||el.textContent))||txt,i=full.indexOf(txt);
+ if(i<0)return txt;
+ var s=0,e=full.length,k;
+ for(k=i-1;k>=0;k--){if('。！？!?\n'.indexOf(full.charAt(k))>=0){s=k+1;break;}}
+ for(k=i+txt.length;k<full.length;k++){if('。！？!?\n'.indexOf(full.charAt(k))>=0){e=k+1;break;}}
+ var c=full.slice(s,e).replace(/\s+/g,' ').trim();
+ if(c.length>140)c=c.slice(Math.max(0,c.indexOf(txt)-50),c.indexOf(txt)+txt.length+60);
+ return c;}
+var vbCur=null,vbPin=false,vbTimer=null;
+function vbBar(){var b=document.getElementById('vbbar');if(b)return b;
+ b=document.createElement('div');b.id='vbbar';
+ b.innerHTML='<div class=vbrow><b id=vbw></b> <button id=vbx class="btn small">✕</button></div><div class=vbrow><input id=vbm placeholder="意思（可选，之后可补）"> <button id=vbadd class="btn good">＋ 加入生词本</button></div>';
+ document.body.appendChild(b);
+ ['touchstart','mousedown'].forEach(function(ev){b.addEventListener(ev,function(){vbPin=true;});});
+ $('#vbx',b).onclick=function(){vbHide();};
+ $('#vbadd',b).onclick=function(){
+  if(!vbCur)return;
+  var m=$('#vbm',b).value.trim(),isNew=vbAdd(vbCur.w,vbCur.ctx,m,vbCur.src);
+  vbToast((isNew?'已加入生词本：':'已更新：')+vbCur.w+'（共 '+vbList().length+' 个）');vbHide();vbHL();};
+ return b;}
+function vbHide(){var b=document.getElementById('vbbar');if(b)b.style.display='none';vbPin=false;vbCur=null;try{window.getSelection().removeAllRanges();}catch(e){}}
+function vbToast(t){var d=document.createElement('div');d.className='vbtoast';d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove();},2200);}
+document.addEventListener('selectionchange',function(){
+ var sel=window.getSelection();if(!sel||!sel.rangeCount)return;
+ var txt=sel.toString().replace(/\s+/g,' ').trim(),r=sel.getRangeAt(0),mn=document.querySelector('main');
+ var inBar=document.getElementById('vbbar')&&document.getElementById('vbbar').contains(document.activeElement);
+ if(!txt||txt.length>40||!mn||!mn.contains(r.commonAncestorContainer)||/^(INPUT|TEXTAREA|BUTTON)$/.test((r.commonAncestorContainer.nodeType===3?r.commonAncestorContainer.parentNode:r.commonAncestorContainer).tagName||'')||document.querySelector('[data-nosel]')&&document.querySelector('[data-nosel]').contains(r.commonAncestorContainer)){
+  if(!vbPin&&!inBar){clearTimeout(vbTimer);vbTimer=setTimeout(function(){if(!vbPin){var b=document.getElementById('vbbar');if(b&&!b.contains(document.activeElement))b.style.display='none';}},350);}
+  return;}
+ clearTimeout(vbTimer);
+ var h1=document.querySelector('main h1');
+ vbCur={w:txt,ctx:ctxOf(r,txt),src:h1?h1.textContent.replace(/\s+还剩.*$/,'').replace(/^\d+ \/ \d+\s*/,''):''};
+ var b=vbBar();$('#vbw',b).textContent='「'+txt+'」'+(vbFind(txt)?'（已在生词本）':'');b.style.display='block';});
+function vbHL(){
+ var L=vbList();if(!L.length)return;
+ var ws=L.map(function(e){return e.w;}).sort(function(a,b){return b.length-a.length;});
+ var re=new RegExp(ws.map(function(w){return w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|'),'g');
+ var mn=document.querySelector('main');if(!mn||mn.querySelector('[data-nohl]'))return;
+ if(obs)obs.disconnect();
+ var wk=document.createTreeWalker(mn,NodeFilter.SHOW_TEXT,{acceptNode:function(n){var p=n.parentNode;
+  if(!n.nodeValue||!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
+  if(p.closest&&p.closest('button,input,textarea,h1,.vbu,#vbbar,.opt,.tile'))return NodeFilter.FILTER_REJECT;
+  var hit=re.test(n.nodeValue);re.lastIndex=0;return hit?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
+ var nodes=[],n;while((n=wk.nextNode()))nodes.push(n);
+ nodes.forEach(function(n){
+  var s=n.nodeValue,fr=document.createDocumentFragment(),last=0,m;re.lastIndex=0;
+  while((m=re.exec(s))){if(m.index>last)fr.appendChild(document.createTextNode(s.slice(last,m.index)));
+   var u=document.createElement('span');u.className='vbu';u.textContent=m[0];var e=vbFind(m[0]);if(e&&e.m)u.title=e.m;fr.appendChild(u);last=m.index+m[0].length;}
+  if(last<s.length)fr.appendChild(document.createTextNode(s.slice(last)));
+  n.parentNode.replaceChild(fr,n);});
+ if(obs)obs.observe(app,{childList:true,subtree:true});}
+var obs=null,obsT=null;
+function vbInit(){if(!window.MutationObserver)return;obs=new MutationObserver(function(){clearTimeout(obsT);obsT=setTimeout(vbHL,60);});obs.observe(app,{childList:true,subtree:true});}
+function vbPool(kind,exclude){
+ var out=[];vbList().forEach(function(e){var v=kind==='w'?e.w:e.m;if(v&&v!==exclude&&out.indexOf(v)<0)out.push(v);});
+ (DATA.vocab||[]).forEach(function(v){var x=kind==='w'?v.w:(v.zh||'').replace(/（.*$/,'');if(x&&x.indexOf('〜')<0&&x!==exclude&&out.indexOf(x)<0)out.push(x);});
+ return out;}
+function vbQuestion(e){
+ var ok=e.ctx&&e.ctx.indexOf(e.w)>=0&&e.ctx.length>e.w.length,types=[];
+ if(ok)types.push('c');if(e.m)types.push('m');
+ if(!types.length)return {t:'f'};
+ var t=types[(e.n||0)%types.length],kind=t==='c'?'w':'m',ans=t==='c'?e.w:e.m;
+ var ds=shuffle(vbPool(kind,ans)).filter(function(x){return t!=='c'||e.ctx.indexOf(x)<0;}).slice(0,3);
+ var opts=shuffle([ans].concat(ds));
+ return {t:t,opts:opts,a:opts.indexOf(ans),
+  q:t==='c'?e.ctx.replace(e.w,'＿＿＿＿'):e.w,
+  p:t==='c'?'选出填入空格的词/表达':'选出这个词/表达的意思'+(e.ctx&&e.ctx!==e.w?'（出处句：'+e.ctx+'）':'')};}
+function vbReview(list){
+ var q=shuffle(list).slice(0,20),total=q.length,right=0,done=0,fl={};
+ function step(){
+  if(!q.length){render('<h1>生词本复习完成</h1><p class=big>一次答对 '+right+' / '+total+'</p><a class=btn href="#/vb">回生词本</a> <a class=btn href="#/home">首页</a>');return;}
+  var e=q.shift(),Q=vbQuestion(e),h='<h1 data-nohl=1>'+(done+1)+' / '+total+' <small>还剩 '+(q.length+1)+'</small></h1><div data-nohl=1 data-nosel=1>';
+  if(Q.t==='f')h+='<p class=big>'+esc(e.w)+'</p><p class=note>还没有填“意思”，先自己回忆，再点“看答案”。</p><p><button id=vshow class=btn>看答案</button></p>';
+  else{h+='<p class=note>'+esc(Q.p)+'</p><p class=q>'+esc(Q.q)+'</p>'+Q.opts.map(function(o,i){return '<button class="opt btn" data-i="'+i+'">'+(i+1)+'. '+esc(o)+'</button>';}).join('');}
+  h+='<div id=vfb></div></div>';render(h);
+  function reveal(ok){
+   var t=dayNum();e.n=(e.n||0)+1;
+   if(ok){e.box=Math.min((e.box||0)+1,INT.length-1);e.due=t+INT[e.box];right+=(fl[e.id]?0:1);}
+   else{e.wr=(e.wr||0)+1;e.box=0;e.due=t+(fl[e.id]?1:0);if(!fl[e.id]){fl[e.id]=1;total++;q.splice(Math.min(3,q.length),0,e);}}
+   save();done++;
+   $('#vfb').innerHTML=(Q.t==='f'?'':(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正解：'+esc(Q.opts[Q.a])+(fl[e.id]&&!ok&&q.indexOf(e)>=0?'（稍后再出现一次）':'')+'</p>'))+
+    '<div class=noteb><b>'+esc(e.w)+'</b>'+(e.m?'　'+esc(e.m):'')+'<br><span class=note>'+esc(e.ctx)+'</span>'+(e.src?'<br><span class=note>出处：'+esc(e.src)+'</span>':'')+'</div><p><button id=vsp class=btn>🔊 听句子</button> <button id=vnx class="btn good">下一个 →</button></p>';
+   $('#vsp').onclick=function(){speak(e.ctx);};$('#vnx').onclick=step;}
+  if(Q.t==='f'){$('#vshow').onclick=function(){this.style.display='none';$('#vfb').innerHTML='<div class=noteb><b>'+esc(e.w)+'</b><br><span class=note>'+esc(e.ctx)+'</span></div><p><button id=vok class="btn good">想起来了</button> <button id=vng class="btn bad">没想起来</button></p>';$('#vok').onclick=function(){$('#vok').parentNode.innerHTML='';reveal(true);};$('#vng').onclick=function(){$('#vng').parentNode.innerHTML='';reveal(false);};};}
+  else{[].forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){var i=+b.getAttribute('data-i'),ok=i===Q.a;
+   [].forEach.call(document.querySelectorAll('.opt'),function(x){x.disabled=true;if(+x.getAttribute('data-i')===Q.a)x.className+=' right';});if(!ok)b.className+=' wrong';reveal(ok);};});}
+ }
+ step();}
+function vbView(){
+ var L=vbList().slice().sort(function(a,b){return b.add-a.add;}),due=vbDue();
+ var h='<h1 data-nohl=1>生词本</h1><div data-nohl=1><p>共 <b>'+L.length+'</b> 个，今天到期 <b>'+due.length+'</b> 个。</p><p class=note>在听力原文、阅读文章或讲解里，用手指划选一个词/表达，底部会出现“加入生词本”。已加入的词会在文中划线。复习是选择题：有出处句时考“填空”，写了意思时考“选意思”，交替出现。</p>';
+ if(due.length)h+='<a class=btn id=vgo href="#">复习今天到期的（'+Math.min(due.length,20)+'）</a> ';
+ if(L.length)h+='<a class=btn id=vall href="#">随机练习（最多20）</a>';
+ h+='<div id=vlist>';
+ L.forEach(function(e){h+='<div class=noteb><b>'+esc(e.w)+'</b>'+(e.m?'　'+esc(e.m):'　<span class=note>（未填意思）</span>')+'<br><span class=note>'+esc(e.ctx)+(e.src?' · '+esc(e.src):'')+'</span><br><button class="btn small" data-m="'+e.id+'">改意思</button> <button class="btn small" data-d="'+e.id+'">删除</button></div>';});
+ h+='</div></div>';
+ if(!L.length)h+='<p data-nohl=1>还没有生词。</p>';
+ render(h);
+ if($('#vgo'))$('#vgo').onclick=function(ev){ev.preventDefault();vbReview(due);};
+ if($('#vall'))$('#vall').onclick=function(ev){ev.preventDefault();vbReview(vbList());};
+ [].forEach.call(document.querySelectorAll('[data-m]'),function(b){b.onclick=function(){var e=vbList().filter(function(x){return x.id===b.getAttribute('data-m');})[0];var v=window.prompt('「'+e.w+'」的意思：',e.m||'');if(v!==null){e.m=v.trim();save();vbView();}};});
+ [].forEach.call(document.querySelectorAll('[data-d]'),function(b){b.onclick=function(){var id=b.getAttribute('data-d');if(window.confirm('删除这个生词？')){S.vb.list=vbList().filter(function(x){return x.id!==id;});save();vbView();}};});}
+
 function route(){
  var p=(location.hash||'#/home').slice(2).split('/');
  var v=p[0];
@@ -1148,12 +1269,13 @@ function route(){
  else if(v==='wrong')wrongView();
  else if(v==='wrongquiz'){var ids=wrongDue();if(ids.length)quiz(null,ids);else wrongView();}
  else if(v==='wrongall'){var ids2=wrongOpen();if(ids2.length)quiz(null,ids2);else wrongView();}
+ else if(v==='vb')vbView();
  else if(v==='lessons')lessonsView();
  else if(v==='lesson')lessonView(p[1]);
  else if(v==='settings')settings();
  else home();}
 window.addEventListener('hashchange',route);
-load();route();
+load();vbInit();route();
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});
 })();
 </script>
