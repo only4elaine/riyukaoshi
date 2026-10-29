@@ -847,7 +847,7 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>③ 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1029-1349</p>';
+ h+='<p class=note style="margin-top:24px">版本 1029-1418</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -1223,7 +1223,7 @@ function settings(){
  $('#rst').onclick=function(){if(confirm('确定重置？')){S=null;try{localStorage.removeItem(KEY);}catch(e){}load();save();route();}};}
 
 /* ===== 生词本 ===== */
-function vbList(){S.vb=S.vb||{list:[]};S.vb.list=S.vb.list||[];return S.vb.list;}
+function vbList(){S.vb=S.vb||{list:[]};S.vb.list=S.vb.list||[];if(!S.vb.v2&&typeof trFor==='function'&&window.DATA){S.vb.v2=1;S.vb.list.forEach(function(e){e.tr=trFor(e.ctx||'');});save();}return S.vb.list;}
 function vbDue(){var t=dayNum();return vbList().filter(function(e){return e.due<=t;});}
 function vbFind(w){var L=vbList();for(var i=0;i<L.length;i++)if(L[i].w===w)return L[i];return null;}
 function vbAdd(w,ctx,m,src,tr){
@@ -1235,9 +1235,11 @@ function ctxOf(range,txt){
  while(el&&el!==mn&&/^(B|U|I|SPAN|A|SMALL|EM|STRONG)$/.test(el.tagName))el=el.parentNode;
  var full=(el&&(el.innerText||el.textContent))||txt,i=full.indexOf(txt);
  if(i<0)return txt;
- var s=0,e=full.length,k;
- for(k=i-1;k>=0;k--){if('。！？!?\n'.indexOf(full.charAt(k))>=0){s=k+1;break;}}
- for(k=i+txt.length;k<full.length;k++){if('。！？!?\n'.indexOf(full.charAt(k))>=0){e=k+1;break;}}
+ var s=0,e=full.length,k,m,re=/[男女ＭＦMF]\s*[:：]/g;
+ for(k=i-1;k>=0;k--){if('。！？!?'.indexOf(full.charAt(k))>=0){s=k+1;break;}}
+ re.lastIndex=0;while((m=re.exec(full))&&m.index<=i){if(m.index+m[0].length<=i)s=Math.max(s,m.index);}
+ for(k=i+txt.length;k<full.length;k++){if('。！？!?'.indexOf(full.charAt(k))>=0){e=k+1;break;}}
+ re.lastIndex=i+txt.length;m=re.exec(full);if(m&&m.index<e)e=m.index;
  var c=full.slice(s,e).replace(/([^\x00-\x7f])\s+(?=[^\x00-\x7f])/g,'$1').replace(/\s+/g,' ').replace(/^[ＭＦMF]\s*[:：]\s*/,'').trim();
  if(c.length>140)c=c.slice(Math.max(0,c.indexOf(txt)-50),c.indexOf(txt)+txt.length+60);
  return c;}
@@ -1250,7 +1252,7 @@ function trInit(){
 function sentSplit(t){return (t.match(/[^。！？!?\n]+[。！？!?]?/g)||[]).map(function(x){return x.trim();}).filter(Boolean);}
 function trFor(sent){
  if(!TR)trInit();var n=nz(sent),e=null,i;
- if(!n)return '';
+ if(n.length<8)return '';
  for(i=0;i<TR.length;i++)if(TR[i].o.indexOf(n)>=0){e=TR[i];break;}
  if(!e)return '';
  var tre=/(?=[男女MFＭＦ]\s*[:：])/,ot=e.ro.split(tre).filter(function(x){return x.trim();}),zt=e.z.split(/\n(?=[男女]：)|(?=[男女]：)/).filter(function(x){return x.trim();});
