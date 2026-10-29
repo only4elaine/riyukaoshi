@@ -798,7 +798,8 @@ function cards(k,extra){
   var LISTEN=(k==='lexp'||k==='lwords');
   var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':frontHtml(c))+'</div><p class=note>'+(k==='read'?'选出正确读音':'选出正确意思')+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
-  render(h+'</div><div id=fb></div>');
+  render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
+  $('#skip').onclick=function(){test(list,n);};
   var rp=document.createElement('button');rp.className='btn';rp.id='sp2';rp.textContent='🔊 重听';rp.onclick=function(){speak(TESTSAY(c));};
   document.querySelector('.flash').appendChild(rp);
   if(LISTEN)speak(TESTSAY(c));
@@ -809,10 +810,10 @@ function cards(k,extra){
    var key=k+':'+c.id,s=S.cards[key]||{box:0,due:t};
    var first=!c._fail;
    if(ok){ if(first){s.box=Math.min(s.box+1,INT.length-1);s.due=t+INT[s.box];} else {s.box=0;s.due=t+1;} doneN++; }
-   else{c._fail=true;s.box=0;s.due=t;list.splice(Math.min(3,list.length),0,c);}
-   S.cards[key]=s;bump();save();
+   else{c._fail=true;c._n=(c._n||0)+1;s.box=0;if(c._n<2){s.due=t;list.splice(Math.min(3,list.length),0,c);}else{s.due=t+1;}}
+   S.cards[key]=s;bump();save();var sk=$('#skip');if(sk)sk.style.display='none';
    if(LISTEN){var fl=document.querySelector('.flash');fl.innerHTML=frontHtml(c);fl.appendChild(rp);}
-   $('#fb').innerHTML=(ok?'<p class=ok>✔ 正确</p>':'<p class=ng>✘ 正确答案：'+esc(ans(c))+'（稍后重测）</p>')+'<div class=ex>'+d.back(c)+'</div><button id=nx2 class=btn>继续</button>';
+   $('#fb').innerHTML=(ok?'<p class=ok>✔ 正确</p>':'<p class=ng>✘ 正确答案：'+esc(ans(c))+(c._n<2?'（稍后重测一次）':'（明天再出现）')+'</p>')+'<div class=ex>'+d.back(c)+'</div><button id=nx2 class=btn>继续</button>';
    $('#nx2').onclick=function(){ test(list,n); };
    if(!LISTEN)speak(speakable(c));
   };});}
