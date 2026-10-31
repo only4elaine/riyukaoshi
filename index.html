@@ -931,6 +931,7 @@ function speak(txt,done){
  }
  browserSpeak(txt,fin);}
 function browserSpeak(txt,fin){
+ try{if(txt&&String(txt).length<120){S.miss=S.miss||{};if(!S.miss[txt]&&Object.keys(S.miss).length<800){S.miss[txt]=1;save();}}}catch(e){}
  if(!window.speechSynthesis){fin();return;}
  var sp=speechSynthesis.speaking||speechSynthesis.pending;try{speechSynthesis.cancel();speechSynthesis.resume();}catch(e){}
  var u=new SpeechSynthesisUtterance(txt);u.lang='ja-JP';u.rate=(S.rate||1.0)*0.95;
@@ -1019,7 +1020,7 @@ function home(){
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
- h+='<p class=note style="margin-top:24px">版本 1031-1717</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-1722</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -1457,10 +1458,11 @@ function dlWire(){[['1',ttsUrls],['2',clipUrls],['3',wordUrls]].forEach(function
   cacheCount(u,function(c){if(c>=0)st.textContent='已存 '+c+' / '+u.length+(c===u.length?' ✓':'');});
   b.onclick=function(){dlAll(u,st);};});}
 function settings(){
- var h='<h1>设置</h1><label>考试日期 <input type=date id=exam value="'+S.exam+'"></label><p><button id=exp class=btn>导出进度</button> <button id=imp class=btn>导入进度</button></p><textarea id=ta rows=5></textarea><p><button id=rep class=btn>复制学习报告（发给 Claude）</button></p><p class=note>离线语音下载按钮在需要的页面里：听力页、生词本、课程页和自由练习页。</p><p class=note>下载完会显示“已全部下载 ✓”。建议在 Wi‑Fi 下进行，下载时不要关页面。iPhone 对网站存储有上限，长期不打开可能被系统清理，出发前再打开确认一次。</p><p><button id=rst class="btn bad">重置</button></p>';
+ var h='<h1>设置</h1><label>考试日期 <input type=date id=exam value="'+S.exam+'"></label><p><button id=exp class=btn>导出进度</button> <button id=imp class=btn>导入进度</button></p><textarea id=ta rows=5></textarea><p><button id=rep class=btn>复制学习报告（发给 Claude）</button></p><p class=note>离线语音下载按钮在需要的页面里：听力页、生词本、课程页和自由练习页。</p><p><button id=miss class=btn>复制“缺语音的词句清单”（发给 Claude 补合成）</button> <span id=missn class=note></span></p><p class=note>下载完会显示“已全部下载 ✓”。建议在 Wi‑Fi 下进行，下载时不要关页面。iPhone 对网站存储有上限，长期不打开可能被系统清理，出发前再打开确认一次。</p><p><button id=rst class="btn bad">重置</button></p>';
  render(h);
  $('#exam').onchange=function(){S.exam=this.value;save();};
  $('#exp').onclick=function(){$('#ta').value=JSON.stringify(S);};
+ var mk=Object.keys(S.miss||{});$('#missn').textContent='目前 '+mk.length+' 条';$('#miss').onclick=function(){var r=JSON.stringify(mk);$('#ta').value=r;try{navigator.clipboard.writeText(r);}catch(e){}$('#ta').select();};
  $('#imp').onclick=function(){try{S=JSON.parse($('#ta').value);save();alert('已导入');}catch(e){alert('格式错误');}};
  $('#rep').onclick=function(){var r=report();$('#ta').value=r;try{navigator.clipboard.writeText(r);}catch(e){}$('#ta').select();};
  $('#rst').onclick=function(){if(confirm('确定重置？')){S=null;try{localStorage.removeItem(KEY);}catch(e){}load();save();route();}};}
