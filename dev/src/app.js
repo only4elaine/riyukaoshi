@@ -690,6 +690,7 @@ function settings(){
 function vbList(){S.vb=S.vb||{list:[]};S.vb.list=S.vb.list||[];if(!S.vb.v2&&typeof trFor==='function'&&window.DATA){S.vb.v2=1;S.vb.list.forEach(function(e){e.tr=trFor(e.ctx||'');});save();}return S.vb.list;}
 function vbDue(){var t=dayNum();return vbList().filter(function(e){return e.due<=t;});}
 function lemOf(w){var L=window.DATA&&DATA.lem;var x=L&&L[String(w).replace(/\s+/g,'')];return x&&x!==w?x:'';}
+function vbSay(e){var T=Object.assign({},(window.DATA&&DATA.wtts)||{},(window.DATA&&DATA.tts)||{});return T[e.w]?e.w:(T[e.r]?e.r:(e.r||e.w));}
 function vbFind(w){var L=vbList();for(var i=0;i<L.length;i++)if(L[i].w===w)return L[i];return null;}
 function vbAdd(w,ctx,m,src,tr){
  var e=vbFind(w),t=dayNum();
@@ -837,7 +838,7 @@ function vbReview(list){
   if(Q.t==='f')h+='<p class=big>'+esc(e.w)+' <button class="btn small" id=vsw>🔊</button></p><p class=note>没有可出的题目，先自己回忆，再点“看答案”。</p><p><button id=vshow class=btn>看答案</button></p>';
   else{h+='<p class=note>'+esc(Q.p).replace(/\n/g,'<br>')+'</p><p class=q>'+esc(Q.q)+' <button class="btn small" id=vsw>🔊</button></p>'+Q.opts.map(function(o,i){return '<button class="opt btn" data-i="'+i+'">'+(i+1)+'. '+esc(o)+'</button>';}).join('');}
   h+='<div id=vfb></div></div>';render(h);
-  if($('#vsw'))$('#vsw').onclick=function(){speak(e.r||e.w);};
+  if($('#vsw'))$('#vsw').onclick=function(){speak(vbSay(e));};
   function reveal(ok){
    var t=dayNum();e.n=(e.n||0)+1;
    if(ok){if(!fl[e.id])fsrs(e,true,t);else{e.box=0;e.due=t+1;}right+=(fl[e.id]?0:1);}
@@ -845,7 +846,7 @@ function vbReview(list){
    bump('vb');save();done++;
    $('#vfb').innerHTML=(Q.t==='f'?'':(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正解：'+esc(Q.opts[Q.a])+(fl[e.id]&&!ok&&q.indexOf(e)>=0?'（稍后再出现一次）':'')+'</p>'))+
     '<div class=noteb><b>'+esc(e.w)+'</b>'+(e.r?'　【'+esc(e.r)+'】':'')+(lemOf(e.w)?'　<span class=note>原形：'+esc(lemOf(e.w))+'</span>':'')+(e.m?'　'+esc(e.m):'')+'<br><span class=note>'+esc(e.ctx)+'</span>'+(e.tr?'<br><span class=note>译：'+esc(e.tr)+'</span>':'')+(e.src?'<br><span class=note>出处：'+esc(e.src)+'</span>':'')+'</div><p><button id=vsw2 class=btn>🔊 词</button> <button id=vsp class=btn>🔊 听句子</button> <button id=vnx class="btn good">下一个 →</button></p>';
-   $('#vsw2').onclick=function(){speak(e.r||e.w);};$('#vsp').onclick=function(){speak(e.ctx);};$('#vnx').onclick=step;}
+   $('#vsw2').onclick=function(){speak(vbSay(e));};$('#vsp').onclick=function(){speak(e.ctx);};$('#vnx').onclick=step;}
   if(Q.t==='f'){$('#vshow').onclick=function(){this.style.display='none';$('#vfb').innerHTML='<div class=noteb><b>'+esc(e.w)+'</b><br><span class=note>'+esc(e.ctx)+'</span></div><p><button id=vok class="btn good">想起来了</button> <button id=vng class="btn bad">没想起来</button></p>';$('#vok').onclick=function(){$('#vok').parentNode.innerHTML='';reveal(true);};$('#vng').onclick=function(){$('#vng').parentNode.innerHTML='';reveal(false);};};}
   else{[].forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){var i=+b.getAttribute('data-i'),ok=i===Q.a;
    [].forEach.call(document.querySelectorAll('.opt'),function(x){x.disabled=true;if(+x.getAttribute('data-i')===Q.a)x.className+=' right';});if(!ok)b.className+=' wrong';reveal(ok);};});}
@@ -864,7 +865,7 @@ function vbView(){
  h+=dlBlock(3,'听力和阅读里所有词的朗读（约38MB）');render(h);dlWire();
  if($('#vgo'))$('#vgo').onclick=function(ev){ev.preventDefault();vbReview(due);};
  if($('#vall'))$('#vall').onclick=function(ev){ev.preventDefault();vbReview(vbList());};
- [].forEach.call(document.querySelectorAll('[data-s]'),function(b){b.onclick=function(){var e=vbList().filter(function(x){return x.id===b.getAttribute('data-s');})[0];if(e){var T=Object.assign({},(window.DATA&&DATA.wtts)||{},(window.DATA&&DATA.tts)||{});var wd=T[e.w]?e.w:(T[e.r]?e.r:(e.r||e.w));speak(wd,function(){if(e.ctx&&T[e.ctx])speak(e.ctx);});}};});
+ [].forEach.call(document.querySelectorAll('[data-s]'),function(b){b.onclick=function(){var e=vbList().filter(function(x){return x.id===b.getAttribute('data-s');})[0];if(e){var T=(window.DATA&&DATA.tts)||{};speak(vbSay(e),function(){if(e.ctx&&T[e.ctx])speak(e.ctx);});}};});
  [].forEach.call(document.querySelectorAll('[data-m]'),function(b){b.onclick=function(){var e=vbList().filter(function(x){return x.id===b.getAttribute('data-m');})[0];var v=window.prompt('「'+e.w+'」的意思：',e.m||'');if(v!==null){e.m=v.trim();save();vbView();}};});
  [].forEach.call(document.querySelectorAll('[data-d]'),function(b){b.onclick=function(){var id=b.getAttribute('data-d');if(window.confirm('删除这个生词？')){S.vb.list=vbList().filter(function(x){return x.id!==id;});save();vbView();}};});}
 
