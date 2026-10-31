@@ -789,19 +789,20 @@ document.addEventListener('selectionchange',function(){
  var b=vbBar();$('#vbw',b).textContent='「'+txt+'」'+(lemOf(txt)?'（原形：'+lemOf(txt)+'）':'')+(vbFind(txt)?'（已在生词本）':'');b.style.display='block';});
 function vbHL(){
  var L=vbList();if(!L.length)return;
- var ws=L.map(function(e){return e.w;}).sort(function(a,b){return b.length-a.length;});
- var re=new RegExp(ws.map(function(w){return w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|'),'g');
+ var MP={},ws=[];L.forEach(function(e){[e.w,lemOf(e.w)].forEach(function(w){w=String(w||'').replace(/\s+/g,'');if(w&&(w===e.w||w.length>=2)&&!MP[w]){MP[w]=e;ws.push(w);}});});
+ ws.sort(function(a,b){return b.length-a.length;});
+ var re=new RegExp(ws.map(function(w){return w.split('').map(function(c){return c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('[\\s\\u3000]*');}).join('|'),'g');
  var mn=document.querySelector('main');if(!mn||mn.querySelector('[data-nohl]'))return;
  if(obs)obs.disconnect();
  var wk=document.createTreeWalker(mn,NodeFilter.SHOW_TEXT,{acceptNode:function(n){var p=n.parentNode;
   if(!n.nodeValue||!n.nodeValue.trim())return NodeFilter.FILTER_REJECT;
-  if(p.closest&&p.closest('button,input,textarea,h1,.vbu,#vbbar,.opt,.tile,[lang=zh]'))return NodeFilter.FILTER_REJECT;
+  if(p.closest&&p.closest('button,input,textarea,h1,.vbu,#vbbar,.opt,.tile,body [lang=zh]'))return NodeFilter.FILTER_REJECT;
   var hit=re.test(n.nodeValue);re.lastIndex=0;return hit?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
  var nodes=[],n;while((n=wk.nextNode()))nodes.push(n);
  nodes.forEach(function(n){
   var s=n.nodeValue,fr=document.createDocumentFragment(),last=0,m;re.lastIndex=0;
   while((m=re.exec(s))){if(m.index>last)fr.appendChild(document.createTextNode(s.slice(last,m.index)));
-   var u=document.createElement('span');u.className='vbu';u.textContent=m[0];var e=vbFind(m[0]);if(e&&e.m)u.title=e.m;fr.appendChild(u);last=m.index+m[0].length;}
+   var u=document.createElement('span');u.className='vbu';u.textContent=m[0];var e=MP[m[0].replace(/\s+/g,'')];if(e&&e.m)u.title=e.m;fr.appendChild(u);last=m.index+m[0].length;}
   if(last<s.length)fr.appendChild(document.createTextNode(s.slice(last)));
   n.parentNode.replaceChild(fr,n);});
  if(obs)obs.observe(app,{childList:true,subtree:true});}
