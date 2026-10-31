@@ -1,6 +1,25 @@
 (function(){
 'use strict';
 var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15;
+/* ===== FSRS-5（默认参数）间隔重复 ===== */
+var FW=[0.4072,1.1829,3.1262,15.4722,7.2102,0.5316,1.0651,0.0234,1.616,0.1544,1.0824,1.9813,0.0953,0.2975,2.2042,0.2407,2.9466,0.5034,0.6567],FF=19/81,FC=-0.5;
+function fsD0(g){return Math.min(10,Math.max(1,FW[4]-Math.exp(FW[5]*(g-1))+1));}
+function fsBox(sb){return sb>=15?5:sb>=8?4:sb>=4?3:sb>=2?2:1;}
+function fsrs(o,ok,t){
+ var g=ok?3:1,days=Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000);
+ if(!o.sb){
+  if(o.box>0&&o.due!=null){o.sb=Math.max(1,INT[Math.min(o.box,INT.length-1)]);o.df=5.3;o.lr=o.due-o.sb;}}
+ if(!o.sb){o.sb=FW[g-1];o.df=fsD0(g);}
+ else{
+  var el=Math.max(0,t-(o.lr==null?t:o.lr)),R=Math.pow(1+FF*el/o.sb,FC),D=o.df||5.3,Sn;
+  D=D+(-FW[6]*(g-3))*(10-D)/9;D=Math.min(10,Math.max(1,FW[7]*fsD0(4)+(1-FW[7])*D));
+  if(ok)Sn=o.sb*(Math.exp(FW[8])*(11-D)*Math.pow(o.sb,-FW[9])*(Math.exp(FW[10]*(1-R))-1)+1);
+  else Sn=Math.min(o.sb,FW[11]*Math.pow(D,-FW[12])*(Math.pow(o.sb+1,FW[13])-1)*Math.exp(FW[14]*(1-R)));
+  o.sb=Math.max(0.1,Sn);o.df=D;}
+ var r=days<=14?0.95:0.9,iv=Math.max(1,Math.round(o.sb/FF*(Math.pow(r,1/FC)-1)));
+ if(days>2)iv=Math.min(iv,days-1);
+ o.lr=t;o.due=t+(ok?iv:1);o.box=ok?fsBox(o.sb):0;return o;}
+
 var S;
 function load(){try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){S=null;}
  if(!S)S={cards:{},wrong:{},log:{},exam:'2026-12-06'};S.stat=S.stat||{};if(!S.rateV2){S.rate=1.0;S.rateV2=1;}S.rate=S.rate||1.0;S.q=S.q||{};S.plan=S.plan||null;
@@ -314,8 +333,8 @@ function cards(k,extra){
    if(!ok)b.className+=' wrong';
    var key=k+':'+c.id,s=S.cards[key]||{box:0,due:t};
    var first=!c._fail;
-   if(ok){ if(first){s.box=Math.min(s.box+1,INT.length-1);s.due=t+INT[s.box];} else {s.box=0;s.due=t+1;} doneN++; }
-   else{c._fail=true;c._n=(c._n||0)+1;s.box=0;if(c._n<2){s.due=t;list.splice(Math.min(3,list.length),0,c);}else{s.due=t+1;}}
+   if(ok){ if(first){fsrs(s,true,t);} else {s.box=0;s.due=t+1;} doneN++; }
+   else{if(!c._fail)fsrs(s,false,t);c._fail=true;c._n=(c._n||0)+1;s.box=0;if(c._n<2){s.due=t;list.splice(Math.min(3,list.length),0,c);}else{s.due=t+1;}}
    S.cards[key]=s;bump('card');save();var sk=$('#skip');if(sk)sk.style.display='none';
    if(LISTEN){var fl=document.querySelector('.flash');fl.innerHTML=frontHtml(c);fl.appendChild(rp);}
    $('#fb').innerHTML=(ok?'<p class=ok>✔ 正确</p>':'<p class=ng>✘ 正确答案：'+esc(ans(c))+(c._n<2?'（稍后重测一次）':'（明天再出现）')+'</p>')+(OQ(c)?origFb(OQ(c)):'')+'<div class=ex>'+d.back(c)+'</div>'+(k==='keigo'?'':'<button id=sp3 class=btn>🔊 听读音</button> ')+'<button id=nx2 class=btn>继续</button>';
@@ -504,24 +523,24 @@ function clipView(id,k){
  $('#f5').onclick=function(){au.currentTime=au.currentTime+5;};
  $('#sc').onclick=function(){var e=$('#scb');e.className=e.className==='hide'?'noteb':'hide';};
  var key='au:'+id+':'+k;
- $('#ok').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;var w=S.wrong[key];if(w){w.box++;w.due=dayNum()+INT[Math.min(w.box,INT.length-1)];}bump('au');save();this.textContent='已记录 ✓';};
+ $('#ok').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;var w=S.wrong[key];if(w){fsrs(w,true,dayNum());}bump('au');save();this.textContent='已记录 ✓';};
  $('#no').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;S.wrong[key]={box:0,due:dayNum()};bump('au');save();this.textContent='已加入重听 ✓（明天再出现）';};}
 
 function recordQ(it,ok,failedInSession){
  var t=dayNum(),q=S.q[it.id];
  if(!q){q=S.q[it.id]={box:0,due:t,intro:t};
-  if(ok&&!failedInSession){q.box=1;q.due=t+INT[1];}
-  else {q.box=0;q.due=t+1;}
+  if(ok&&!failedInSession){fsrs(q,true,t);}
+  else {fsrs(q,false,t);q.box=0;q.due=t+1;}
   return;}
- if(ok&&!failedInSession){q.box=Math.min(q.box+1,INT.length-1);q.due=t+INT[q.box];}
- else {q.box=0;q.due=t+1;}
+ if(ok&&!failedInSession){fsrs(q,true,t);}
+ else {fsrs(q,false,t);q.box=0;q.due=t+1;}
 }
 function record(it,ok,failedInSession){
  if(DAILY_IDS[it.id])recordQ(it,ok,failedInSession);
  var st=S.stat[it.id]=S.stat[it.id]||{n:0,w:0};st.n++;if(!ok)st.w++;
  var t=dayNum(),w=S.wrong[it.id];
- if(!ok){S.wrong[it.id]={box:0,due:t};}
- else if(w){ if(!failedInSession){w.box++;w.due=t+INT[Math.min(w.box,INT.length-1)];} else {w.box=0;w.due=t+1;} }
+ if(!ok){var nw=w||{};fsrs(nw,false,t);nw.box=0;nw.due=t;S.wrong[it.id]=nw;}
+ else if(w){ if(!failedInSession){fsrs(w,true,t);} else {fsrs(w,false,t);w.box=0;w.due=t+1;} }
  bump(w?'wrong':'quiz');save();}
 function quiz(setKey,ids,fk){
  var items;
@@ -821,8 +840,8 @@ function vbReview(list){
   if($('#vsw'))$('#vsw').onclick=function(){speak(e.r||e.w);};
   function reveal(ok){
    var t=dayNum();e.n=(e.n||0)+1;
-   if(ok){e.box=Math.min((e.box||0)+1,INT.length-1);e.due=t+INT[e.box];right+=(fl[e.id]?0:1);}
-   else{e.wr=(e.wr||0)+1;e.box=0;e.due=t+(fl[e.id]?1:0);if(!fl[e.id]){fl[e.id]=1;total++;q.splice(Math.min(3,q.length),0,e);}}
+   if(ok){if(!fl[e.id])fsrs(e,true,t);else{e.box=0;e.due=t+1;}right+=(fl[e.id]?0:1);}
+   else{e.wr=(e.wr||0)+1;if(!fl[e.id])fsrs(e,false,t);e.box=0;e.due=t+(fl[e.id]?1:0);if(!fl[e.id]){fl[e.id]=1;total++;q.splice(Math.min(3,q.length),0,e);}}
    bump('vb');save();done++;
    $('#vfb').innerHTML=(Q.t==='f'?'':(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正解：'+esc(Q.opts[Q.a])+(fl[e.id]&&!ok&&q.indexOf(e)>=0?'（稍后再出现一次）':'')+'</p>'))+
     '<div class=noteb><b>'+esc(e.w)+'</b>'+(e.r?'　【'+esc(e.r)+'】':'')+(lemOf(e.w)?'　<span class=note>原形：'+esc(lemOf(e.w))+'</span>':'')+(e.m?'　'+esc(e.m):'')+'<br><span class=note>'+esc(e.ctx)+'</span>'+(e.tr?'<br><span class=note>译：'+esc(e.tr)+'</span>':'')+(e.src?'<br><span class=note>出处：'+esc(e.src)+'</span>':'')+'</div><p><button id=vsw2 class=btn>🔊 词</button> <button id=vsp class=btn>🔊 听句子</button> <button id=vnx class="btn good">下一个 →</button></p>';
