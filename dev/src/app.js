@@ -712,8 +712,8 @@ function dlWire(){[['1',ttsUrls],['2',clipUrls],['3',wordUrls]].forEach(function
   cacheCount(u,function(c){if(c>=0)st.textContent='已存 '+c+' / '+u.length+(c===u.length?' ✓':'');});
   b.onclick=function(){dlAll(u,st);};});}
 function settings(){
- var h='<h1>设置</h1><label>考试日期 <input type=date id=exam value="'+S.exam+'"></label><p><button id=exp class=btn>导出进度</button> <button id=imp class=btn>导入进度</button></p><textarea id=ta rows=5></textarea><p><button id=rep class=btn>复制学习报告（发给 Claude）</button></p><p class=note>离线语音下载按钮在需要的页面里：听力页、生词本、课程页和自由练习页。</p><p><button id=miss class=btn>复制“缺语音的词句清单”（发给 Claude 补合成）</button> <span id=missn class=note></span></p><p class=note>下载完会显示“已全部下载 ✓”。建议在 Wi‑Fi 下进行，下载时不要关页面。iPhone 对网站存储有上限，长期不打开可能被系统清理，出发前再打开确认一次。</p><p><button id=rst class="btn bad">重置</button></p>';
- render(h);
+ var h='<h1>设置</h1><label>考试日期 <input type=date id=exam value="'+S.exam+'"></label><p><button id=exp class=btn>导出进度</button> <button id=imp class=btn>导入进度</button></p><textarea id=ta rows=5></textarea><p><button id=rep class=btn>复制学习报告（发给 Claude）</button> <span class=note>复制后粘贴到和我的对话里，我能看到你哪里错得多，帮你调整内容</span></p><h2>离线语音下载</h2>'+dlBlock(1,'例句和词的朗读（约16MB）')+dlBlock(2,'全部真题录音（约76MB）')+dlBlock(3,'听力和阅读里所有词的朗读（约38MB）')+'<p class=note>这些按钮在需要语音的页面里也有。</p><p><button id=miss class=btn>复制“缺语音的词句清单”（发给 Claude 补合成）</button> <span id=missn class=note></span><br><span class=note>点听没声音的词句会被记在这里；复制后粘贴给我，我给它们补上语音，下次更新后就有声音了。</span></p><p class=note>下载完会显示“已全部下载 ✓”。建议在 Wi‑Fi 下进行，下载时不要关页面。iPhone 对网站存储有上限，长期不打开可能被系统清理，出发前再打开确认一次。</p><p><button id=rst class="btn bad">重置</button></p>';
+ render(h);dlWire();
  $('#exam').onchange=function(){S.exam=this.value;save();};
  $('#exp').onclick=function(){$('#ta').value=JSON.stringify(S);};
  var mk=Object.keys(S.miss||{});$('#missn').textContent='目前 '+mk.length+' 条';$('#miss').onclick=function(){var r=JSON.stringify(mk);$('#ta').value=r;try{navigator.clipboard.writeText(r);}catch(e){}$('#ta').select();};
