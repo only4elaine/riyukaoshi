@@ -958,7 +958,7 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1031-1612</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-1617</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -973,7 +973,37 @@ function TESTSAY(c){return (c.line&&window.DATA&&DATA.tts&&DATA.tts[c.line])?c.l
 function speakable(c){return String(c.r&&c.r.indexOf('↔')<0&&c.r.indexOf('／')<0?c.r:(c.w||c.expr||'')).replace(/[〜～（）()「」\/／↔]/g,' ');}
 function origFill(o){if(String(o.q).indexOf('（　）')<0&&o.sec==='用法')return String(o.o[o.a]);return String(o.q).replace('（　）',o.o[o.a]).replace(/\n/g,'').replace(/[【】]/g,'');}
 (function(){var O=DATA.orig||[];(DATA.vocab||[]).forEach(function(c){if(c.oid||!c.ex)return;var n=nz(c.ex);for(var i=0;i<O.length;i++){var f=nz(origFill(O[i]));if(f===n||(n.length>8&&f.indexOf(n)>=0)){c.oid=O[i].id;break;}}});})();
-function OQ(c){if(!c.oid)return null;var O=DATA.orig||[];for(var i=0;i<O.length;i++)if(O[i].id===c.oid)return O[i];return null;}
+function OQ(c){if(c&&/^j\d+$/.test(c.id))return jitaQ(c);if(!c.oid)return null;var O=DATA.orig||[];for(var i=0;i<O.length;i++)if(O[i].id===c.oid)return O[i];return null;}
+
+var JEX={"j1": "ドアが開いた。／ドアを開けた。", "j2": "窓が閉まっている。／窓を閉めた。", "j3": "電気がついた。／電気をつけた。", "j4": "火が消えた。／火を消した。", "j5": "会議が始まった。／会議を始めた。", "j6": "車が止まった。／車を止めた。", "j7": "財布が落ちた。／財布を落とした。", "j8": "時計が壊れた。／時計を壊した。", "j9": "人口が増える。／人数を増やす。", "j10": "収入が減る。／無駄を減らす。", "j11": "天気が変わる。／予定を変える。", "j12": "日程が決まる。／日程を決める。", "j13": "人が集まる。／切手を集める。", "j14": "鍵が見つかった。／鍵を見つけた。", "j15": "雨が続く。／勉強を続ける。", "j16": "気持ちが伝わる。／気持ちを伝える。", "j17": "荷物が届く。／荷物を届ける。", "j18": "病気が治る。／病気を治す。", "j19": "部屋に入る。／かばんに入れる。", "j20": "家を出る。／手紙を出す。", "j21": "朝早く起きる。／子どもを起こす。", "j22": "洗濯物が乾く。／髪を乾かす。", "j23": "お湯が沸く。／お湯を沸かす。", "j24": "計画が進む。／計画を進める。"};
+function jitaParse(c,idx){var ss=String(JEX[c.id]||'').split('／'),m=/^(.+?)(が|を|に)(.+?)。?$/.exec(ss[idx]||'');return m?{n:m[1],p:m[2],t:m[3]}:null;}
+function jitaQ(c){
+ var n=c._n||0;if(c._jq)return c._jq;
+ var L=DATA.jita||[],ws=c.w.split(' ↔ '),zs=String(c.zh).split(' ↔ '),idx=Math.random()<.5?0:1,A=jitaParse(c,idx),B=jitaParse(c,1-idx);
+ if(!A||!B)return null;
+ var intr=idx===0,V=ws[idx],PV=ws[1-idx],id='jq_'+c.id+'_'+idx+'_'+n,form=Math.random()<.5?'p':'v',o,a,ex,q;
+ var P=['が','を','に','で'];
+ if(form==='p'){
+  o=P.slice();a=P.indexOf(A.p);q=A.n+'（　）'+A.t+'。';
+  var tp={'が':'「が」：自动词「'+V+'」表示事物自己发生变化，变化的主体用「が」。','を':(intr?'「を」：移动动词表示离开的起点时用「を」（'+A.n+'を'+A.t+'）。':'「を」：他动词「'+V+'」是人做的动作，被作用的对象用「を」。'),'に':'「に」：表示到达点、目的地（'+A.n+'に'+A.t+'）。','で':'「で」：表示场所、手段、原因，这里不合。'};
+  ex=P.map(function(p,i){
+   if(i===a)return '✔ '+tp[p];
+   if(p==='が')return '「が」标的是自动词的主体；这里「'+V+'」是他动词，对象要用「を」。'+(intr?'':'');
+   if(p==='を')return '「を」是他动词的宾语标记；「'+V+'」是自动词，前面不能接「を」（他动词是「'+PV+'」）。';
+   if(p==='に')return '「に」表示到达点或时间，不是变化的主体，也不是直接对象。';
+   return '「で」表示场所、手段或原因，不能代替主体或对象。';});
+  if(a===0)ex[1]='「を」是他动词的宾语标记；「'+V+'」是自动词，前面不能接「を」（他动词是「'+PV+'」）。';
+  if(a===1&&!intr)ex[0]='「が」标的是自动词的主体；「'+V+'」是他动词，人对「'+A.n+'」做动作，对象要用「を」（自动词是「'+PV+'」）。';
+ }else{
+  var pool=shuffle(L.filter(function(x){return x.id!==c.id;})),ds=[],i2,tails={};tails[A.t]=1;tails[B.t]=1;
+  for(i2=0;i2<pool.length&&ds.length<2;i2++){var tt=jitaParse(pool[i2],idx);if(tt&&!tails[tt.t]){tails[tt.t]=1;ds.push({t:tt.t,w:pool[i2].w});}}
+  o=[A.t,B.t].concat(ds.map(function(d){return d.t;}));a=0;q=A.n+A.p+'（　）。';
+  ex=['✔ 「'+A.n+A.p+A.t+'」：'+(intr?'自动词「'+V+'」，事物自己变化，主体用「が」。':'他动词「'+V+'」，人对「'+A.n+'」做动作，对象用「を」。'),
+   '「'+B.t+'」是'+(intr?'他动词「'+PV+'」（人做的动作），前面要用「を」，而这里是「'+A.p+'」。':'自动词「'+PV+'」（事物自己变化），前面要用「が」，而这里是「'+A.p+'」。')]
+   .concat(ds.map(function(d){return '「'+d.t+'」是另一组动词（'+d.w+'），意思与句子不合。';}));
+ }
+ DATA.ox=DATA.ox||{};DATA.ox[id]=ex;DATA.qz=DATA.qz||{};DATA.qz[id]=zs[idx]||'';
+ c._jk=n;c._jq={id:id,q:q,o:o,a:a,sec:'自他'};return c._jq;}
 function origFb(o){var it={wx:DATA.ox[o.id],o:o.o,a:o.a,pk:(o.pick||0)-1,qz:DATA.qz&&DATA.qz[o.id]};return (it.qz?'<div class=noteb><b>题干译文：</b><br>'+esc(it.qz)+'</div>':'')+wxHtml(it)+gramHtml(o.id);}
 function cards(k,extra){
  var d=DECKS[k],t=dayNum(),due=[],nw=[],seen=[];
@@ -1005,10 +1035,10 @@ function cards(k,extra){
  function stemEx(c){if(k==='keigo')return '';if(k==='lexp'||k==='lwords'||k==='read'||OQ(c))return '';var e=c.ex||c.ctx;return e?String(e).split('／')[0]:'';}
  function test(list,n){
   if(!list.length){doneN+=0;next();return;}
-  var c=list.shift();
+  var c=list.shift();if(/^j\d+$/.test(c.id))c._jq=null;
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?'真题原题：选出正确选项':(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
+  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':'真题原题：选出正确选项'):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
   $('#skip').onclick=function(){test(list,n);};
