@@ -936,9 +936,15 @@ function ttsWarn(){
  if(ttsOK())return '';
  return '<div class=noteb>⚠️ 这台手机/浏览器没有可用的日语语音，所以听不到声音。<br>iPhone：请用 Safari 打开（不要在微信里打开），并在 设置→辅助功能→朗读内容→声音→日语 下载一个声音。<br>安卓：请用 Chrome，并在 系统设置→文字转语音 里安装日语语音数据。<br>装好后重新打开本页。有真题 mp3 的话，可以改用录音播放。</div>';}
 var AUD=null;
+var _TK=null;
+function ttsFuzzy(t){if(!window.DATA||!DATA.tts)return null;var n=String(t||'').replace(/[【】\s\u3000]/g,'');if(n.length<6)return null;
+ if(!_TK){_TK=Object.keys(DATA.tts).map(function(k){return [k.replace(/[【】\s\u3000]/g,''),k];});}
+ for(var i=0;i<_TK.length;i++)if(_TK[i][0]===n)return DATA.tts[_TK[i][1]];
+ var best=null;for(i=0;i<_TK.length;i++)if(_TK[i][0].indexOf(n)>=0&&(!best||_TK[i][0].length<best[0].length))best=_TK[i];
+ return best?DATA.tts[best[1]]:null;}
 function speak(txt,done){
  var fired=false;function fin(){if(fired)return;fired=true;if(done)done();}
- var f=window.DATA&&((DATA.tts&&DATA.tts[txt])||(DATA.wtts&&DATA.wtts[txt]));
+ var f=window.DATA&&((DATA.tts&&DATA.tts[txt])||(DATA.wtts&&DATA.wtts[txt])||ttsFuzzy(txt));
  if(f){
   try{
    if(!AUD)AUD=new Audio();
@@ -1042,7 +1048,7 @@ function home(){
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
- h+='<p class=note style="margin-top:24px">版本 1031-2240</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-2243</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -1493,7 +1499,8 @@ function settings(){
 function vbList(){S.vb=S.vb||{list:[]};S.vb.list=S.vb.list||[];if(!S.vb.v2&&typeof trFor==='function'&&window.DATA){S.vb.v2=1;S.vb.list.forEach(function(e){e.tr=trFor(e.ctx||'');});save();}return S.vb.list;}
 function vbDue(){var t=dayNum();return vbList().filter(function(e){return e.due<=t;});}
 function lemOf(w){var L=window.DATA&&DATA.lem;var x=L&&L[String(w).replace(/\s+/g,'')];return x&&x!==w?x:'';}
-function vbSay(e){var T=Object.assign({},(window.DATA&&DATA.wtts)||{},(window.DATA&&DATA.tts)||{});return T[e.w]?e.w:(T[e.r]?e.r:(e.r||e.w));}
+function vbSent(e){var c=e.ctx||'';return c.length>=6&&c!==e.w&&c.indexOf('=')<0&&!!(DATA.tts[c]||ttsFuzzy(c));}
+function vbSay(e){var T=Object.assign({},(window.DATA&&DATA.wtts)||{},(window.DATA&&DATA.tts)||{});var lm=lemOf(e.w);return T[e.w]?e.w:(T[lm]?lm:(T[e.r]?e.r:(e.r||e.w)));}
 function vbFind(w){var L=vbList();for(var i=0;i<L.length;i++)if(L[i].w===w)return L[i];return null;}
 function vbAdd(w,ctx,m,src,tr){
  var e=vbFind(w),t=dayNum();
@@ -1648,8 +1655,8 @@ function vbReview(list){
    else{e.wr=(e.wr||0)+1;if(!fl[e.id])fsrs(e,false,t);e.box=0;e.due=t+(fl[e.id]?1:0);if(!fl[e.id]){fl[e.id]=1;total++;q.splice(Math.min(3,q.length),0,e);}}
    bump('vb');save();done++;
    $('#vfb').innerHTML=(Q.t==='f'?'':(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正解：'+esc(Q.opts[Q.a])+(fl[e.id]&&!ok&&q.indexOf(e)>=0?'（稍后再出现一次）':'')+'</p>'))+
-    '<div class=noteb><b>'+esc(e.w)+'</b>'+(e.r?'　【'+esc(e.r)+'】':'')+(lemOf(e.w)?'　<span class=note>原形：'+esc(lemOf(e.w))+'</span>':'')+(e.m?'　'+esc(e.m):'')+'<br><span class=note>'+esc(e.ctx)+'</span>'+(e.tr?'<br><span class=note>译：'+esc(e.tr)+'</span>':'')+(e.src?'<br><span class=note>出处：'+esc(e.src)+'</span>':'')+'</div><p><button id=vsw2 class=btn>🔊 词</button> <button id=vsp class=btn>🔊 听句子</button> <button id=vnx class="btn good">下一个 →</button></p>';
-   $('#vsw2').onclick=function(){speak(vbSay(e));};$('#vsp').onclick=function(){speak(e.ctx);};$('#vnx').onclick=step;}
+    '<div class=noteb><b>'+esc(e.w)+'</b>'+(e.r?'　【'+esc(e.r)+'】':'')+(lemOf(e.w)?'　<span class=note>原形：'+esc(lemOf(e.w))+'</span>':'')+(e.m?'　'+esc(e.m):'')+'<br><span class=note>'+esc(e.ctx)+'</span>'+(e.tr?'<br><span class=note>译：'+esc(e.tr)+'</span>':'')+(e.src?'<br><span class=note>出处：'+esc(e.src)+'</span>':'')+'</div><p><button id=vsw2 class=btn>🔊 词</button> '+(vbSent(e)?'<button id=vsp class=btn>🔊 听句子</button> ':'')+'<button id=vnx class="btn good">下一个 →</button></p>';
+   $('#vsw2').onclick=function(){speak(vbSay(e));};if($('#vsp'))$('#vsp').onclick=function(){speak(e.ctx);};$('#vnx').onclick=step;}
   if(Q.t==='f'){$('#vshow').onclick=function(){this.style.display='none';$('#vfb').innerHTML='<div class=noteb><b>'+esc(e.w)+'</b><br><span class=note>'+esc(e.ctx)+'</span></div><p><button id=vok class="btn good">想起来了</button> <button id=vng class="btn bad">没想起来</button></p>';$('#vok').onclick=function(){$('#vok').parentNode.innerHTML='';reveal(true);};$('#vng').onclick=function(){$('#vng').parentNode.innerHTML='';reveal(false);};};}
   else{[].forEach.call(document.querySelectorAll('.opt'),function(b){b.onclick=function(){var i=+b.getAttribute('data-i'),ok=i===Q.a;
    [].forEach.call(document.querySelectorAll('.opt'),function(x){x.disabled=true;if(+x.getAttribute('data-i')===Q.a)x.className+=' right';});if(!ok)b.className+=' wrong';reveal(ok);};});}
