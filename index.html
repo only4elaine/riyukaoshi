@@ -1049,7 +1049,7 @@ function home(){
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
- h+='<p class=note style="margin-top:24px">版本 1031-2257</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-2258</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -1222,7 +1222,7 @@ function todayParts(extra){
 function pickClips(){
  var td=tdState();
  if(!td.clips){var log=S.aulog||{},all=[];DATA.audio.forEach(function(p){p.clips.forEach(function(c){all.push(p.id+':'+c.k);});});
-  var rk=rankAll(),pk=[];[1,2,3,4,5].forEach(function(sc){for(var i=0;i<rk.length;i++)if(rk[i].sec===sc){pk.push(rk[i].key);break;}});if(!pk.length)pk=all.slice(0,3);td.clips=pk;save();}
+  var rk=rankAll(),pk=[];[[1,1],[2,1],[3,1],[4,4],[5,1]].forEach(function(sn){var n=0;for(var i=0;i<rk.length&&n<sn[1];i++)if(rk[i].sec===sn[0]){pk.push(rk[i].key);n++;}});if(!pk.length)pk=all.slice(0,3);td.clips=pk;save();}
  return td.clips;}
 function pickSb(){
  var td=tdState();
@@ -1248,7 +1248,7 @@ function taskList(){
  // 听力
  var cl=pickClips();
  if(cl.length){var left=cl.filter(function(k){return !log[k];}).length;
-  L.push({g:'听力',id:'clips',title:'听力迷你模考',sub:'5 个题型各 1 题（优先最需要的）· 还剩 '+left+' 题，约 8 分钟',href:left?'#/drill/0':'#/drill',done:left===0});}
+  L.push({g:'听力',id:'clips',title:'听力迷你模考',sub:'5 个题型都有（即时应答 4 题，其余各 1 题）· 还剩 '+left+' 题，约 9 分钟',href:left?'#/drill/0':'#/drill',done:left===0});}
  var ad=auDue();
  if(ad.length)L.push({g:'听力',id:'au',title:'重听没听懂的',sub:ad.length+' 段',href:'#/audio',done:false});
  return L;}
@@ -1294,9 +1294,9 @@ function drillHome(){
  [1,2,3,4,5].forEach(function(sec){var tot=0,hd=0;DATA.audio.forEach(function(p){p.clips.forEach(function(c){if(c.sec===sec){tot++;if(log[p.id+':'+c.k])hd++;}});});
   h+='<a class=card href="#/drill/'+sec+'"><b>'+SECN[sec]+'</b><span>已练 '+hd+' / '+tot+(sec===4?' · 短，约 10 秒/段':'')+'</span></a>';});
  h+='</div>';
- var rk=rankAll(),dl=Math.max(1,Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000)),cap=Math.min(rk.length,dl*5),tot=0,got=0;rk.forEach(function(x,i){tot+=x.sc;if(i<cap)got+=x.sc;});
- h+='<div class=noteb><b>📌 考前听力规划</b><br>距考试 '+dl+' 天，每天 5 题，一共能听约 <b>'+cap+'</b> 段；还没听过的有 '+rk.length+' 段。<br>每天按「最需要」排序取，所以先听掉的这 '+cap+' 段已经覆盖了 <b>'+(tot?Math.round(got/tot*100):100)+'%</b> 的高频表达/词；排在后面的段可以放心略过。</div>';
- h+='<p class=note>建议：每天先做「迷你模考」（5 个题型各 1 题）；想多练哪种题型，再点上面的题型。</p>';render(h);}
+ var rk=rankAll(),dl=Math.max(1,Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000)),cap=Math.min(rk.length,dl*8),tot=0,got=0;rk.forEach(function(x,i){tot+=x.sc;if(i<cap)got+=x.sc;});
+ h+='<div class=noteb><b>📌 考前听力规划</b><br>距考试 '+dl+' 天，每天 8 题，一共能听约 <b>'+cap+'</b> 段；还没听过的有 '+rk.length+' 段。<br>每天按「最需要」排序取，所以先听掉的这 '+cap+' 段已经覆盖了 <b>'+(tot?Math.round(got/tot*100):100)+'%</b> 的高频表达/词；排在后面的段可以放心略过。</div>';
+ h+='<p class=note>建议：每天先做「迷你模考」（5 个题型都有，即时应答 4 题）；想多练哪种题型，再点上面的题型。</p>';render(h);}
 function drillStart(sec){
  if(sec===0){var q=pickClips().slice();if(!q.length)q=rankAll().slice(0,5).map(function(x){return x.key;});DRILL={sec:0,q:q,i:0,ok:0,no:0};var a0=q[0].split(':');location.hash='#/clip/'+a0[0]+'/'+a0[1];return;}
  var u=unheardBy(sec),sc=clipScore(),w=auDue().filter(function(k){var a=k.split(':');var p=getPaper(a[1]);var c=p&&p.clips.filter(function(x){return x.k===a[2];})[0];return c&&c.sec===sec;}).map(function(k){return k.slice(3);});
@@ -1305,7 +1305,7 @@ function drillStart(sec){
  DRILL={sec:sec,q:q,i:0,ok:0,no:0};var a=q[0].split(':');location.hash='#/clip/'+a[0]+'/'+a[1];}
 function drillNext(){
  if(!DRILL)return;DRILL.i++;
- if(DRILL.i>=DRILL.q.length){var d=DRILL;DRILL=null;render('<h1>🎉 '+(d.sec?'这组练完了':'今天的迷你模考完成')+'</h1><p>'+(d.sec?SECN[d.sec]:'5 个题型各一题')+'：听懂 <b>'+d.ok+'</b> 段，没听懂 <b>'+d.no+'</b> 段（已加入重听）。</p><p><a class="btn good" href="#/drill/'+(d.sec||1)+'">再来一组</a> <a class=btn href="#/drill">换题型</a> <a class=btn href="#/home">回首页</a></p>');return;}
+ if(DRILL.i>=DRILL.q.length){var d=DRILL;DRILL=null;render('<h1>🎉 '+(d.sec?'这组练完了':'今天的迷你模考完成')+'</h1><p>'+(d.sec?SECN[d.sec]:'5 个题型都练到')+'：听懂 <b>'+d.ok+'</b> 段，没听懂 <b>'+d.no+'</b> 段（已加入重听）。</p><p><a class="btn good" href="#/drill/'+(d.sec||1)+'">再来一组</a> <a class=btn href="#/drill">换题型</a> <a class=btn href="#/home">回首页</a></p>');return;}
  var a=DRILL.q[DRILL.i].split(':');location.hash='#/clip/'+a[0]+'/'+a[1];}
 function audioHome(){
  var h='<h1>听力真题（原录音）</h1><p class=note>每道题已切成单独小段，可反复听、调速、看原文。</p><div class=grid>';
