@@ -119,6 +119,11 @@ th{background:rgba(255,255,255,.35)}table{border-radius:14px;overflow:hidden}
 .extra{margin-top:12px;background:rgba(255,255,255,.3);border:1px solid var(--bd);border-radius:20px;padding:12px 14px}
 .frow.lock{opacity:.55}
 @media(prefers-color-scheme:dark){.extra{background:rgba(255,255,255,.06)}.bdg.on{background:linear-gradient(145deg,rgba(90,90,98,.6),rgba(150,125,70,.3))}}
+
+.rings{display:grid;grid-template-columns:1fr 1fr;gap:14px 8px;margin:4px 0 12px}
+.rg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px}
+.rg b{font-size:14px;line-height:1.35;margin-top:4px}.rg .note{margin:0;font-size:13px}
+.rgv{animation:rgin 1s ease-out}@keyframes rgin{from{stroke-dasharray:0 264}}
 </style></head>
 <body><div id="app"></div>
 <script>window.DATA = window.DATA || {};
@@ -1002,12 +1007,16 @@ function home(){
  h+=sh;
  if(wdue)h+='<a class=card href="#/wrongquiz"><b>🍓 错题到期复习：'+wdue+' 题</b><span>按记忆曲线安排，也包含在今日清单里</span></a>';
  h+='<h2>🌱 全局进度</h2><div class=noteb>';
- G.rows.forEach(function(r){var p=100*r.a/Math.max(1,r.b);h+='<div><b>'+esc(r.n)+'</b>　'+r.a+' / '+r.b+(r.s!=null?'　<span class=note>'+esc(r.sn)+' '+r.s+'</span>':'')+bar(p)+'</div>';});
+ var RG=[['#d9a5a0','#e6cfa0'],['#9fb5c2','#a9c2ad'],['#b8a6c4','#e0b9b4'],['#a9c2ad','#e6cfa0']];
+ h+='<div class=rings>';
+ G.rows.forEach(function(r,i){var p=Math.max(0,Math.min(100,100*r.a/Math.max(1,r.b))),C=2*Math.PI*42,g=RG[i%RG.length],nm=String(r.n).replace(/（.*$/,'');
+  h+='<div class=rg><svg viewBox="0 0 100 100" width=118 height=118><defs><linearGradient id=rg'+i+' x1=0 y1=0 x2=1 y2=1><stop offset=0 stop-color="'+g[0]+'"/><stop offset=1 stop-color="'+g[1]+'"/></linearGradient></defs><circle cx=50 cy=50 r=42 fill=none stroke="rgba(120,110,100,.16)" stroke-width=10 /><circle class=rgv cx=50 cy=50 r=42 fill=none stroke="url(#rg'+i+')" stroke-width=10 stroke-linecap=round transform="rotate(-90 50 50)" stroke-dasharray="'+(C*p/100).toFixed(1)+' '+C.toFixed(1)+'"/><text x=50 y=55 text-anchor=middle font-size=20 font-weight=700 fill="currentColor">'+Math.round(p)+'%</text></svg><b>'+esc(nm)+'</b><span class=note>'+r.a+' / '+r.b+(r.s!=null?'<br>'+esc(r.sn)+' '+r.s:'')+'</span></div>';});
+ h+='</div>';
  var eta=new Date(Date.now()+G.need*86400000);
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1031-1650</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-1652</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
