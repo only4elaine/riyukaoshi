@@ -111,6 +111,14 @@ th{background:rgba(255,255,255,.35)}table{border-radius:14px;overflow:hidden}
 .sdot.today b{border-color:var(--ac);border-width:2px}
 .hm{border-radius:3px;background:rgba(120,110,100,.16)}.hm.h1{background:#e6cfcb}.hm.h2{background:#d9bdb8}.hm.h3{background:#a9b8a8}.hm.h4{background:#7a9a82}.hm.h5{background:#e2c27a}
 .g2 .frow{border-radius:18px}
+
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bdg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:14px 6px;border-radius:20px;background:var(--card);border:1px solid var(--bd);box-shadow:var(--shadow);opacity:.55;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.bdg.on{opacity:1;background:linear-gradient(145deg,rgba(255,255,255,.7),rgba(226,194,122,.25))}
+.bdg .be{font-size:34px;line-height:1.1}.bdg b{font-size:14px}.bdg small{font-size:12px}
+.extra{margin-top:12px;background:rgba(255,255,255,.3);border:1px solid var(--bd);border-radius:20px;padding:12px 14px}
+.frow.lock{opacity:.55}
+@media(prefers-color-scheme:dark){.extra{background:rgba(255,255,255,.06)}.bdg.on{background:linear-gradient(145deg,rgba(90,90,98,.6),rgba(150,125,70,.3))}}
 </style></head>
 <body><div id="app"></div>
 <script>window.DATA = window.DATA || {};
@@ -803,16 +811,53 @@ function streakInfo(){var L=S.log||{},P=S.perfect||{},t=dayNum(),i;
  var ok=function(v){return (v||0)>=1;},n=runOf(L,ok,t),pn=runOf(P,function(v){return !!v;},t);
  var ks=Object.keys(L).map(Number).filter(function(k){return L[k]>=1;}).sort(function(a,b){return a-b;}),best=0,run=0,prev=null;
  ks.forEach(function(k){run=(prev!==null&&k===prev+1)?run+1:1;if(run>best)best=run;prev=k;});
- var pd=Object.keys(P).filter(function(k){return P[k];}).length,xp=pd*50;for(i in L)xp+=L[i]*10;
+ var pd=Object.keys(P).filter(function(k){return P[k];}).length,xp=pd*50,bx=0;for(i in L)xp+=L[i]*10;for(i in (S.bonus||{}))bx+=S.bonus[i];xp+=bx;
  var lv=1;while(xp>=50*lv*(lv+1))lv++;
- return {n:n,pn:pn,pd:pd,best:best,days:ks.length,xp:xp,lv:lv,lo:50*(lv-1)*lv,hi:50*lv*(lv+1)};}
+ return {bx:bx,n:n,pn:pn,pd:pd,best:best,days:ks.length,xp:xp,lv:lv,lo:50*(lv-1)*lv,hi:50*lv*(lv+1)};}
 var LVN=['见习','初学','入门','渐入佳境','稳扎稳打','N3 选手','N2 冲刺手','N2 熟手','考场老手','合格圈','N2 达人'];
+
+var LVE=['🌱','🌿','🍀','🌸','🌼','🍒','🍓','🍑','🍇','🏆','👑'];
+function badgeCtx(){var si=streakInfo(),T=0,i;for(i in S.log)T+=S.log[i];return {si:si,T:T,vb:vbList().length,au:Object.keys(S.aulog||{}).length,kw:(S.kc&&S.kc.wrong)||0,kv:(S.kc&&S.kc.vb)||0};}
+var BADGES=[
+ {id:'d1',e:'🌱',n:'第一次打卡',t:'完成第一次学习',f:function(c){return c.si.days>=1;}},
+ {id:'s3',e:'🔥',n:'三天连胜',t:'连续打卡 3 天',f:function(c){return c.si.best>=3;}},
+ {id:'s7',e:'🌶️',n:'一周连胜',t:'连续打卡 7 天',f:function(c){return c.si.best>=7;}},
+ {id:'s14',e:'🌋',n:'两周连胜',t:'连续打卡 14 天',f:function(c){return c.si.best>=14;}},
+ {id:'s30',e:'☄️',n:'三十天连胜',t:'连续打卡 30 天',f:function(c){return c.si.best>=30;}},
+ {id:'p1',e:'⭐',n:'完美一天',t:'第一次完成全部今日任务',f:function(c){return c.si.pd>=1;}},
+ {id:'p7',e:'🌟',n:'完美一周',t:'累计 7 个完美日',f:function(c){return c.si.pd>=7;}},
+ {id:'p20',e:'💫',n:'完美达人',t:'累计 20 个完美日',f:function(c){return c.si.pd>=20;}},
+ {id:'t100',e:'🍪',n:'百题',t:'累计答题 100',f:function(c){return c.T>=100;}},
+ {id:'t500',e:'🍰',n:'五百题',t:'累计答题 500',f:function(c){return c.T>=500;}},
+ {id:'t1000',e:'🎂',n:'千题',t:'累计答题 1000',f:function(c){return c.T>=1000;}},
+ {id:'w30',e:'🍓',n:'错题克星',t:'复习错题 30 次',f:function(c){return c.kw>=30;}},
+ {id:'w100',e:'🍒',n:'错题终结者',t:'复习错题 100 次',f:function(c){return c.kw>=100;}},
+ {id:'v10',e:'🍯',n:'小蜜罐',t:'生词本收藏 10 个词',f:function(c){return c.vb>=10;}},
+ {id:'v50',e:'🐝',n:'词汇蜂巢',t:'生词本收藏 50 个词',f:function(c){return c.vb>=50;}},
+ {id:'vr50',e:'🧸',n:'生词常客',t:'复习生词 50 次',f:function(c){return c.kv>=50;}},
+ {id:'a30',e:'🎧',n:'耳朵开挂',t:'听完 30 道真题录音',f:function(c){return c.au>=30;}},
+ {id:'a100',e:'🎼',n:'听力高手',t:'听完 100 道真题录音',f:function(c){return c.au>=100;}},
+ {id:'b200',e:'🎁',n:'加分狂人',t:'额外加分累计 200 XP',f:function(c){return c.si.bx>=200;}}
+];
+function checkBadges(quiet){try{S.badges=S.badges||{};var c=badgeCtx(),t=dayNum(),nw=[],i;
+ BADGES.forEach(function(b){if(!S.badges[b.id]&&b.f(c)){S.badges[b.id]=t;nw.push(b);}});
+ for(i=2;i<=c.si.lv;i++){var id='lv'+i;if(!S.badges[id]){S.badges[id]=t;nw.push({e:LVE[Math.min(LVE.length-1,i-1)],n:'升到 Lv.'+i});}}
+ if(nw.length){save();if(!quiet&&S.badges._init)vbToast((nw.length>1?'🏅 获得 '+nw.length+' 枚徽章：':'🏅 获得徽章：')+nw.map(function(b){return b.e+' '+b.n;}).join('、'));}
+ if(!S.badges._init){S.badges._init=1;save();}}catch(e){}}
+function badgesView(){checkBadges(true);var c=badgeCtx(),n=0;
+ var h='<h1>🏅 我的徽章</h1><p class=note>做事得徽章：连胜、完美日、答题数、错题和生词复习、听力、额外加分，还有每升一级一枚。灰色的是还没解锁的。</p><div class=g3>';
+ BADGES.forEach(function(b){var on=!!S.badges[b.id];if(on)n++;h+='<div class="bdg'+(on?' on':'')+'"><span class=be>'+(on?b.e:'🔒')+'</span><b>'+b.n+'</b><small>'+b.t+'</small></div>';});
+ h+='</div><h2>等级</h2><div class=g3>';
+ for(var i=1;i<=11;i++){var on2=c.si.lv>=i;h+='<div class="bdg'+(on2?' on':'')+'"><span class=be>'+(on2?LVE[i-1]:'🔒')+'</span><b>Lv.'+i+' '+LVN[i-1]+'</b><small>'+(50*(i-1)*i)+' XP</small></div>';}
+ h+='</div><p><a class=btn href="#/home">回首页</a></p>';render(h.replace('我的徽章','我的徽章（'+n+'/'+BADGES.length+'）'));}
 function checkPerfect(quiet){try{var t=dayNum();S.perfect=S.perfect||{};if(S.perfect[t])return;
  var TL=taskList();if(TL.length&&TL.every(function(x){return x.done;})){S.perfect[t]=1;save();
   if(!quiet){var si=streakInfo();vbToast('🌟 今日任务全部完成！+50 XP · 完美日连续 '+si.pn+' 天');}}}catch(e){}}
-function bump(){var t=dayNum(),b=S.log[t]||0;S.log[t]=b+1;
+function bump(kind){var t=dayNum(),b=S.log[t]||0;S.log[t]=b+1;
+ S.kc=S.kc||{};if(kind)S.kc[kind]=(S.kc[kind]||0)+1;
+ if(S.perfect&&S.perfect[t]){var ex=(kind==='wrong'||kind==='vb')?15:10;S.bonus=S.bonus||{};S.bonus[t]=(S.bonus[t]||0)+ex;if(!S._bt||Date.now()-S._bt>4000){S._bt=Date.now();try{vbToast('🎁 额外加分 +'+(10+ex)+' XP');}catch(e){}}}
  if(b===0){setTimeout(function(){var si=streakInfo();vbToast('🔥 今日打卡成功！连胜 '+si.n+' 天'+([3,7,14,30,50,100].indexOf(si.n)>=0?' · 里程碑！':''));},300);}
- setTimeout(function(){checkPerfect(false);},900);}var app=document.getElementById('app');
+ setTimeout(function(){checkPerfect(false);checkBadges(false);},900);}
 
 // ---- decks
 var DECKS={
@@ -938,16 +983,20 @@ function home(){
  var d=Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000);
  var wdue=wrongDue().length,G=globalProg();
  var TL=taskList(),TD=TL.filter(function(x){return x.done;}).length,left=TL.length-TD;
- checkPerfect(true);
+ checkPerfect(true);checkBadges(true);
  var SI=streakInfo(),tl=(S.log[dayNum()]||0),sh='';
  (function(){var t=dayNum(),dots='',wd=['日','一','二','三','四','五','六'],i,P=S.perfect||{};
   for(i=6;i>=0;i--){var dd=t-i,c=(S.log[dd]||0)>=1,pf=!!P[dd];
    dots+='<span class="sdot'+(c?' on':'')+(pf?' gold':'')+(i===0?' today':'')+'"><b>'+(pf?'⭐':(c?'✓':(i===0?'·':'')))+'</b><small>'+wd[new Date(dd*86400000).getUTCDay()]+'</small></span>';}
   var hm='';for(i=34;i>=0;i--){var v=S.log[t-i]||0,lvl=P[t-i]?5:(v>=20?4:v>=10?3:v>=5?2:v>0?1:0);hm+='<i class="hm h'+lvl+'"></i>';}
-  var nm=LVN[Math.min(LVN.length-1,SI.lv-1)];
-  sh='<div class=hero id=streak><div class=hrow><span class=flame>'+(SI.n&&tl?'🔥':(SI.n?'🕯️':'🌙'))+'</span><div class=hmain><b class=big>'+SI.n+' 天连胜</b><div class=note>'+(tl?'今天已打卡 ✓（做了就算）':(SI.n?'今天还没做，做一题就保住连胜':'做一题就开始连胜'))+'</div></div><span class=chip>🌱 Lv.'+SI.lv+' '+nm+'</span></div><div class=sweek>'+dots+'</div>'
+  var nm=LVN[Math.min(LVN.length-1,SI.lv-1)],pf2=!!(S.perfect&&S.perfect[t]),wd2=wrongDue().length,vd2=vbDue().length,extra='';
+  extra='<div class=extra><b>🎁 额外加分</b> <span class=note>'+(pf2?'今日任务已完成，下面每做一题都多加分':'完成今日任务后解锁：之后每做一题多加分')+'</span><div class=g2 style="margin-top:8px">'
+   +'<a class="frow'+(pf2?'':' lock')+'" href="#/wrongquiz"><b>🍓 错题复习</b><span class=note>'+(wd2?wd2+' 题到期':'今天没有到期的')+' · 每题 +25 XP</span></a>'
+   +'<a class="frow'+(pf2?'':' lock')+'" href="#/vb"><b>🍯 生词复习</b><span class=note>'+(vd2?vd2+' 个到期':'今天没有到期的')+' · 每题 +25 XP</span></a>'
+   +'</div><p class=note style="margin:8px 0 0">其他加练每题 +20 XP（平时每题 10）'+(SI.bx?' · 已额外获得 '+SI.bx+' XP':'')+'</p></div>';
+  sh='<div class=hero id=streak><div class=hrow><span class=flame>'+(SI.n&&tl?'🔥':(SI.n?'🕯️':'🌙'))+'</span><div class=hmain><b class=big>'+SI.n+' 天连胜</b><div class=note>'+(tl?'今天已打卡 ✓（做了就算）':(SI.n?'今天还没做，做一题就保住连胜':'做一题就开始连胜'))+'</div></div><a class=chip href="#/badges" style="text-decoration:none;color:inherit">'+LVE[Math.min(LVE.length-1,SI.lv-1)]+' Lv.'+SI.lv+' '+nm+' ›</a></div><div class=sweek>'+dots+'</div>'
    +'<div class=todo><div class=trow><b>🍡 今天要做：'+(left?'还剩 '+left+' 项':'全部完成啦 🎉')+'</b><span class=note>'+(left?'共 '+TL.length+' 项 · 约 '+estMin()+' 分钟':'共 '+TL.length+' 项')+'</span></div>'+bar(100*TD/Math.max(1,TL.length),TD===TL.length?'var(--ok)':'')+'<p class=note style="margin:0 0 10px">'+(TD===TL.length&&TL.length?'⭐ 完美日达成，已得 +50 XP':'全部做完得 ⭐ 完美日 +50 XP')+'</p><a class="btn go" href="#/today">'+(left?'开始今天的任务 →':'进去再多做一点 →')+'</a></div>'
-   +'<details class=more><summary>📅 打卡记录 · 等级 · 数据</summary><div class=hmap>'+hm+'</div><p class=note style="margin:6px 0 0">'+SI.xp+' XP（再 '+(SI.hi-SI.xp)+' 升级）· 最长连胜 '+SI.best+' 天 · 累计打卡 '+SI.days+' 天<br>⭐ 完美日累计 '+SI.pd+' 天 · 连续 '+SI.pn+' 天 · 每答一题 +10 XP</p></details></div>';
+   +extra+'<details class=more><summary>📅 打卡记录 · 等级 · 数据</summary><div class=hmap>'+hm+'</div><p class=note style="margin:6px 0 0">'+SI.xp+' XP（再 '+(SI.hi-SI.xp)+' 升级）· 最长连胜 '+SI.best+' 天 · 累计打卡 '+SI.days+' 天<br>⭐ 完美日累计 '+SI.pd+' 天 · 连续 '+SI.pn+' 天 · 每答一题 +10 XP<br><a href="#/badges">🏅 查看全部徽章（'+Object.keys(S.badges||{}).filter(function(k){return k!=="_init";}).length+' 枚）</a></p></details></div>';
   })();
  var h='<h1>N2 冲刺 <button id=howb class="btn small" style="vertical-align:middle;margin-left:8px">每天怎么用</button></h1><div id=howbox class=hide><div class=noteb>1. 打开首页，点“今天要做”；<br>2. 按清单从上往下做：先背卡片 → 做新题 → 做到期复习 → 听录音；<br>3. 清单全部打勾就可以收工；想多做，在今日清单里点“提前做 1 天的量”（每点一次＝多做一天的新内容）；<br>4. 听力/阅读里遇到不会的词，划选加入生词本，到生词本里复习。</div></div><p class=sub>距离考试（'+esc(S.exam)+'）还有 <b>'+(isFinite(d)?d:'?')+'</b> 天'+(S.aheadTotal?' · 已提前做了 <b>'+S.aheadTotal+'</b> 天的量':'')+'</p>';
  h+=sh;
@@ -958,7 +1007,7 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1031-1617</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-1641</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -1053,7 +1102,7 @@ function cards(k,extra){
    var first=!c._fail;
    if(ok){ if(first){s.box=Math.min(s.box+1,INT.length-1);s.due=t+INT[s.box];} else {s.box=0;s.due=t+1;} doneN++; }
    else{c._fail=true;c._n=(c._n||0)+1;s.box=0;if(c._n<2){s.due=t;list.splice(Math.min(3,list.length),0,c);}else{s.due=t+1;}}
-   S.cards[key]=s;bump();save();var sk=$('#skip');if(sk)sk.style.display='none';
+   S.cards[key]=s;bump('card');save();var sk=$('#skip');if(sk)sk.style.display='none';
    if(LISTEN){var fl=document.querySelector('.flash');fl.innerHTML=frontHtml(c);fl.appendChild(rp);}
    $('#fb').innerHTML=(ok?'<p class=ok>✔ 正确</p>':'<p class=ng>✘ 正确答案：'+esc(ans(c))+(c._n<2?'（稍后重测一次）':'（明天再出现）')+'</p>')+(OQ(c)?origFb(OQ(c)):'')+'<div class=ex>'+d.back(c)+'</div>'+(k==='keigo'?'':'<button id=sp3 class=btn>🔊 听读音</button> ')+'<button id=nx2 class=btn>继续</button>';
    if($('#sp3'))$('#sp3').onclick=function(){speak(OQ(c)?origFill(OQ(c)):speakable(c),function(){if(k==='read'&&c.ctx)speak(c.ctx);});};
@@ -1241,8 +1290,8 @@ function clipView(id,k){
  $('#f5').onclick=function(){au.currentTime=au.currentTime+5;};
  $('#sc').onclick=function(){var e=$('#scb');e.className=e.className==='hide'?'noteb':'hide';};
  var key='au:'+id+':'+k;
- $('#ok').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;var w=S.wrong[key];if(w){w.box++;w.due=dayNum()+INT[Math.min(w.box,INT.length-1)];}bump();save();this.textContent='已记录 ✓';};
- $('#no').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;S.wrong[key]={box:0,due:dayNum()};bump();save();this.textContent='已加入重听 ✓（明天再出现）';};}
+ $('#ok').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;var w=S.wrong[key];if(w){w.box++;w.due=dayNum()+INT[Math.min(w.box,INT.length-1)];}bump('au');save();this.textContent='已记录 ✓';};
+ $('#no').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;S.wrong[key]={box:0,due:dayNum()};bump('au');save();this.textContent='已加入重听 ✓（明天再出现）';};}
 
 function recordQ(it,ok,failedInSession){
  var t=dayNum(),q=S.q[it.id];
@@ -1259,7 +1308,7 @@ function record(it,ok,failedInSession){
  var t=dayNum(),w=S.wrong[it.id];
  if(!ok){S.wrong[it.id]={box:0,due:t};}
  else if(w){ if(!failedInSession){w.box++;w.due=t+INT[Math.min(w.box,INT.length-1)];} else {w.box=0;w.due=t+1;} }
- bump();save();}
+ bump(w?'wrong':'quiz');save();}
 function quiz(setKey,ids,fk){
  var items;
  if(ids){var all=allItems();items=all.filter(function(i){return ids.indexOf(i.id)>=0;});}
@@ -1557,7 +1606,7 @@ function vbReview(list){
    var t=dayNum();e.n=(e.n||0)+1;
    if(ok){e.box=Math.min((e.box||0)+1,INT.length-1);e.due=t+INT[e.box];right+=(fl[e.id]?0:1);}
    else{e.wr=(e.wr||0)+1;e.box=0;e.due=t+(fl[e.id]?1:0);if(!fl[e.id]){fl[e.id]=1;total++;q.splice(Math.min(3,q.length),0,e);}}
-   save();done++;
+   bump('vb');save();done++;
    $('#vfb').innerHTML=(Q.t==='f'?'':(ok?'<p class=ok>✔ 正解</p>':'<p class=ng>✘ 正解：'+esc(Q.opts[Q.a])+(fl[e.id]&&!ok&&q.indexOf(e)>=0?'（稍后再出现一次）':'')+'</p>'))+
     '<div class=noteb><b>'+esc(e.w)+'</b>'+(e.r?'　【'+esc(e.r)+'】':'')+(lemOf(e.w)?'　<span class=note>原形：'+esc(lemOf(e.w))+'</span>':'')+(e.m?'　'+esc(e.m):'')+'<br><span class=note>'+esc(e.ctx)+'</span>'+(e.tr?'<br><span class=note>译：'+esc(e.tr)+'</span>':'')+(e.src?'<br><span class=note>出处：'+esc(e.src)+'</span>':'')+'</div><p><button id=vsw2 class=btn>🔊 词</button> <button id=vsp class=btn>🔊 听句子</button> <button id=vnx class="btn good">下一个 →</button></p>';
    $('#vsw2').onclick=function(){speak(e.r||e.w);};$('#vsp').onclick=function(){speak(e.ctx);};$('#vnx').onclick=step;}
@@ -1604,7 +1653,7 @@ function route(){
  else if(v==='wrong')wrongView();
  else if(v==='wrongquiz'){var ids=wrongDue();if(ids.length)quiz(null,ids);else wrongView();}
  else if(v==='wrongall'){var ids2=wrongOpen();if(ids2.length)quiz(null,ids2);else wrongView();}
- else if(v==='vb')vbView();
+ else if(v==='vb')vbView();else if(v==='badges')badgesView();
  else if(v==='free')home();
  else if(v==='lessons')lessonsView();
  else if(v==='lesson')lessonView(p[1]);
