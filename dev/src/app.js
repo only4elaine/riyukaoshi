@@ -824,9 +824,10 @@ function vbPool(kind,exclude){
  var out=[];vbList().forEach(function(e){var v=kind==='w'?e.w:e.m;if(v&&v!==exclude&&out.indexOf(v)<0)out.push(v);});
  (DATA.vocab||[]).forEach(function(v){var x=kind==='w'?v.w:(v.zh||'').replace(/（.*$/,'');if(x&&x.indexOf('〜')<0&&x!==exclude&&out.indexOf(x)<0)out.push(x);});
  return out;}
+function vbTrivial(e){var w=String(e.w||''),m=String(e.m||'').replace(/（.*?）|\(.*?\)|[\s,，；;、。]/g,'');if(!m||!/^[\u4e00-\u9fff々]+$/.test(w))return false;var sh=0;for(var i=0;i<m.length;i++)if(w.indexOf(m.charAt(i))>=0)sh++;return m.length<=w.length+1&&sh>=1&&sh*2>=Math.min(m.length,w.length);}
 function vbQuestion(e){
  if(!e.r&&/[\u4e00-\u9fff々〆]/.test(e.w)){e.r=vbRead(e.w);}
- var types=[];if(e.r)types.push('r');if(e.m)types.push('m');
+ var types=[];if(e.r)types.push('r');if(e.m&&!(e.r&&vbTrivial(e)))types.push('m');
  if(!types.length)return {t:'f'};
  var t=types[(e.n||0)%types.length],ans,ds;
  if(t==='r'){ans=e.r;ds=rdVariants(e.r).slice(0,3);
