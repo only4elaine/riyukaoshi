@@ -3,9 +3,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>N2 冲刺</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#c0392b">
-<style>:root{--bg:#faf8f4;--fg:#222;--card:#fff;--bd:#ddd;--ac:#c0392b;--ok:#1e8449;--ng:#c0392b;--mut:#666}
-@media(prefers-color-scheme:dark){:root{--bg:#1b1b1d;--fg:#eee;--card:#27272a;--bd:#3a3a3e;--ac:#ff7b6b;--ok:#58d68d;--ng:#ff7b6b;--mut:#aaa}}
+<meta name="theme-color" content="#e8e3dc">
+<style>:root{--bg:#e8e3dc;--fg:#3e3b38;--card:rgba(255,255,255,.52);--bd:rgba(110,100,90,.22);--ac:#b07f82;--ok:#7a9a82;--ng:#b9696d;--mut:#7a746d;--sage:#a9b8a8;--rose:#d9bdb8;--blue:#a9bac4;--sand:#dccfb8;--mauve:#bfb2c2;--shadow:0 8px 28px rgba(88,76,64,.13)}
+@media(prefers-color-scheme:dark){:root{--bg:#25262a;--fg:#ebe7e1;--card:rgba(70,70,76,.46);--bd:rgba(255,255,255,.14);--ac:#d3a3a5;--ok:#9dbba4;--ng:#d58b8e;--mut:#a9a39b;--sage:#53655a;--rose:#6a5254;--blue:#4a5a66;--sand:#665e4e;--mauve:#5a5062;--shadow:0 8px 28px rgba(0,0,0,.35)}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 -apple-system,"Hiragino Sans","PingFang SC","Noto Sans CJK JP",sans-serif}
 nav{display:flex;gap:16px;padding:12px 16px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--bg)}
@@ -63,6 +63,54 @@ audio{width:100%}
 .hm{display:block;aspect-ratio:1;border-radius:2px;background:var(--bd)}
 .hm.h1{background:#f5b7b1}.hm.h2{background:#f1948a}.hm.h3{background:#58d68d}.hm.h4{background:#1e8449}
 .sdot.gold b{background:#f1c40f;border-color:#d4ac0d;font-size:15px}.hm.h5{background:#f1c40f}
+
+/* ===== 莫兰迪 · 磨砂玻璃 ===== */
+html{background:var(--bg)}
+body{background:transparent;position:relative;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:
+ radial-gradient(60vmax 50vmax at 8% 6%,var(--rose) 0,transparent 60%),
+ radial-gradient(55vmax 45vmax at 96% 18%,var(--blue) 0,transparent 60%),
+ radial-gradient(60vmax 50vmax at 20% 96%,var(--sage) 0,transparent 60%),
+ radial-gradient(50vmax 40vmax at 92% 92%,var(--sand) 0,transparent 60%),
+ radial-gradient(40vmax 35vmax at 55% 50%,var(--mauve) 0,transparent 65%),var(--bg);opacity:.9}
+.card,.noteb,.think,.flash,.hero,.frow,.btn,.opt,.tile,textarea,input,#vbbar,nav,table,.sdot b,.vbtoast{
+ -webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25)}
+nav{background:var(--card);border-bottom:1px solid var(--bd);box-shadow:0 4px 18px rgba(88,76,64,.08);overflow-x:auto;white-space:nowrap;z-index:20;gap:14px}
+nav a{font-weight:600;font-size:15px;padding:2px 2px}
+main{padding:18px 16px 40px}
+h1,h2{letter-spacing:.3px}
+.card,.frow,.flash,.noteb,.think{background:var(--card);border:1px solid rgba(255,255,255,.55);border-color:var(--bd);border-radius:20px;box-shadow:var(--shadow)}
+.noteb,.think{border-left:1px solid var(--bd);border-radius:18px;position:relative;overflow:hidden}
+.noteb::before,.think::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;background:var(--ac);opacity:.75}
+.btn,.opt,.tile{background:var(--card);border:1px solid var(--bd);border-radius:16px;box-shadow:0 3px 12px rgba(88,76,64,.08);transition:transform .12s,box-shadow .12s}
+.btn:active,.opt:active,.card:active,.frow:active{transform:scale(.98)}
+.btn.good{background:linear-gradient(135deg,rgba(169,184,168,.65),rgba(255,255,255,.35));border-color:var(--ok)}
+.btn.bad{background:linear-gradient(135deg,rgba(217,189,184,.7),rgba(255,255,255,.35));border-color:var(--ng)}
+.opt.right{background:rgba(169,184,168,.55);border-color:var(--ok)}.opt.wrong{background:rgba(217,189,184,.6);border-color:var(--ng)}
+.flash{padding:28px 20px}
+textarea,input{background:var(--card);border-radius:14px}
+#vbbar{border-top:1px solid var(--bd);border-radius:22px 22px 0 0;background:var(--card);box-shadow:0 -8px 28px rgba(88,76,64,.18)}
+.vbtoast{background:rgba(70,64,60,.78);border-radius:20px;padding:10px 18px}
+.rd{color:var(--ac)}
+th{background:rgba(255,255,255,.35)}table{border-radius:14px;overflow:hidden}
+/* 首页合并卡片 */
+.hero{background:linear-gradient(145deg,rgba(255,255,255,.62),rgba(255,255,255,.28));border:1px solid rgba(255,255,255,.6);border-color:var(--bd);border-radius:26px;padding:18px 18px 14px;margin:12px 0 16px;box-shadow:0 14px 40px rgba(88,76,64,.16)}
+@media(prefers-color-scheme:dark){.hero{background:linear-gradient(145deg,rgba(90,90,98,.55),rgba(60,60,66,.3))}.btn.good{background:linear-gradient(135deg,rgba(83,101,90,.7),rgba(70,70,76,.3))}}
+.hrow{display:flex;align-items:center;gap:12px}.hrow .flame{font-size:44px;line-height:1;filter:drop-shadow(0 4px 6px rgba(176,127,130,.35))}
+.hmain{flex:1;min-width:0}.hmain .big{font-size:26px;margin:0}.hmain .note{margin:0}
+.chip{background:rgba(255,255,255,.5);border:1px solid var(--bd);border-radius:999px;padding:4px 10px;font-size:13px;white-space:nowrap}
+.hero .sweek{margin:14px 0 12px}
+.hero .todo{background:rgba(255,255,255,.35);border:1px solid var(--bd);border-radius:20px;padding:12px 14px}
+@media(prefers-color-scheme:dark){.hero .todo,.chip{background:rgba(255,255,255,.07)}}
+.trow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.btn.go{display:block;text-align:center;background:linear-gradient(135deg,var(--ac),#c9a08f);color:#fff;border:none;font-weight:700;margin:0;border-radius:18px;padding:13px;box-shadow:0 8px 20px rgba(176,127,130,.4)}
+.more{margin-top:10px}.more summary{cursor:pointer;color:var(--mut);font-size:14px;padding:4px 0}
+.sdot b{background:rgba(255,255,255,.4);border:1.5px solid var(--bd);color:var(--fg);box-shadow:inset 0 1px 2px rgba(255,255,255,.5)}
+.sdot.on b{background:var(--sage);border-color:var(--ok);color:#fff}
+.sdot.gold b{background:linear-gradient(135deg,#ecd9a4,#e2c27a);border-color:#d8b765}
+.sdot.today b{border-color:var(--ac);border-width:2px}
+.hm{border-radius:3px;background:rgba(120,110,100,.16)}.hm.h1{background:#e6cfcb}.hm.h2{background:#d9bdb8}.hm.h3{background:#a9b8a8}.hm.h4{background:#7a9a82}.hm.h5{background:#e2c27a}
+.g2 .frow{border-radius:18px}
 </style></head>
 <body><div id="app"></div>
 <script>window.DATA = window.DATA || {};
@@ -844,12 +892,12 @@ function speakSeq(arr,done){if(window.speechSynthesis)speechSynthesis.cancel();v
 function stopTTS(){clearTimeout(ttsTimer);if(AUD){try{AUD.pause();}catch(e){}}if(window.speechSynthesis)speechSynthesis.cancel();}
 
 // ---- views
-function nav(){return '<nav><a href="#/home">首页</a><a href="#/audio">听力</a><a href="#" id=rate></a><a href="#/lessons">课程</a><a href="#/wrong">错题本</a><a href="#/vb">生词本</a><a href="#/settings">设置</a></nav>';}
+function nav(){return '<nav><a href="#/home">🏡 首页</a><a href="#/audio">🎧 听力</a><a href="#" id=rate></a><a href="#/lessons">📖 课程</a><a href="#/wrong">🍓 错题本</a><a href="#/vb">🍯 生词本</a><a href="#/settings">🧸 设置</a></nav>';}
 function render(h){stopTTS();app.innerHTML=nav()+'<main>'+h+'</main>';window.scrollTo(0,0);
  var r=document.getElementById('rate');if(r){r.textContent='🐢 '+(S.rate||1.0)+'×';r.onclick=function(e){e.preventDefault();var o=[0.6,0.8,1.0],i=(o.indexOf(S.rate||1.0)+1)%3;S.rate=o[i];save();r.textContent='🐢 '+S.rate+'×';};}}
 
 function aheadN(){var t=dayNum();return S.ahead&&S.ahead.day===t?S.ahead.n:0;}
-function bar(p,col){return '<div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden;margin:4px 0 10px"><div style="height:8px;width:'+Math.max(0,Math.min(100,Math.round(p)))+'%;background:'+(col||'var(--ok)')+'"></div></div>';}
+function bar(p,col){return '<div style="height:10px;background:rgba(120,110,100,.18);border-radius:6px;overflow:hidden;margin:4px 0 10px"><div style="height:10px;border-radius:6px;width:'+Math.max(0,Math.min(100,Math.round(p)))+'%;background:'+(col||'var(--ok)')+'"></div></div>';}
 function globalProg(){
  var ps=planStats(),t=dayNum(),rows=[],stableQ=0;
  Object.keys(S.q).forEach(function(i){if(DAILY_IDS[i]&&S.q[i].box>=4)stableQ++;});
@@ -876,10 +924,10 @@ function aheadAdd(){
  save();}
 function freeRows(){
  function r(href,t,sub){return '<a class=frow href="'+href+'"><b>'+t+'</b>'+(sub?'<span class=note>'+sub+'</span>':'')+'</a>';}
- var h='<div class=g2>'+r('#/vb','生词本（'+vbList().length+'）','划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:''));
- h+=r('#/wrong','错题本',wrongOpen().length+' 题待攻克');
- h+=r('#/audio','听力真题（原录音）','可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:''));
- h+=r('#/lessons','引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
+ var h='<div class=g2>'+r('#/vb','🍯 生词本（'+vbList().length+'）','划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:''));
+ h+=r('#/wrong','🍓 错题本',wrongOpen().length+' 题待攻克');
+ h+=r('#/audio','🎧 听力真题（原录音）','可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:''));
+ h+=r('#/lessons','📖 引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
  h+='<p class=note style="margin:14px 0 0">单独刷某一类卡片</p><div class=g2>';
  ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
   h+=r('#/cards/'+k,esc(DECKS[k].name),(st.due?'待复习 '+st.due+' · ':'')+'还没学 '+st.nw+' / '+st.total);});
@@ -897,17 +945,20 @@ function home(){
    dots+='<span class="sdot'+(c?' on':'')+(pf?' gold':'')+(i===0?' today':'')+'"><b>'+(pf?'⭐':(c?'✓':(i===0?'·':'')))+'</b><small>'+wd[new Date(dd*86400000).getUTCDay()]+'</small></span>';}
   var hm='';for(i=34;i>=0;i--){var v=S.log[t-i]||0,lvl=P[t-i]?5:(v>=20?4:v>=10?3:v>=5?2:v>0?1:0);hm+='<i class="hm h'+lvl+'"></i>';}
   var nm=LVN[Math.min(LVN.length-1,SI.lv-1)];
-  sh='<div class=noteb id=streak><div class=stk><span class=flame>'+(SI.n&&tl?'🔥':(SI.n?'🕯️':'💤'))+'</span><div><b class=big>'+SI.n+' 天连胜</b><br><span class=note>'+(tl?'今天已打卡 ✓（做了就算）':(SI.n?'今天还没做，做一题就保住连胜':'做一题就开始连胜'))+'</span></div></div>'+bar(100*TD/Math.max(1,TL.length),TD===TL.length?'var(--ok)':'')+'<p class=note style="margin:0 0 8px">今日任务 '+TD+' / '+TL.length+(TD===TL.length&&TL.length?'　🌟 全部完成，已得 ⭐ 和 +50 XP':'　全部做完得 ⭐ 和 +50 XP')+'</p><div class=sweek>'+dots+'</div><div class=hmap>'+hm+'</div><p class=note style="margin:6px 0 0">Lv.'+SI.lv+' '+nm+' · '+SI.xp+' XP（再 '+(SI.hi-SI.xp)+' 到下一级）· 最长连胜 '+SI.best+' 天 · 累计打卡 '+SI.days+' 天<br>⭐ 完美日（任务全完成）累计 '+SI.pd+' 天 · 连续 '+SI.pn+' 天 · 每答一题 +10 XP</p></div>';})();
+  sh='<div class=hero id=streak><div class=hrow><span class=flame>'+(SI.n&&tl?'🔥':(SI.n?'🕯️':'🌙'))+'</span><div class=hmain><b class=big>'+SI.n+' 天连胜</b><div class=note>'+(tl?'今天已打卡 ✓（做了就算）':(SI.n?'今天还没做，做一题就保住连胜':'做一题就开始连胜'))+'</div></div><span class=chip>🌱 Lv.'+SI.lv+' '+nm+'</span></div><div class=sweek>'+dots+'</div>'
+   +'<div class=todo><div class=trow><b>🍡 今天要做：'+(left?'还剩 '+left+' 项':'全部完成啦 🎉')+'</b><span class=note>'+(left?'共 '+TL.length+' 项 · 约 '+estMin()+' 分钟':'共 '+TL.length+' 项')+'</span></div>'+bar(100*TD/Math.max(1,TL.length),TD===TL.length?'var(--ok)':'')+'<p class=note style="margin:0 0 10px">'+(TD===TL.length&&TL.length?'⭐ 完美日达成，已得 +50 XP':'全部做完得 ⭐ 完美日 +50 XP')+'</p><a class="btn go" href="#/today">'+(left?'开始今天的任务 →':'进去再多做一点 →')+'</a></div>'
+   +'<details class=more><summary>📅 打卡记录 · 等级 · 数据</summary><div class=hmap>'+hm+'</div><p class=note style="margin:6px 0 0">'+SI.xp+' XP（再 '+(SI.hi-SI.xp)+' 升级）· 最长连胜 '+SI.best+' 天 · 累计打卡 '+SI.days+' 天<br>⭐ 完美日累计 '+SI.pd+' 天 · 连续 '+SI.pn+' 天 · 每答一题 +10 XP</p></details></div>';
+  })();
  var h='<h1>N2 冲刺 <button id=howb class="btn small" style="vertical-align:middle;margin-left:8px">每天怎么用</button></h1><div id=howbox class=hide><div class=noteb>1. 打开首页，点“今天要做”；<br>2. 按清单从上往下做：先背卡片 → 做新题 → 做到期复习 → 听录音；<br>3. 清单全部打勾就可以收工；想多做，在今日清单里点“提前做 1 天的量”（每点一次＝多做一天的新内容）；<br>4. 听力/阅读里遇到不会的词，划选加入生词本，到生词本里复习。</div></div><p class=sub>距离考试（'+esc(S.exam)+'）还有 <b>'+(isFinite(d)?d:'?')+'</b> 天'+(S.aheadTotal?' · 已提前做了 <b>'+S.aheadTotal+'</b> 天的量':'')+'</p>';
- h+=sh+'<a class=card style="border-color:var(--ac)" href="#/today"><b>① 今天要做：'+(left?'还剩 '+left+' 项（共 '+TL.length+' 项）':'今天的任务已全部完成 🎉')+'</b><span>'+(left?'点这里进入今日清单，从上往下做完即可 · 约 '+estMin()+' 分钟':'想多做可以进去点“提前做 1 天的量”')+'</span></a>';
- if(wdue)h+='<a class=card href="#/wrongquiz"><b>错题到期复习：'+wdue+' 题</b><span>按记忆曲线安排，也包含在今日清单里</span></a>';
- h+='<h2>② 全局进度</h2><div class=noteb>';
+ h+=sh;
+ if(wdue)h+='<a class=card href="#/wrongquiz"><b>🍓 错题到期复习：'+wdue+' 题</b><span>按记忆曲线安排，也包含在今日清单里</span></a>';
+ h+='<h2>🌱 全局进度</h2><div class=noteb>';
  G.rows.forEach(function(r){var p=100*r.a/Math.max(1,r.b);h+='<div><b>'+esc(r.n)+'</b>　'+r.a+' / '+r.b+(r.s!=null?'　<span class=note>'+esc(r.sn)+' '+r.s+'</span>':'')+bar(p)+'</div>';});
  var eta=new Date(Date.now()+G.need*86400000);
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
- h+='<h2>③ 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1031-1609</p>';
+ h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
+ h+='<p class=note style="margin-top:24px">版本 1031-1612</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
