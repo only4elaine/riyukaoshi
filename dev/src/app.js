@@ -811,7 +811,7 @@ function vbRead(w){
    if(r!=null){if(best[j]==null)best[j]=best[i]+r;}
    else if(j===i+1){var c=sub;if(/[ぁ-ゖー]/.test(c)||/[ァ-ヺー]/.test(c)){if(best[j]==null)best[j]=best[i]+kh(c);}}}}
  return best[n]!=null?best[n]:'';}
-function rdVariants(r){
+function rdVariants0(r){
  var out=[],dk={'か':'が','き':'ぎ','く':'ぐ','け':'げ','こ':'ご','さ':'ざ','し':'じ','す':'ず','せ':'ぜ','そ':'ぞ','た':'だ','ち':'ぢ','て':'で','と':'ど','は':'ば','ひ':'び','ふ':'ぶ','へ':'べ','ほ':'ぼ'},ud={};
  Object.keys(dk).forEach(function(k){ud[dk[k]]=k;});
  var i,c;
@@ -820,6 +820,16 @@ function rdVariants(r){
   if(/[ぁ-んー]/.test(c)&&c!=='っ'&&c!=='ー'&&i>0&&i<r.length-1&&/[かきくけこさしすせそたちつてとぱぴぷぺぽ]/.test(r.charAt(i+1)))out.push(r.slice(0,i+1)+'っ'+r.slice(i+1));
   if(/[おこそとのほもよろ]/.test(c)&&r.charAt(i+1)!=='う'&&i<r.length-1)out.push(r.slice(0,i+1)+'う'+r.slice(i+1));}
  return shuffle(out.filter(function(x,k){return x!==r&&out.indexOf(x)===k&&!/ぢ|づ|[ゃゅょうんいー]っ|っ$|^っ/.test(x);}));}
+function rdVariants(r,w){
+ var tail='',m=/[\u4e00-\u9fff々][ぁ-ゖー]+$/.exec(String(w||''));if(m){var t=m[0].slice(1);if(r.length>t.length+1&&r.slice(-t.length)===t)tail=t;}
+ var stem=tail?r.slice(0,r.length-tail.length):r,out=rdVariants0(stem).filter(function(x){return x.length>=2&&!/[っ]$/.test(x);}),n0=out.length,rd0=out.slice();
+ var V={'あ':'あいうえお','か':'かきくけこ','さ':'さしすせそ','た':'たちつてと','な':'なにぬねの','は':'はひふへほ','ま':'まみむめも','ら':'らりるれろ','が':'がぎぐげご','ざ':'ざじずぜぞ','だ':'だぢづでど','ば':'ばびぶべぼ'};
+ var sm={};Object.keys(V).forEach(function(k){V[k].split('').forEach(function(c){sm[c]=V[k];});});
+ for(var i=0;i<stem.length;i++){if(i>0&&i<stem.length-1)continue;var c=stem.charAt(i),g=sm[c];if(g){g.split('').forEach(function(d){if(d!==c)out.push(stem.slice(0,i)+d+stem.slice(i+1));});}}
+ var seen={};out=out.filter(function(x){if(x===stem||seen[x])return false;seen[x]=1;return true;});
+ // prefer variants differing by 1 char (dakuten/long vowel/っ) first, then vowel swaps
+ var k0=out.filter(function(x){return rd0.indexOf(x)>=0;}),rest=shuffle(out.filter(function(x){return rd0.indexOf(x)<0;})),pri=k0;
+ return shuffle(pri).concat(rest).map(function(x){return x+tail;});}
 function vbPool(kind,exclude){
  var out=[];vbList().forEach(function(e){var v=kind==='w'?e.w:e.m;if(v&&v!==exclude&&out.indexOf(v)<0)out.push(v);});
  (DATA.vocab||[]).forEach(function(v){var x=kind==='w'?v.w:(v.zh||'').replace(/（.*$/,'');if(x&&x.indexOf('〜')<0&&x!==exclude&&out.indexOf(x)<0)out.push(x);});
@@ -841,7 +851,7 @@ function vbQuestion(e){
  var types=[];if(e.r)types.push('r');if(e.m&&!(e.r&&vbTrivial(e)))types.push('m');
  if(!types.length)return {t:'f'};
  var t=types[(e.n||0)%types.length],ans,ds;
- if(t==='r'){ans=e.r;ds=rdVariants(e.r).slice(0,3);
+ if(t==='r'){ans=e.r;ds=rdVariants(e.r,e.w).slice(0,3);
   if(ds.length<3){var pool=[];vbList().forEach(function(x){if(x.r&&x.r!==ans&&pool.indexOf(x.r)<0)pool.push(x.r);});(DATA.vocab||[]).forEach(function(v){if(v.r&&v.r!==ans&&/^[ぁ-ゖー]+$/.test(v.r)&&Math.abs(v.r.length-ans.length)<=2&&pool.indexOf(v.r)<0)pool.push(v.r);});
    shuffle(pool).forEach(function(x){if(ds.length<3&&ds.indexOf(x)<0)ds.push(x);});}}
  else{ans=e.m;ds=vbMDist(e,ans);}
