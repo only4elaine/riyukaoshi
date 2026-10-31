@@ -825,6 +825,17 @@ function vbPool(kind,exclude){
  (DATA.vocab||[]).forEach(function(v){var x=kind==='w'?v.w:(v.zh||'').replace(/（.*$/,'');if(x&&x.indexOf('〜')<0&&x!==exclude&&out.indexOf(x)<0)out.push(x);});
  return out;}
 function vbTrivial(e){var w=String(e.w||''),m=String(e.m||'').replace(/（.*?）|\(.*?\)|[\s,，；;、。]/g,'');if(!m||!/^[\u4e00-\u9fff々]+$/.test(w))return false;var sh=0;for(var i=0;i<m.length;i++)if(w.indexOf(m.charAt(i))>=0)sh++;return m.length<=w.length+1&&sh>=1&&sh*2>=Math.min(m.length,w.length);}
+function vbCls(w){w=String(w||'').replace(/[〜～\s]/g,'');if(/する$/.test(w))return 'S';if(/[なに]$/.test(w)&&w.length>2&&/[\u4e00-\u9fff]/.test(w))return 'N';if(/い$/.test(w)&&/[\u4e00-\u9fff]/.test(w)&&w.length>2)return 'I';if(/[うくぐすつぬぶむる]$/.test(w))return 'V';if(/的$|化$|性$/.test(w))return 'T';return 'W';}
+function vbMDist(e,ans){
+ var cl=vbCls(e.w),cand=[],seen={};seen[ans]=1;var L=ans.replace(/（.*$/,'').length;
+ function add(w,m,own){m=String(m||'').trim();if(!m||seen[m]||w===e.w)return;var core=m.replace(/（.*$/,'');if(!core||core===ans.replace(/（.*$/,''))return;
+  if(own&&vbTrivial({w:e.w,m:core}))return;seen[m]=1;
+  var sc=(vbCls(w)===cl?0:4)+Math.min(3,Math.abs(core.length-L))+(/（/.test(m)===/（/.test(ans)?0:1)+(core.slice(-1)===ans.replace(/（.*$/,'').slice(-1)?-1:0)+Math.random()*1.5;
+  cand.push([sc,m]);}
+ (DATA.vocab||[]).forEach(function(v){add(v.w,v.zh,1);});
+ vbList().forEach(function(x){add(x.w,x.m,1);});
+ cand.sort(function(a,b){return a[0]-b[0];});
+ var wp=/（/.test(ans);return cand.slice(0,3).map(function(x){return wp?x[1]:x[1].replace(/（.*$/,'');});}
 function vbQuestion(e){
  if(!e.r&&/[\u4e00-\u9fff々〆]/.test(e.w)){e.r=vbRead(e.w);}
  var types=[];if(e.r)types.push('r');if(e.m&&!(e.r&&vbTrivial(e)))types.push('m');
@@ -833,7 +844,7 @@ function vbQuestion(e){
  if(t==='r'){ans=e.r;ds=rdVariants(e.r).slice(0,3);
   if(ds.length<3){var pool=[];vbList().forEach(function(x){if(x.r&&x.r!==ans&&pool.indexOf(x.r)<0)pool.push(x.r);});(DATA.vocab||[]).forEach(function(v){if(v.r&&v.r!==ans&&/^[ぁ-ゖー]+$/.test(v.r)&&Math.abs(v.r.length-ans.length)<=2&&pool.indexOf(v.r)<0)pool.push(v.r);});
    shuffle(pool).forEach(function(x){if(ds.length<3&&ds.indexOf(x)<0)ds.push(x);});}}
- else{ans=e.m;ds=shuffle(vbPool('m',ans)).slice(0,3);}
+ else{ans=e.m;ds=vbMDist(e,ans);}
  var opts=shuffle([ans].concat(ds));
  return {t:t,opts:opts,a:opts.indexOf(ans),q:e.w,
   p:(t==='r'?'选出这个词的读音':'选出这个词的意思')+(e.ctx&&e.ctx!==e.w?'\n出处句：'+e.ctx:'')};}
