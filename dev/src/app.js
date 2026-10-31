@@ -228,13 +228,12 @@ function home(){
    +'<a class="frow'+(pf2?'':' lock')+'" href="#/wrongquiz"><b>🍓 错题复习</b><span class=note>'+(wd2?wd2+' 题到期':'今天没有到期的')+' · 每题 +25 XP</span></a>'
    +'<a class="frow'+(pf2?'':' lock')+'" href="#/vb"><b>🍯 生词复习</b><span class=note>'+(vd2?vd2+' 个到期':'今天没有到期的')+' · 每题 +25 XP</span></a>'
    +'</div><p class=note style="margin:8px 0 0">其他加练每题 +20 XP（平时每题 10）'+(SI.bx?' · 已额外获得 '+SI.bx+' XP':'')+'</p></div>';
-  sh='<div class=hero id=streak><div class=hrow><span class=flame>'+(SI.n&&tl?'🔥':(SI.n?'🕯️':'🌙'))+'</span><div class=hmain><b class=big>'+SI.n+' 天连胜</b><div class=note>'+(tl?'今天已打卡 ✓（做了就算）':(SI.n?'今天还没做，做一题就保住连胜':'做一题就开始连胜'))+'</div></div><a class=chip href="#/badges" style="text-decoration:none;color:inherit">'+LVE[Math.min(LVE.length-1,SI.lv-1)]+' Lv.'+SI.lv+' '+nm+' ›</a></div><div class=sweek>'+dots+'</div>'
+  sh='<div class=hero id=streak><div class=hrow><span class=flame>'+(SI.n&&tl?'🔥':(SI.n?'🐣':'🌙'))+'</span><div class=hmain><b class=big>'+SI.n+' 天连胜</b><div class=note>'+(tl?'今天已打卡 ✓（做了就算）':(SI.n?'今天还没做，做一题就保住连胜':'做一题就开始连胜'))+'</div></div><a class=chip href="#/badges" style="text-decoration:none;color:inherit">'+LVE[Math.min(LVE.length-1,SI.lv-1)]+' Lv.'+SI.lv+' '+nm+' ›</a></div><div class=sweek>'+dots+'</div>'
    +'<div class=todo><div class=trow><b>🍡 今天要做：'+(left?'还剩 '+left+' 项':'全部完成啦 🎉')+'</b><span class=note>'+(left?'共 '+TL.length+' 项 · 约 '+estMin()+' 分钟':'共 '+TL.length+' 项')+'</span></div>'+bar(100*TD/Math.max(1,TL.length),TD===TL.length?'var(--ok)':'')+'<p class=note style="margin:0 0 10px">'+(TD===TL.length&&TL.length?'⭐ 完美日达成，已得 +50 XP':'全部做完得 ⭐ 完美日 +50 XP')+'</p><a class="btn go" href="#/today">'+(left?'开始今天的任务 →':'进去再多做一点 →')+'</a></div>'
    +extra+'<details class=more><summary>📅 打卡记录 · 等级 · 数据</summary><div class=hmap>'+hm+'</div><p class=note style="margin:6px 0 0">'+SI.xp+' XP（再 '+(SI.hi-SI.xp)+' 升级）· 最长连胜 '+SI.best+' 天 · 累计打卡 '+SI.days+' 天<br>⭐ 完美日累计 '+SI.pd+' 天 · 连续 '+SI.pn+' 天 · 每答一题 +10 XP<br><a href="#/badges">🏅 查看全部徽章（'+Object.keys(S.badges||{}).filter(function(k){return k!=="_init";}).length+' 枚）</a></p></details></div>';
   })();
  var h='<h1>N2 冲刺 <button id=howb class="btn small" style="vertical-align:middle;margin-left:8px">每天怎么用</button></h1><div id=howbox class=hide><div class=noteb>1. 打开首页，点“今天要做”；<br>2. 按清单从上往下做：先背卡片 → 做新题 → 做到期复习 → 听录音；<br>3. 清单全部打勾就可以收工；想多做，在今日清单里点“提前做 1 天的量”（每点一次＝多做一天的新内容）；<br>4. 听力/阅读里遇到不会的词，划选加入生词本，到生词本里复习。</div></div><p class=sub>距离考试（'+esc(S.exam)+'）还有 <b>'+(isFinite(d)?d:'?')+'</b> 天'+(S.aheadTotal?' · 已提前做了 <b>'+S.aheadTotal+'</b> 天的量':'')+'</p>';
  h+=sh;
- if(wdue)h+='<a class=card href="#/wrongquiz"><b>🍓 错题到期复习：'+wdue+' 题</b><span>按记忆曲线安排，也包含在今日清单里</span></a>';
  h+='<h2>🌱 全局进度</h2><div class=noteb>';
  var RG=[['#d9a5a0','#e6cfa0'],['#9fb5c2','#a9c2ad'],['#b8a6c4','#e0b9b4'],['#a9c2ad','#e6cfa0']];
  h+='<div class=rings>';
