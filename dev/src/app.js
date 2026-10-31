@@ -204,6 +204,7 @@ function freeRows(){
  function r(href,t,sub){return '<a class=frow href="'+href+'"><b>'+t+'</b>'+(sub?'<span class=note>'+sub+'</span>':'')+'</a>';}
  var h='<div class=g2>'+r('#/vb','🍯 生词本（'+vbList().length+'）','划线收藏的词和表达'+(vbDue().length?' · 今天到期 '+vbDue().length:''));
  h+=r('#/wrong','🍓 错题本',wrongOpen().length+' 题待攻克');
+ h+=r('#/drill','🎯 听力专项（按题型模拟）','先听不看原文 · 优先高频表达/词'+'');
  h+=r('#/audio','🎧 听力真题（原录音）','可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:''));
  h+=r('#/lessons','📖 引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
  h+='<p class=note style="margin:14px 0 0">单独刷某一类卡片</p><div class=g2>';
@@ -418,7 +419,7 @@ function todayParts(extra){
 function pickClips(){
  var td=tdState();
  if(!td.clips){var log=S.aulog||{},all=[];DATA.audio.forEach(function(p){p.clips.forEach(function(c){all.push(p.id+':'+c.k);});});
-  td.clips=all.filter(function(k){return !log[k];}).slice(0,3);save();}
+  var lg=[1,2,3,5][dayNum()%4],pk=unheardBy(lg).slice(0,1).concat(unheardBy(4).slice(0,2));if(pk.length<3)pk=pk.concat(all.filter(function(k){return !log[k]&&pk.indexOf(k)<0;})).slice(0,3);td.clips=pk;save();}
  return td.clips;}
 function pickSb(){
  var td=tdState();
@@ -475,10 +476,33 @@ function wrongOpen(){return Object.keys(S.wrong).filter(function(k){var w=S.wron
 function auDue(){var t=dayNum();return Object.keys(S.wrong).filter(function(k){var w=S.wrong[k];return k.indexOf('au:')===0&&w&&w.box<5&&w.due<=t;});}
 var SECN={1:'问题1 课题理解',2:'问题2 要点理解',3:'问题3 概要理解',4:'问题4 即时应答',5:'问题5 综合理解'};
 function getPaper(id){return DATA.audio.filter(function(p){return p.id===id;})[0];}
+var CSC=null,DRILL=null;
+function clipScore(c){
+ if(!CSC){CSC={};var D=window.DATA||{},ex=(D.lexp||[]).map(function(x){return String(x.expr||'').split('／')[0].replace(/[〜～\s]/g,'').slice(0,4);}).filter(function(x){return x.length>=2;}),
+  wd=(D.lwords||[]).map(function(x){return x.w;}),vb=vbList().map(function(x){return x.w;});
+  (D.audio||[]).forEach(function(p){p.clips.forEach(function(cl){var t=nz(cl.s),n=0;ex.forEach(function(x){if(t.indexOf(x)>=0)n+=2;});wd.forEach(function(x){if(t.indexOf(x)>=0)n+=1;});vb.forEach(function(x){if(x.length>=2&&t.indexOf(x)>=0)n+=1.5;});
+   var w=S.wrong['au:'+p.id+':'+cl.k];if(w&&w.box<5)n+=4;CSC[p.id+':'+cl.k]=n/Math.sqrt(Math.max(30,t.length)/60);});});}
+ return CSC;}
+function unheardBy(sec){var log=S.aulog||{},sc=clipScore(),o=[];DATA.audio.forEach(function(p){p.clips.forEach(function(c){var key=p.id+':'+c.k;if(c.sec===sec&&!log[key])o.push(key);});});
+ return o.sort(function(a,b){return sc[b]-sc[a];});}
+function drillHome(){
+ var log=S.aulog||{},h='<h1>🎯 听力专项（按题型）</h1><p class=note>像考试一样练：先听一遍、不看原文，再对原文，最后自评。每组 6 段，优先练到<b>高频表达、高频单词、你的生词本词</b>多的录音，以及你上次没听懂的。</p><div class=grid>';
+ [1,2,3,4,5].forEach(function(sec){var tot=0,hd=0;DATA.audio.forEach(function(p){p.clips.forEach(function(c){if(c.sec===sec){tot++;if(log[p.id+':'+c.k])hd++;}});});
+  h+='<a class=card href="#/drill/'+sec+'"><b>'+SECN[sec]+'</b><span>已练 '+hd+' / '+tot+(sec===4?' · 短，约 10 秒/段':'')+'</span></a>';});
+ h+='</div><p class=note>建议：每天 1 组「问题1/2/3/5」里的一种 + 1 组「问题4」。问题4很短，最适合碎片时间。</p>';render(h);}
+function drillStart(sec){
+ var u=unheardBy(sec),sc=clipScore(),w=auDue().filter(function(k){var a=k.split(':');var p=getPaper(a[1]);var c=p&&p.clips.filter(function(x){return x.k===a[2];})[0];return c&&c.sec===sec;}).map(function(k){return k.slice(3);});
+ var q=w.slice(0,2).concat(u.filter(function(x){return w.indexOf(x)<0;})).slice(0,6);
+ if(!q.length){DATA.audio.forEach(function(p){p.clips.forEach(function(c){if(c.sec===sec)q.push(p.id+':'+c.k);});});q=shuffle(q).slice(0,6);}
+ DRILL={sec:sec,q:q,i:0,ok:0,no:0};var a=q[0].split(':');location.hash='#/clip/'+a[0]+'/'+a[1];}
+function drillNext(){
+ if(!DRILL)return;DRILL.i++;
+ if(DRILL.i>=DRILL.q.length){var d=DRILL;DRILL=null;render('<h1>🎉 这组练完了</h1><p>'+SECN[d.sec]+'：听懂 <b>'+d.ok+'</b> 段，没听懂 <b>'+d.no+'</b> 段（已加入重听）。</p><p><a class="btn good" href="#/drill/'+d.sec+'">再来一组</a> <a class=btn href="#/drill">换题型</a> <a class=btn href="#/home">回首页</a></p>');return;}
+ var a=DRILL.q[DRILL.i].split(':');location.hash='#/clip/'+a[0]+'/'+a[1];}
 function audioHome(){
  var h='<h1>听力真题（原录音）</h1><p class=note>每道题已切成单独小段，可反复听、调速、看原文。</p><div class=grid>';
  DATA.audio.forEach(function(p){h+='<a class=card href="#/audio/'+p.id+'"><b>'+p.name+'</b><span>'+p.clips.length+' 段</span></a>';});
- h+='</div><h2>待重听（听不懂的）</h2>';
+ h+='</div><p><a class="btn good" href="#/drill">🎯 听力专项：按题型模拟练习</a></p><h2>待重听（听不懂的）</h2>';
  var d=auDue();
  if(!d.length)h+='<p class=note>今天没有到期的。</p>';
  d.forEach(function(k){var a=k.split(':');var p=getPaper(a[1]);h+='<a class=btn href="#/clip/'+a[1]+'/'+a[2]+'">'+p.name+' '+a[2]+'</a>';});
@@ -515,9 +539,10 @@ function clipView(id,k){
  var p=getPaper(id),i=p?p.clips.map(function(c){return c.k;}).indexOf(k):-1;
  if(i<0){audioHome();return;}
  var c=p.clips[i],prev=p.clips[i-1],next=p.clips[i+1],sp=splitOpts(c);
- var h='<h1>'+p.name+' '+SECN[c.sec]+' 第'+c.q+'题</h1><audio id=au controls preload=auto style="width:100%"></audio>'+
+ var dr=DRILL&&DRILL.q[DRILL.i]===id+':'+k;if(dr){prev=next=null;}
+ var h=(dr?'<p class=note>🎯 专项 '+(DRILL.i+1)+' / '+DRILL.q.length+' · 先听一遍，不看原文；听完点下面按钮对原文</p>':'')+'<h1>'+p.name+' '+SECN[c.sec]+' 第'+c.q+'题</h1><audio id=au controls preload=auto style="width:100%"></audio>'+
   '<p><button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button> <button class="btn small" id=f5>5秒 ⏩</button></p>'+
-  (sp.o.length?'<div class=noteb><b>试卷上的选项</b><br>'+sp.o.map(esc).join('<br>')+'</div>':'')+'<p><button id=sc class=btn>显示原文</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
+  (sp.o.length?'<div class=noteb><b>试卷上的选项</b><br>'+sp.o.map(esc).join('<br>')+'</div>':'')+'<p><button id=sc class=btn>'+(dr?'听完了，对原文':'显示原文')+'</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
   '<p><button id=ok class="btn good">听懂了</button> <button id=no class="btn bad">没听懂，加入重听</button></p>'+
   '<p>'+(prev?'<a class=btn href="#/clip/'+id+'/'+prev.k+'">← 上一题</a>':'')+' <a class=btn href="#/audio/'+id+'">目录</a> '+(next?'<a class=btn href="#/clip/'+id+'/'+next.k+'">下一题 →</a>':'')+'</p>';
  render(h);
@@ -529,8 +554,8 @@ function clipView(id,k){
  $('#f5').onclick=function(){au.currentTime=au.currentTime+5;};
  $('#sc').onclick=function(){var e=$('#scb');e.className=e.className==='hide'?'noteb':'hide';};
  var key='au:'+id+':'+k;
- $('#ok').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;var w=S.wrong[key];if(w){fsrs(w,true,dayNum());}bump('au');save();this.textContent='已记录 ✓';};
- $('#no').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;S.wrong[key]={box:0,due:dayNum()};bump('au');save();this.textContent='已加入重听 ✓（明天再出现）';};}
+ $('#ok').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;var w=S.wrong[key];if(w){fsrs(w,true,dayNum());}bump('au');save();this.textContent='已记录 ✓';if(dr){DRILL.ok++;setTimeout(drillNext,500);}};
+ $('#no').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;S.wrong[key]={box:0,due:dayNum()};bump('au');save();this.textContent='已加入重听 ✓（明天再出现）';if(dr){DRILL.no++;setTimeout(drillNext,500);}};}
 
 function recordQ(it,ok,failedInSession){
  var t=dayNum(),q=S.q[it.id];
@@ -651,7 +676,7 @@ function lessonView(id){
   else if(b.t==='go')h+='<a class=btn href="#/quiz/'+b.set+'">'+esc(b.x)+'</a>';});
  h+='<p><button id=lsdone class="btn good">✔ 这一课学完了</button> <a class=btn href="#/today">回今日任务</a></p>';
  render(h);
- $('#lsdone').onclick=function(){S.ls=S.ls||{};S.ls[id]=1;flag('lesson');this.textContent='已记录 ✓';};
+ $('#lsdone').onclick=function(){S.ls=S.ls||{};S.ls[id]=1;flag('lesson');this.textContent='已记录 ✓';if(dr){DRILL.ok++;setTimeout(drillNext,500);}};
  [].forEach.call(document.querySelectorAll('.tsp,.lsp'),function(b){b.onclick=function(e){e.stopPropagation();speak(b.getAttribute('data-say'));};});
  [].forEach.call(document.querySelectorAll('.rv'),function(b){b.onclick=function(){$('#a'+b.getAttribute('data-n')).className='note';};});
  [].forEach.call(document.querySelectorAll('.mcq .opt'),function(b){b.onclick=function(){
@@ -914,6 +939,7 @@ function route(){
  else if(v==='quiz'&&SETS[p[1]])quiz(p[1]);
  else if(v==='audio'){if(p[1])audioPaper(p[1]);else audioHome();}
  else if(v==='clip')clipView(p[1],p[2]);
+ else if(v==='drill'){if(p[1])drillStart(+p[1]);else drillHome();}
  else if(v==='today')today();
  else if(v==='t')runTask(p[1]);
  else if(v==='wrong')wrongView();
