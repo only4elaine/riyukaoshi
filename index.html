@@ -1018,16 +1018,17 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1031-1712</p>';
- render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
+ h+=dlBlock(1,'例句和词的朗读（约16MB）');
+ h+='<p class=note style="margin-top:24px">版本 1031-1717</p>';
+ render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
  ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){var s=deckStat(k);
   h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>'+(s.due?'待复习 '+s.due+' 张':'共 '+s.total+' 张')+'</span></a>';});
  h+='</div><h2>再做（测验，全部题）</h2><div class=grid>';
  for(var k in SETS)h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>共 '+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';
- h+='</div><p><a class=btn href="#/home">回首页</a></p>';
- render(h);}
+ h+='</div>'+dlBlock(1,'例句和词的朗读（约16MB）')+'<p><a class=btn href="#/home">回首页</a></p>';
+ render(h);dlWire();}
 
 function TESTSAY(c){return (c.line&&window.DATA&&DATA.tts&&DATA.tts[c.line])?c.line:speakable(c);}
 function speakable(c){return String(c.r&&c.r.indexOf('↔')<0&&c.r.indexOf('／')<0?c.r:(c.w||c.expr||'')).replace(/[〜～（）()「」\/／↔]/g,' ');}
@@ -1255,7 +1256,7 @@ function audioHome(){
  var d=auDue();
  if(!d.length)h+='<p class=note>今天没有到期的。</p>';
  d.forEach(function(k){var a=k.split(':');var p=getPaper(a[1]);h+='<a class=btn href="#/clip/'+a[1]+'/'+a[2]+'">'+p.name+' '+a[2]+'</a>';});
- render(h);}
+ h+=dlBlock(2,'全部真题录音（约76MB）');render(h);dlWire();}
 function audioPaper(id){
  var p=getPaper(id);if(!p){audioHome();return;}
  var h='<h1>'+p.name+' 听力</h1><p><button id=dl class=btn>⬇ 离线下载本卷（去台湾前联网点一次）</button> <span id=dlst class=note></span></p>';
@@ -1405,7 +1406,7 @@ function report(){
 function lessonsView(){
  var h='<h1>引导型课程</h1><div class=grid>';
  DATA.lessons.forEach(function(L){h+='<a class=card href="#/lesson/'+L.id+'"><b>'+esc(L.title)+'</b><span>'+esc(L.sub)+'</span></a>';});
- render(h+'</div>');}
+ render(h+'</div>'+dlBlock(1,'课程和卡片里例句、词的朗读（约16MB）'));dlWire();}
 
 function lsayOK(t){return /[\u3040-\u30ff]/.test(t)&&!/[=→，状态做好形含义结尾]/.test(t);}
 function lsay(t){return String(t).replace(/[・\/／]/g,'、').replace(/[〜～（）()「」]/g,' ').replace(/\s+/g,' ').trim();}
@@ -1451,13 +1452,14 @@ function cacheCount(urls,cb){
 function ttsUrls(){var o=[],seen={};for(var k in DATA.tts){var u=DATA.tts[k];if(!seen[u]){seen[u]=1;o.push(u);}}return o;}
 function wordUrls(){var o=[],seen={};for(var k in (DATA.wtts||{})){var u=DATA.wtts[k];if(!seen[u]){seen[u]=1;o.push(u);}}return o;}
 function clipUrls(){var o=[];DATA.audio.forEach(function(p){p.clips.forEach(function(c){o.push(c.f);});});return o;}
+function dlBlock(n,label){return '<div class=noteb data-nohl=1><p style="margin:0 0 6px"><b>离线语音</b> <span class=note>（出门没网也能听，联网时点一次）</span></p><p style="margin:0"><button id=dl'+n+' class=btn>⬇ '+label+'</button> <span id=dl'+n+'s class=note></span></p></div>';}
+function dlWire(){[['1',ttsUrls],['2',clipUrls],['3',wordUrls]].forEach(function(p){var b=$('#dl'+p[0]);if(!b)return;var u=p[1](),st=$('#dl'+p[0]+'s');
+  cacheCount(u,function(c){if(c>=0)st.textContent='已存 '+c+' / '+u.length+(c===u.length?' ✓':'');});
+  b.onclick=function(){dlAll(u,st);};});}
 function settings(){
- var h='<h1>设置</h1><label>考试日期 <input type=date id=exam value="'+S.exam+'"></label><p><button id=exp class=btn>导出进度</button> <button id=imp class=btn>导入进度</button></p><textarea id=ta rows=5></textarea><p><button id=rep class=btn>复制学习报告（发给 Claude）</button></p><h2>离线语音（去台湾前联网点一次）</h2><p><button id=dl1 class=btn>⬇ 例句和词的朗读（约16MB）</button> <span id=dl1s class=note></span></p><p><button id=dl3 class=btn>⬇ 听力和阅读里所有词的朗读（约38MB）</button> <span id=dl3s class=note></span></p><p><button id=dl2 class=btn>⬇ 全部真题录音（约76MB）</button> <span id=dl2s class=note></span></p><p class=note>下载完会显示“已全部下载 ✓”。建议在 Wi‑Fi 下进行，下载时不要关页面。iPhone 对网站存储有上限，长期不打开可能被系统清理，出发前再打开确认一次。</p><p><button id=rst class="btn bad">重置</button></p>';
+ var h='<h1>设置</h1><label>考试日期 <input type=date id=exam value="'+S.exam+'"></label><p><button id=exp class=btn>导出进度</button> <button id=imp class=btn>导入进度</button></p><textarea id=ta rows=5></textarea><p><button id=rep class=btn>复制学习报告（发给 Claude）</button></p><p class=note>离线语音下载按钮在需要的页面里：听力页、生词本、课程页和自由练习页。</p><p class=note>下载完会显示“已全部下载 ✓”。建议在 Wi‑Fi 下进行，下载时不要关页面。iPhone 对网站存储有上限，长期不打开可能被系统清理，出发前再打开确认一次。</p><p><button id=rst class="btn bad">重置</button></p>';
  render(h);
  $('#exam').onchange=function(){S.exam=this.value;save();};
- [['1',ttsUrls],['2',clipUrls],['3',wordUrls]].forEach(function(p){var u=p[1](),st=$('#dl'+p[0]+'s');
-  cacheCount(u,function(c){if(c>=0)st.textContent='已存 '+c+' / '+u.length+(c===u.length?' ✓':'');});
-  $('#dl'+p[0]).onclick=function(){dlAll(u,st);};});
  $('#exp').onclick=function(){$('#ta').value=JSON.stringify(S);};
  $('#imp').onclick=function(){try{S=JSON.parse($('#ta').value);save();alert('已导入');}catch(e){alert('格式错误');}};
  $('#rep').onclick=function(){var r=report();$('#ta').value=r;try{navigator.clipboard.writeText(r);}catch(e){}$('#ta').select();};
@@ -1638,7 +1640,7 @@ function vbView(){
  L.forEach(function(e){h+='<div class=noteb><b>'+esc(e.w)+'</b>'+(e.r?'　【'+esc(e.r)+'】':'')+(lemOf(e.w)?'　<span class=note>原形：'+esc(lemOf(e.w))+'</span>':'')+(e.m?'　'+esc(e.m):'')+'<br><span class=note>'+esc(e.ctx)+(e.tr?'<br>译：'+esc(e.tr):'')+(e.src?' · '+esc(e.src):'')+'</span><br><button class="btn small" data-s="'+e.id+'">🔊</button> <button class="btn small" data-m="'+e.id+'">改意思</button> <button class="btn small" data-d="'+e.id+'">删除</button></div>';});
  h+='</div></div>';
  if(!L.length)h+='<p data-nohl=1>还没有生词。</p>';
- render(h);
+ h+=dlBlock(3,'听力和阅读里所有词的朗读（约38MB）');render(h);dlWire();
  if($('#vgo'))$('#vgo').onclick=function(ev){ev.preventDefault();vbReview(due);};
  if($('#vall'))$('#vall').onclick=function(ev){ev.preventDefault();vbReview(vbList());};
  [].forEach.call(document.querySelectorAll('[data-s]'),function(b){b.onclick=function(){var e=vbList().filter(function(x){return x.id===b.getAttribute('data-s');})[0];if(e){var T=Object.assign({},(window.DATA&&DATA.wtts)||{},(window.DATA&&DATA.tts)||{});var wd=T[e.w]?e.w:(T[e.r]?e.r:(e.r||e.w));speak(wd,function(){if(e.ctx&&T[e.ctx])speak(e.ctx);});}};});
