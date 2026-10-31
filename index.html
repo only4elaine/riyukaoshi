@@ -1049,7 +1049,7 @@ function home(){
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
- h+='<p class=note style="margin-top:24px">版本 1031-2254</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-2255</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -1222,7 +1222,7 @@ function todayParts(extra){
 function pickClips(){
  var td=tdState();
  if(!td.clips){var log=S.aulog||{},all=[];DATA.audio.forEach(function(p){p.clips.forEach(function(c){all.push(p.id+':'+c.k);});});
-  var lg=[1,2,3,5][dayNum()%4],pk=unheardBy(lg).slice(0,1).concat(unheardBy(4).slice(0,2));if(pk.length<3)pk=pk.concat(all.filter(function(k){return !log[k]&&pk.indexOf(k)<0;})).slice(0,3);td.clips=pk;save();}
+  var rk=rankAll(),pk=[],nl=0,ns=0;rk.forEach(function(x){if(pk.length>=3)return;var sh=x.sec===4;if(sh&&ns>=2)return;if(!sh&&nl>=1)return;pk.push(x.key);if(sh)ns++;else nl++;});if(pk.length<3)pk=pk.concat(all.filter(function(k){return !log[k]&&pk.indexOf(k)<0;})).slice(0,3);td.clips=pk;save();}
  return td.clips;}
 function pickSb(){
  var td=tdState();
@@ -1288,11 +1288,15 @@ function clipScore(c){
  return CSC;}
 function unheardBy(sec){var log=S.aulog||{},sc=clipScore(),o=[];DATA.audio.forEach(function(p){p.clips.forEach(function(c){var key=p.id+':'+c.k;if(c.sec===sec&&!log[key])o.push(key);});});
  return o.sort(function(a,b){return sc[b]-sc[a];});}
+function rankAll(){var log=S.aulog||{},sc=clipScore(),o=[];DATA.audio.forEach(function(p){p.clips.forEach(function(c){var key=p.id+':'+c.k;if(!log[key])o.push({key:key,sec:c.sec,sc:sc[key]||0});});});return o.sort(function(a,b){return b.sc-a.sc;});}
 function drillHome(){
  var log=S.aulog||{},h='<h1>🎯 听力专项（按题型）</h1><p class=note>像考试一样练：先听一遍、不看原文，再对原文，最后自评。每组 6 段，优先练到<b>高频表达、高频单词、你的生词本词</b>多的录音，以及你上次没听懂的。</p><div class=grid>';
  [1,2,3,4,5].forEach(function(sec){var tot=0,hd=0;DATA.audio.forEach(function(p){p.clips.forEach(function(c){if(c.sec===sec){tot++;if(log[p.id+':'+c.k])hd++;}});});
   h+='<a class=card href="#/drill/'+sec+'"><b>'+SECN[sec]+'</b><span>已练 '+hd+' / '+tot+(sec===4?' · 短，约 10 秒/段':'')+'</span></a>';});
- h+='</div><p class=note>建议：每天 1 组「问题1/2/3/5」里的一种 + 1 组「问题4」。问题4很短，最适合碎片时间。</p>';render(h);}
+ h+='</div>';
+ var rk=rankAll(),dl=Math.max(1,Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000)),cap=Math.min(rk.length,dl*3),tot=0,got=0;rk.forEach(function(x,i){tot+=x.sc;if(i<cap)got+=x.sc;});
+ h+='<div class=noteb><b>📌 考前听力规划</b><br>距考试 '+dl+' 天，每天 3 段，一共能听约 <b>'+cap+'</b> 段；还没听过的有 '+rk.length+' 段。<br>每天按「最需要」排序取，所以先听掉的这 '+cap+' 段已经覆盖了 <b>'+(tot?Math.round(got/tot*100):100)+'%</b> 的高频表达/词；排在后面的段可以放心略过。</div>';
+ h+='<p class=note>建议：每天 1 组「问题1/2/3/5」里的一种 + 1 组「问题4」。问题4很短，最适合碎片时间。</p>';render(h);}
 function drillStart(sec){
  var u=unheardBy(sec),sc=clipScore(),w=auDue().filter(function(k){var a=k.split(':');var p=getPaper(a[1]);var c=p&&p.clips.filter(function(x){return x.k===a[2];})[0];return c&&c.sec===sec;}).map(function(k){return k.slice(3);});
  var q=w.slice(0,2).concat(u.filter(function(x){return w.indexOf(x)<0;})).slice(0,6);
