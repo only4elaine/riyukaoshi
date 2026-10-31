@@ -1007,7 +1007,7 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1031-1641</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-1650</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -1022,7 +1022,7 @@ function TESTSAY(c){return (c.line&&window.DATA&&DATA.tts&&DATA.tts[c.line])?c.l
 function speakable(c){return String(c.r&&c.r.indexOf('↔')<0&&c.r.indexOf('／')<0?c.r:(c.w||c.expr||'')).replace(/[〜～（）()「」\/／↔]/g,' ');}
 function origFill(o){if(String(o.q).indexOf('（　）')<0&&o.sec==='用法')return String(o.o[o.a]);return String(o.q).replace('（　）',o.o[o.a]).replace(/\n/g,'').replace(/[【】]/g,'');}
 (function(){var O=DATA.orig||[];(DATA.vocab||[]).forEach(function(c){if(c.oid||!c.ex)return;var n=nz(c.ex);for(var i=0;i<O.length;i++){var f=nz(origFill(O[i]));if(f===n||(n.length>8&&f.indexOf(n)>=0)){c.oid=O[i].id;break;}}});})();
-function OQ(c){if(c&&/^j\d+$/.test(c.id))return jitaQ(c);if(!c.oid)return null;var O=DATA.orig||[];for(var i=0;i<O.length;i++)if(O[i].id===c.oid)return O[i];return null;}
+function OQ(c){if(c&&/^j\d+$/.test(c.id))return jitaQ(c);if(c&&c.id&&KQ[c.id])return KQ[c.id];if(!c.oid)return null;var O=DATA.orig||[];for(var i=0;i<O.length;i++)if(O[i].id===c.oid)return O[i];return null;}
 
 var JEX={"j1": "ドアが開いた。／ドアを開けた。", "j2": "窓が閉まっている。／窓を閉めた。", "j3": "電気がついた。／電気をつけた。", "j4": "火が消えた。／火を消した。", "j5": "会議が始まった。／会議を始めた。", "j6": "車が止まった。／車を止めた。", "j7": "財布が落ちた。／財布を落とした。", "j8": "時計が壊れた。／時計を壊した。", "j9": "人口が増える。／人数を増やす。", "j10": "収入が減る。／無駄を減らす。", "j11": "天気が変わる。／予定を変える。", "j12": "日程が決まる。／日程を決める。", "j13": "人が集まる。／切手を集める。", "j14": "鍵が見つかった。／鍵を見つけた。", "j15": "雨が続く。／勉強を続ける。", "j16": "気持ちが伝わる。／気持ちを伝える。", "j17": "荷物が届く。／荷物を届ける。", "j18": "病気が治る。／病気を治す。", "j19": "部屋に入る。／かばんに入れる。", "j20": "家を出る。／手紙を出す。", "j21": "朝早く起きる。／子どもを起こす。", "j22": "洗濯物が乾く。／髪を乾かす。", "j23": "お湯が沸く。／お湯を沸かす。", "j24": "計画が進む。／計画を進める。"};
 function jitaParse(c,idx){var ss=String(JEX[c.id]||'').split('／'),m=/^(.+?)(が|を|に)(.+?)。?$/.exec(ss[idx]||'');return m?{n:m[1],p:m[2],t:m[3]}:null;}
@@ -1053,6 +1053,7 @@ function jitaQ(c){
  }
  DATA.ox=DATA.ox||{};DATA.ox[id]=ex;DATA.qz=DATA.qz||{};DATA.qz[id]=zs[idx]||'';
  c._jk=n;c._jq={id:id,q:q,o:o,a:a,sec:'自他'};return c._jq;}
+var KQ={};(function(){var I={"k2": {"q": "（会社で）社長は明日、大阪へ（　）そうです。", "o": ["いらっしゃる", "参る", "伺う", "行く"], "qz": "听说社长明天要去大阪。", "ex": ["✔ 「いらっしゃる」＝「行く」的尊敬语，说社长的动作，抬高对方。", "「参る」＝「行く／来る」的谦让语，只能说自己（己方）的动作；用在社长身上等于贬低对方。", "「伺う」＝谦让语（拜访、询问），同样只能用于自己，而且意思是“拜访”，不是单纯的“去”。", "「行く」＝普通形，没有表达对社长的敬意。"]}, "k3": {"q": "（お客様に）私が明日、お宅へ（　）ます。", "o": ["参り", "いらっしゃい", "お越しになり", "来られ"], "qz": "我明天去府上拜访。", "ex": ["✔ 「参る」＝「来る／行く」的谦让语。自己的动作要用谦让语：「参ります」。", "「いらっしゃる」＝尊敬语，说自己时等于抬高自己，错。", "「お越しになる」＝お＋ます形＋になる，尊敬语，只能说对方的动作。", "「来られる」＝れる形的尊敬语，同样只能说对方的动作。"]}, "k4": {"q": "（お客様に）山田先生は今、研究室に（　）。", "o": ["いらっしゃいます", "おります", "あります", "ございます"], "qz": "山田老师现在在研究室。", "ex": ["✔ 「いらっしゃる」＝「いる」的尊敬语，说山田老师（对方尊敬的人）。", "「おる」＝「いる」的谦让语，用于自己或己方的人；对客人说对方尊敬的人，不能用。", "「ある」用于物品，不能用于人。", "「ございます」＝「ある」的郑重说法，用于物或场所，说人要用「いらっしゃいます」。"]}, "k6": {"q": "（先生に）先生のご著書を（　）ました。", "o": ["拝見し", "ご覧になり", "見られ", "見せ"], "qz": "我拜读了老师的大作。", "ex": ["✔ 「拝見する」＝「見る」的谦让语，自己看对方的东西用谦让语。", "「ご覧になる」＝尊敬语，说的是对方看；这里看的人是“我”。", "「見られる」＝可能／被动，不是这里需要的谦让表达。", "「見せる」＝让别人看，意思相反。"]}, "k7": {"q": "（会議で）来週の予定について、私からご説明（　）ます。", "o": ["いたし", "なさい", "され", "になり"], "qz": "关于下周的安排，由我来说明。", "ex": ["✔ 「いたす」＝「する」的谦让语：「ご説明いたします」，说自己的动作。", "「なさる」＝「する」的尊敬语，只能说对方的动作。", "「される」＝「する」的尊敬形，同样用于对方。", "「ご〜になる」＝尊敬句型，用于对方；而且「ご説明になります」不能用于自己。"]}, "k10": {"q": "（先生に）先生から貴重なお話を（　）ました。", "o": ["いただき", "くださり", "もらい", "差し上げ"], "qz": "我听到了老师宝贵的话。", "ex": ["✔ 「いただく」＝「もらう」的谦让语，「先生から〜いただく」：我从老师那里得到。", "「くださる」＝「くれる」的尊敬语，句型是「先生が〜くださる」，和「先生から」不搭。", "「もらう」＝普通形，对老师不够恭敬。", "「差し上げる」＝「あげる」的谦让语，方向相反（我给对方）。"]}, "k13": {"q": "（先生に）先生に一つ（　）たいことがあるのですが。", "o": ["伺い", "お聞きになり", "聞かれ", "聞き"], "qz": "有一件事想请教老师。", "ex": ["✔ 「伺う」＝「聞く（询问）」的谦让语：「伺いたい」，自己向老师请教。", "「お聞きになる」＝尊敬语，说老师听／问，不能用于自己。", "「聞かれる」＝尊敬／被动形，用于对方，不是自己的动作。", "「聞く」＝普通形，对老师没有敬意。"]}};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};Object.keys(I).forEach(function(k){var x=I[k],id='kq_'+k;DATA.ox[id]=x.ex;DATA.qz[id]=x.qz;KQ[k]={id:id,q:x.q,o:x.o,a:0,sec:'敬語'};});})();
 function origFb(o){var it={wx:DATA.ox[o.id],o:o.o,a:o.a,pk:(o.pick||0)-1,qz:DATA.qz&&DATA.qz[o.id]};return (it.qz?'<div class=noteb><b>题干译文：</b><br>'+esc(it.qz)+'</div>':'')+wxHtml(it)+gramHtml(o.id);}
 function cards(k,extra){
  var d=DECKS[k],t=dayNum(),due=[],nw=[],seen=[];
@@ -1087,7 +1088,7 @@ function cards(k,extra){
   var c=list.shift();if(/^j\d+$/.test(c.id))c._jq=null;
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':'真题原题：选出正确选项'):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
+  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?'敬语：选出正确的说法':'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
   $('#skip').onclick=function(){test(list,n);};
