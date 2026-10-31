@@ -805,12 +805,12 @@ function speak(txt,done){
  browserSpeak(txt,fin);}
 function browserSpeak(txt,fin){
  if(!window.speechSynthesis){fin();return;}
- try{speechSynthesis.cancel();speechSynthesis.resume();}catch(e){}
+ var sp=speechSynthesis.speaking||speechSynthesis.pending;try{speechSynthesis.cancel();speechSynthesis.resume();}catch(e){}
  var u=new SpeechSynthesisUtterance(txt);u.lang='ja-JP';u.rate=(S.rate||1.0)*0.95;
  var v=jaVoice||pickVoice();if(v)u.voice=v;
  u.onend=fin;u.onerror=fin;
  setTimeout(fin,Math.max(3000,txt.length*450));
- speechSynthesis.speak(u);}
+ if(sp)setTimeout(function(){try{speechSynthesis.speak(u);}catch(e){}},120);else speechSynthesis.speak(u);}
 function speakSeq(arr,done){if(window.speechSynthesis)speechSynthesis.cancel();var i=0;
  (function next(){if(i>=arr.length){if(done)done();return;}
   var t=arr[i++];speak(t,function(){ttsTimer=setTimeout(next,700);});})();}
@@ -872,7 +872,7 @@ function home(){
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>③ 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
- h+='<p class=note style="margin-top:24px">版本 1031-1539</p>';
+ h+='<p class=note style="margin-top:24px">版本 1031-1554</p>';
  render(h);$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
@@ -1462,7 +1462,7 @@ function vbView(){
  render(h);
  if($('#vgo'))$('#vgo').onclick=function(ev){ev.preventDefault();vbReview(due);};
  if($('#vall'))$('#vall').onclick=function(ev){ev.preventDefault();vbReview(vbList());};
- [].forEach.call(document.querySelectorAll('[data-s]'),function(b){b.onclick=function(){var e=vbList().filter(function(x){return x.id===b.getAttribute('data-s');})[0];if(e)speak(e.r||e.w);};});
+ [].forEach.call(document.querySelectorAll('[data-s]'),function(b){b.onclick=function(){var e=vbList().filter(function(x){return x.id===b.getAttribute('data-s');})[0];if(e){var T=(window.DATA&&DATA.tts)||{};var wd=T[e.w]?e.w:(T[e.r]?e.r:(e.r||e.w));speak(wd,function(){if(e.ctx&&T[e.ctx])speak(e.ctx);});}};});
  [].forEach.call(document.querySelectorAll('[data-m]'),function(b){b.onclick=function(){var e=vbList().filter(function(x){return x.id===b.getAttribute('data-m');})[0];var v=window.prompt('「'+e.w+'」的意思：',e.m||'');if(v!==null){e.m=v.trim();save();vbView();}};});
  [].forEach.call(document.querySelectorAll('[data-d]'),function(b){b.onclick=function(){var id=b.getAttribute('data-d');if(window.confirm('删除这个生词？')){S.vb.list=vbList().filter(function(x){return x.id!==id;});save();vbView();}};});}
 
