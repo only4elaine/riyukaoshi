@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15, NEWCAP={keigo:8};
+var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15, NEWCAP={keigo:8,sortc:8};
 function newCap(k){return NEWCAP[k]||NEW_PER_DAY;}
 /* ===== FSRS-5（默认参数）间隔重复 ===== */
 var FW=[0.4072,1.1829,3.1262,15.4722,7.2102,0.5316,1.0651,0.0234,1.616,0.1544,1.0824,1.9813,0.0953,0.2975,2.2042,0.2407,2.9466,0.5034,0.6567],FF=19/81,FC=-0.5;
@@ -94,7 +94,8 @@ var DECKS={
  lwords:{name:'听力词汇',list:DATA.lwords,front:function(c){return c.w;},back:cardBack},
  gram:{name:'语法句型',list:DATA.gram,front:function(c){return c.w;},back:cardBack},
  keigo:{name:'敬语对照',list:DATA.keigo,front:function(c){return c.w;},back:keigoBack},
- jita:{name:'自他动词',list:DATA.jita,front:function(c){return c.w;},back:jitaBack}
+ jita:{name:'自他动词',list:DATA.jita,front:function(c){return c.w;},back:jitaBack},
+ sortc:{name:'排序搭配',list:DATA.sortc||[],front:function(c){return c.w;},back:function(c){return sortcBack(c);}}
 };
 function exTr(seg){var n=nz(seg),X=window.DATA&&DATA.extr;if(X&&X[n])return X[n];
  var O=window.DATA&&DATA.orig||[],i,o,f;for(i=0;i<O.length;i++){o=O[i];f=nz(o.q.replace('（　）',o.o[o.a]));if(f===n||(n.length>8&&(f.indexOf(n)>=0||n.indexOf(f)>=0&&f.length>8))){return (DATA.qz&&DATA.qz[o.id])||'';}}return '';}
@@ -133,6 +134,10 @@ function jitaBack(c){var x=(DATA.jx||{})[c.id];if(!x)return cardBack(c);
  var h=jxBox('zi',x.zi,L.zi)+jxBox('ta',x.ta,L.ta);
  if(x.sp)h+='<div class=exb><div class=jp><span class="kgt n" style="background:#c7a24a">⚠ 特殊</span> '+esc(x.sp)+'</div></div>';
  var my=/^你的错题：(.*)$/.exec(c.note||'');if(my)h+='<div class=note>❌ '+esc(my[1])+'</div>';
+ return h;}
+function sortcBack(c){var ex=String(c.ex||'').split('／'),zs=c.zx||[],ss=c.sx||[],h='<div>'+esc(c.zh)+'</div>'+(c.con?'<div class=note>接续：'+esc(c.con)+'</div>':'');
+ ex.forEach(function(e,i){if(!e)return;h+='<div class=exb><div class=jp><button class="kgp btn small" data-s="'+esc(e)+'">🔊</button> '+esc(e).replace(esc(c.w.replace(/[〜（）()]|[AVN]|る$/g,'')),function(m){return m;})+'</div>'+(zs[i]?'<div class=zhx>'+esc(zs[i])+'</div>':'')+'<div class=note>📌 真题排序题 · '+esc(ss[i]||'')+'</div></div>';});
+ if(c.tip)h+='<div class=noteb><b>排序时怎么抓：</b>'+esc(c.tip)+'</div>';
  return h;}
 function keigoBack(c){
  if(c.sx){var q=c.ex&&c.o?'<div class=note style="margin-top:10px">📌 真题里的例句</div>'+kgEx(c)+'<div class=note>'+esc(c.srcx||'')+'</div>':'';var nt=c.note&&!/^你的错题/.test(c.note)?'<div class=note>'+esc(c.note)+'</div>':'';var my=/^你的错题：(.*)$/.exec(c.note||'');return kgSx(c)+nt+q+(my?'<div class=note>❌ '+esc(my[1])+'</div>':'');}
@@ -229,18 +234,18 @@ function globalProg(){
  Object.keys(S.q).forEach(function(i){if(DAILY_IDS[i]&&S.q[i].box>=4)stableQ++;});
  rows.push({n:'真题错题原题（含听力错题、阅读）',a:ps.done,b:ps.total,s:stableQ,sn:'已稳定（间隔≥7天）'});
  var cl=0,cs=0,ct=0,cst=0;
- ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);ct+=st.total;cl+=st.total-st.nw;
+ ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);ct+=st.total;cl+=st.total-st.nw;
   DECKS[k].list.forEach(function(c){var x=S.cards[k+':'+c.id];if(x&&x.box>=4)cst++;});});
  rows.push({n:'背诵卡片（表达·词汇·读音·语法·敬语·自他动词）',a:cl,b:ct,s:cst,sn:'已稳定'});
  var log=S.aulog||{},tot=0,hd=0;DATA.audio.forEach(function(p){p.clips.forEach(function(c){tot++;if(log[p.id+':'+c.k])hd++;});});
  rows.push({n:'听真题录音（已听）',a:hd,b:tot});
  var ls=DATA.lessons||[],lsd=ls.filter(function(x){return S.ls&&S.ls[x.id];}).length;
  rows.push({n:'引导型课程',a:lsd,b:ls.length});
- var deckDays=0;['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(DECKS[k])deckDays=Math.max(deckDays,Math.ceil(deckStat(k).nw/newCap(k)));});
+ var deckDays=0;['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(DECKS[k])deckDays=Math.max(deckDays,Math.ceil(deckStat(k).nw/newCap(k)));});
  var qDays=ps.quota?Math.ceil(ps.unseen.length/ps.quota):0,need=Math.max(deckDays,qDays);
  return {rows:rows,need:need,days:ps.days,ps:ps};}
 function estMin(){var P=todayParts(),m=P.nw.length*0.8+P.due.length*0.5,t=0;
- ['lexp','lwords','vocab','read','gram','keigo','jita'].forEach(function(k){if(DECKS[k])t+=deckNeed(k);});
+ ['lexp','lwords','vocab','read','gram','keigo','jita','sortc'].forEach(function(k){if(DECKS[k])t+=deckNeed(k);});
  var cl=(S.td&&S.td.clips||[]).length;return Math.round(m+t*0.4+8*0.6+cl*4);}
 function aheadAdd(){
  var t=dayNum(),st=planStats();todayView();
@@ -256,7 +261,7 @@ function freeRows(){
  h+=r('#/audio','🎧 听力真题（原录音）','可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:''));
  h+=r('#/lessons','📖 引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
  h+='<p class=note style="margin:14px 0 0">单独刷某一类卡片</p><div class=g2>';
- ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
+ ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
   h+=r('#/cards/'+k,esc(DECKS[k].name),(st.due?'待复习 '+st.due+' 张 · ':'')+'已学 '+(st.total-st.nw)+' / '+st.total);});
  h+='</div><p class=note style="margin:14px 0 0">单独做某一套题（全部题）</p><div class=g2>';
  for(var k in SETS)h+=r('#/quiz/'+k,esc(SETS[k].name)+(SETS[k].listen?' 🔊':''),SETS[k].items.length+' 题');
@@ -297,7 +302,7 @@ function home(){
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
- ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){var s=deckStat(k);
+ ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){var s=deckStat(k);
   h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>'+(s.due?'待复习 '+s.due+' 张 · ':'')+'已学 '+(s.total-s.nw)+' / '+s.total+'</span></a>';});
  h+='</div><h2>再做（测验，全部题）</h2><div class=grid>';
  for(var k in SETS)h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>共 '+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';
@@ -342,6 +347,7 @@ function jitaQ(c){
 var KQ={};(function(){var I={"k2": {"q": "（会社で）社長は明日、大阪へ（　）そうです。", "o": ["いらっしゃる", "参る", "伺う", "行く"], "qz": "听说社长明天要去大阪。", "ex": ["✔ 「いらっしゃる」＝「行く」的尊敬语（空格里接「そうです」，用原形）。去大阪的是社长，是别人（地位高的人）的动作，所以用尊敬语抬高他。三步判断：①谁做动作＝社长（对方）→ ②要抬高 → ③用尊敬语。", "「参る」＝「行く／来る」的谦让语。谦让语是压低自己，只能说“我／我方”的动作。这里去的是社长，用谦让语等于贬低社长，所以错。", "「伺う」＝谦让语，意思是“拜访、询问”（去别人那里），也只能用于自己，而且不是单纯的“去”，所以错。", "「行く」＝普通说法，句子本身没错，但没有表达对社长的敬意，在这里不够礼貌，所以不选。"]}, "k3": {"q": "（お客様に）私が明日、お宅へ（　）ます。", "o": ["参り", "いらっしゃい", "お越しになり", "来られ"], "qz": "我明天去府上拜访。", "ex": ["✔ 「参り」＋ます＝「参る」的ます形（参ります）。「参る」是「行く／来る」的谦让语，说我自己去拜访，用谦让语压低自己。空格后面的「ます」前要用ます形，所以选项是「参り」，不是「参る」。", "「いらっしゃい」＋ます＝「いらっしゃる」的ます形（いらっしゃいます），尊敬语。说自己的动作却抬高自己，所以错。（提示：「いらっしゃる」后接ます要变成「いらっしゃい」，所以看到选项是「〜い」要想到原形。）", "「お越しになり」＋ます＝お越しになる，是「お＋ます形＋になる」的尊敬语句型，只能说对方的动作，不能说自己。", "「来られ」＋ます＝「来られる」（来る的れる形），也是尊敬语，用于对方，不能说自己。"]}, "k4": {"q": "（お客様に）山田先生は今、研究室に（　）。", "o": ["いらっしゃいます", "おります", "あります", "ございます"], "qz": "山田老师现在在研究室。", "ex": ["✔ 「いらっしゃいます」＝「いる」的尊敬语（いらっしゃる→ます形いらっしゃい→いらっしゃいます）。这里“在研究室”的是山田先生，是对方要尊敬的人，用尊敬语抬高他。", "「おります」＝「おる」，是「いる」的谦让语，只能说自己或己方的人。山田先生是需要抬高的人，所以不能用。", "「あります」＝「ある」，只能用于物品，不能用于人，所以错。", "「ございます」＝「ある」的郑重说法（丁寧语），用于物或场所，说人不能用，所以错。"]}, "k6": {"q": "（先生に）先生のご著書を（　）ました。", "o": ["拝見し", "ご覧になり", "見られ", "見せ"], "qz": "我拜读了老师的大作。", "ex": ["✔ 「拝見し」＋ました＝「拝見する」的ます形（拝見します→拝見しました）。「拝見する」＝「見る」的谦让语，我看老师的作品，用谦让语压低自己、抬高老师。你看不到「する」，是因为变成了「し」。", "「ご覧になり」＋ました＝「ご覧になる」的ます形，是「見る」的尊敬语，说的是对方看；这句看的人是“我”，所以错。", "「見られ」＋ました＝「見られる」，可以是可能（能看到）或被动（被看），不是这里要的谦让语。", "「見せ」＋ました＝「見せる」（给人看），方向相反，意思也不对。"]}, "k7": {"q": "（会議で）来週の予定について、私からご説明（　）ます。", "o": ["いたし", "なさい", "され", "になり"], "qz": "关于下周的安排，由我来说明。", "ex": ["✔ 「いたし」＋ます＝「いたす」的ます形（いたします）。「いたす」＝「する」的谦让语。「ご説明いたします」是固定的谦让表达（ご＋名词＋いたす），我来说明自己的动作，用谦让语。", "「なさい」＋ます＝「なさる」的ます形（なさいます），是「する」的尊敬语，只能说对方的动作。这里是“我”来说明，所以错。", "「され」＋ます＝「される」（する的れる形），也是尊敬语，用于对方，所以错。", "「になり」＋ます＝「ご説明になります」，是「ご＋名词＋になる」的尊敬句型，只能说对方的动作，用在自己身上不对。"]}, "k10": {"q": "（先生に）先生から貴重なお話を（　）ました。", "o": ["いただき", "くださり", "もらい", "差し上げ"], "qz": "我听到了老师宝贵的话。", "ex": ["✔ 「いただき」＋ました＝「いただく」的ます形的过去（いただきました）。「いただく」＝「もらう」的谦让语。这句是“我从老师那里得到了宝贵的话”，格式是「先生から〜いただく」（我从对方得到），用谦让语。", "「くださり」＋ました＝「くださる」的ます形的过去，「くださる」＝「くれる」的尊敬语。格式是「先生が〜くださる」（对方给我），主语是老师，和这里的「先生から」不搭。「から」常与「いただく」搭配，「が」与「くださる」搭配。", "「もらい」＋ました＝「もらう」，普通形，对老师不够恭敬。", "「差し上げ」＋ました＝「差し上げる」，是「あげる」的谦让语，方向是“我给对方”，和这句“我从老师那里得到”相反。"]}, "k13": {"q": "（先生に）先生に一つ（　）たいことがあるのですが。", "o": ["伺い", "お聞きになり", "聞かれ", "聞き"], "qz": "有一件事想请教老师。", "ex": ["✔ 「伺い」＋たい＝「伺う」的ます形去掉ます后接たい（伺いたい）。「伺う」＝「聞く（询问）」的谦让语，我想请教老师，是自己的动作，用谦让语。", "「お聞きになり」＋たい＝「お聞きになる」，是「お＋ます形＋になる」的尊敬语，说老师听／问，不能用于自己。", "「聞かれ」＋たい＝「聞かれる」，是尊敬语（也可以是被动），用于对方，不是自己的动作。", "「聞き」＋たい＝「聞く」，普通形，对老师没有敬意。"]}};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};Object.keys(I).forEach(function(k){var x=I[k],id='kq_'+k;DATA.ox[id]=x.ex;DATA.qz[id]=x.qz;KQ[k]={id:id,q:x.q,o:x.o,a:0,sec:'敬語'};});})();
 (function(){var X=DATA.kqx||{};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};Object.keys(X).forEach(function(k){var x=X[k],id='kq_'+k;DATA.ox[id]=x.ex;DATA.qz[id]=x.qz;KQ[k]={id:id,q:x.q,o:x.o,a:0,sec:'敬語'};});})();
 (function(){(DATA.kreal||[]).forEach(function(x){var id='kr_'+x.id;DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};DATA.ox[id]=x.wx;DATA.qz[id]=x.qz;KQ[x.card]={id:id,q:x.q,o:x.o,a:x.a,sec:'敬語',src:x.src};});})();
+(function(){var X=DATA.sortq||{};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};(DATA.sortc||[]).forEach(function(c){var x=X[c.id];if(!x)return;var id='sq_'+c.id;DATA.ox[id]=x.ex;DATA.qz[id]=c.qz||'';KQ[c.id]={id:id,q:x.q,o:x.o,a:x.a,sec:'排序搭配',src:(c.sx&&c.sx[0]||'')};});})();
 function origFb(o){var it={wx:DATA.ox[o.id],o:o.o,a:o.a,pk:(o.pick||0)-1,qz:DATA.qz&&DATA.qz[o.id]};return (it.qz?'<div class=noteb><b>题干译文：</b><br>'+esc(it.qz)+'</div>':'')+wxHtml(it)+gramHtml(o.id);}
 function cards(k,extra){
  var d=DECKS[k],t=dayNum(),due=[],nw=[],seen=[];
@@ -378,7 +384,7 @@ function cards(k,extra){
   var c=list.shift();if(/^j\d+$/.test(c.id))c._jq=null;
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var ds1=deckStat(k),h=prog()+'<p class=note>这个卡组已学 '+(ds1.total-ds1.nw)+' / '+ds1.total+'</p><h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?'敬语：选出正确的说法':'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
+  var ds1=deckStat(k),h=prog()+'<p class=note>这个卡组已学 '+(ds1.total-ds1.nw)+' / '+ds1.total+'</p><h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?(/^sc\d+$/.test(c.id)?'排序搭配：选出填入空格的搭配':'敬语：选出正确的说法'):'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
   $('#skip').onclick=function(){test(list,n);};
@@ -482,7 +488,7 @@ function taskList(){
  var P=todayParts(),L=[],t=dayNum();
  var log=S.aulog||{};
  // 学习
- [['lexp','听力表达'],['lwords','听力词汇'],['vocab','词汇'],['read','汉字读音'],['gram','语法句型'],['keigo','敬语'],['jita','自他动词']].forEach(function(a){
+ [['lexp','听力表达'],['lwords','听力词汇'],['vocab','词汇'],['read','汉字读音'],['gram','语法句型'],['keigo','敬语'],['jita','自他动词'],['sortc','排序搭配']].forEach(function(a){
   var n=deckNeed(a[0]);if(!DECKS[a[0]])return;
   L.push({g:'学习',id:'c:'+a[0],title:'背 · '+DECKS[a[0]].name,sub:n?('今天 '+n+' 个（先学再测）'):'今天没有要学的',href:'#/cards/'+a[0],done:isF('c:'+a[0])||n===0});});
  var ls=(DATA.lessons||[]).filter(function(x){return !(S.ls&&S.ls[x.id]);})[0];
