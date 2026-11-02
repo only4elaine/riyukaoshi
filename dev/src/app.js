@@ -146,6 +146,7 @@ function buildSets(){
  sets.qListenWrong={name:'错题原题（听力·配原录音）',items:(DATA.lq||[]).map(function(x){return {id:x.id,q:x.q,o:x.o,a:x.a,e:x.e,wx:x.wx,pk:x.pick?x.pick-1:-1,clip:x.f,hide:x.hide,sc:x.s,lz:window.DATA.lqzh&&DATA.lqzh[x.id],secn:x.secn,s:x.src+(x.pick?' · 你当时选了 '+x.pick:'')};})};
  
  
+ sets.qKeigoReal={name:'敬语真题（补充）',items:(DATA.kreal||[]).map(function(x){return {id:x.id,q:x.q,o:x.o,a:x.a,wx:x.wx,qz:x.qz,s:x.src+' · 敬語'};})};
  sets.qGram={name:'语法填空（真题）',items:DATA.qGram.filter(function(x){return /^\d{4}\./.test(x.s||'');})};
  return sets;}
 var SETS=buildSets();
