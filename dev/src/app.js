@@ -87,10 +87,18 @@ function bump(kind){var t=dayNum(),b=S.log[t]||0;S.log[t]=b+1;
  setTimeout(function(){checkPerfect(false);checkBadges(false);},900);}
 
 // ---- decks
+var LXHL={'お役に立てる（立てず）':'お役に立てる','〜かねる':'かねます','〜どころではない':'どころではありません','〜てもらえると助かる':'もらえるとありがたい','〜つもりだった（のに／んだけど）':'つもりだった','〜させていただく':'させていただきます','〜ほどではない':'ほどじゃなかった','〜に決まっている（≒に違いない）':'に決まってる','〜てしまった':'ちゃった'};
+function lxHl(c){var line=String(c.line||''),k=LXHL[c.expr];
+ if(!k){var ps=String(c.expr).replace(/[〜～]/g,'').split(/[／\/・]/).map(function(x){return x.replace(/（.*$/,'').trim();}).filter(Boolean);for(var i=0;i<ps.length;i++){if(line.indexOf(ps[i])>=0){k=ps[i];break;}}}
+ var out=esc(line);
+ if(k&&line.indexOf(k)>=0){var ek=esc(k);out=out.replace(ek,'<b class=pt>'+ek+'</b>');
+  var base=String(c.expr).replace(/[〜～]/g,'').replace(/（.*$/,'');
+  if(LXHL[c.expr]&&base!==k)out+='<div class=note style="text-align:center">句中用的是「<b>'+ek+'</b>」（＝「'+esc(base)+'」的说法）</div>';}
+ return out;}
 var DECKS={
  read:{name:'读音（错题）',list:DATA.readings,front:function(c){return c.w;},back:function(c){return '<div class=big>'+esc(c.r)+'</div>'+exHtml(c,c.ctx)+'<div class=note>'+esc(c.note)+'</div>';}},
  vocab:{name:'近义词・词汇',list:DATA.vocab,front:function(c){return c.w;},back:cardBack},
- lexp:{name:'听力表达（先背）',list:DATA.lexp,front:function(c){return c.expr;},back:function(c){return '<div class=big>'+esc(c.zh)+'</div><div class=ex>'+esc(c.line)+'</div>'+(c.lzh?'<div class=note>译：'+esc(c.lzh)+'</div>':'')+'<div class=note>'+(c.o?'📌 真题原句 · '+esc(c.srcx):'✏️ 示例句（非真题原句，是按常见用法编的）')+'</div>'+(c.opts?'<div class=note>原题选项：'+esc(c.opts)+'</div>'+(c.ozh?'<div class=note>译：'+esc(c.ozh)+'</div>':''):'')+'<div>✅ '+esc(c.right)+'</div>'+(c.trap?'<div class=note>⚠️ '+esc(c.trap)+'</div>':'')+(c.tip?'<div class=note>'+esc(c.tip)+'</div>':'');}},
+ lexp:{name:'听力表达（先背）',list:DATA.lexp,front:function(c){return c.expr;},back:function(c){return '<div class=big>'+esc(c.zh)+'</div><div class=ex>'+lxHl(c)+'</div>'+(c.lzh?'<div class=note>译：'+esc(c.lzh)+'</div>':'')+'<div class=note>'+(c.o?'📌 真题原句 · '+esc(c.srcx):'✏️ 示例句（非真题原句，是按常见用法编的）')+'</div>'+(c.opts?'<div class=note>原题选项：'+esc(c.opts)+'</div>'+(c.ozh?'<div class=note>译：'+esc(c.ozh)+'</div>':''):'')+'<div>✅ '+esc(c.right)+'</div>'+(c.trap?'<div class=note>⚠️ '+esc(c.trap)+'</div>':'')+(c.tip?'<div class=note>'+esc(c.tip)+'</div>':'');}},
  lwords:{name:'听力词汇',list:DATA.lwords,front:function(c){return c.w;},back:cardBack},
  gram:{name:'语法句型',list:DATA.gram,front:function(c){return c.w;},back:cardBack},
  keigo:{name:'敬语对照',list:DATA.keigo,front:function(c){return c.w;},back:keigoBack},
