@@ -261,7 +261,7 @@ function freeRows(){
  h+=r('#/wrong','🍓 错题本',wrongOpen().length+' 题待攻克');
  h+=r('#/drill','🎯 听力专项（按题型模拟）','先听不看原文 · 优先高频表达/词'+'');
  h+=r('#/audio','🎧 听力真题（原录音）','可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:''));
- h+=r('#/lessons','📖 引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
+ h+=r('#/conj','✍️ 动词变形练习','教材基础①②的变形作业 · 11 种变形')+r('#/lessons','📖 引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
  h+='<p class=note style="margin:14px 0 0">单独刷某一类卡片</p><div class=g2>';
  ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
   h+=r('#/cards/'+k,esc(DECKS[k].name),(st.due?'待复习 '+st.due+' 张 · ':'')+'已学 '+(st.total-st.nw)+' / '+st.total);});
@@ -302,12 +302,17 @@ function home(){
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
  h+='<p class=note style="margin-top:24px">版本 BUILDID</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
+function conjView(){
+ var h='<h1>动词变形练习</h1><p class=note>按教材《基础①》《基础②》每课下方的变形作业出的题。</p><div class=grid>';
+ Object.keys(SETS).filter(function(k){return /^qConj/.test(k);}).forEach(function(k){h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name.replace('动词变形·','')+'</b><span>共 '+SETS[k].items.length+' 题</span></a>';});
+ render(h+'</div><p><a class=btn href="#/free">回自由练习</a> <a class=btn href="#/lesson/L3">看动词变形课程</a></p>');}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
  ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){var s=deckStat(k);
   h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>'+(s.due?'待复习 '+s.due+' 张 · ':'')+'已学 '+(s.total-s.nw)+' / '+s.total+'</span></a>';});
  h+='</div><h2>再做（测验，全部题）</h2><div class=grid>';
- for(var k in SETS)h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>共 '+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';
+ var cjn=0;for(var k in SETS){if(/^qConj/.test(k)){cjn+=SETS[k].items.length;continue;}h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>共 '+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';}
+ if(cjn)h+='<a class=card href="#/conj"><b>动词变形练习</b><span>教材基础①②作业 · 共 '+cjn+' 题</span></a>';
  h+='</div>'+dlBlock(1,'例句和词的朗读（约16MB）')+'<p><a class=btn href="#/home">回首页</a></p>';
  render(h);dlWire();}
 
@@ -758,6 +763,7 @@ function lessonView(id){
   else if(b.t==='note')h+='<div class=noteb>'+esc(b.x)+'</div>';
   else if(b.t==='think')h+='<div class=think><b>想一想：</b>'+esc(b.q)+'<br><button class="btn small rv" data-n="'+n+'">看答案</button><div class=hide id="a'+n+'">'+esc(b.a)+'</div></div>';
   else if(b.t==='mcq'){h+='<div class=mcq data-n="'+n+'"><p><b>'+esc(b.q)+'</b> <button class="btn small lsp" data-say="'+esc(lsay(b.q.replace('（　）','、')))+'">🔊</button></p>';b.o.forEach(function(o,i){h+='<div class=orow><button class="opt" data-n="'+n+'" data-i="'+i+'">'+esc(o)+'</button><button class="btn small lsp" data-say="'+esc(lsay(o))+'">🔊</button></div>';});h+='<div class=note id="m'+n+'"></div></div>';}
+  else if(b.t==='goh')h+='<a class=btn href="'+b.h+'">'+esc(b.x)+'</a>';
   else if(b.t==='go')h+='<a class=btn href="#/quiz/'+b.set+'">'+esc(b.x)+'</a>';});
  h+='<p><button id=lsdone class="btn good">✔ 这一课学完了</button> <a class=btn href="#/today">回今日任务</a></p>';
  render(h);
@@ -1032,6 +1038,7 @@ function route(){
  else if(v==='vb')vbView();else if(v==='badges')badgesView();
  else if(v==='free')home();
  else if(v==='lessons')lessonsView();
+ else if(v==='conj')conjView();
  else if(v==='lesson')lessonView(p[1]);
  else if(v==='settings')settings();
  else home();}
