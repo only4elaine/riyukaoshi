@@ -345,7 +345,7 @@ function cards(k,extra){
   (function one(){
    if(i>=items.length){test(items.slice(),0);return;}
    var c=items[i];
-   var ds0=deckStat(k);render('<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+'（每组学完并测试后才算“已学”）</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>记住了，下一个</button>');
+   var ds0=deckStat(k);render('<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+'（每组学完并测试后才算“已学”）</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>'+(k==='keigo'?'看懂了，下一个':'记住了，下一个')+'</button>');
    var say=speakable(c),ex=c.line||c.ctx||c.ex;
    $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
    [].forEach.call(document.querySelectorAll('.kgp'),function(b){b.onclick=function(){speak(b.getAttribute('data-s'));};});
