@@ -503,8 +503,6 @@ function taskList(){
  var cl=pickClips();
  if(cl.length){var left=cl.filter(function(k){return !log[k];}).length;
   L.push({g:'听力',id:'clips',title:'听力迷你模考',sub:'5 个题型都有（即时应答 4 题，其余各 1 题）· 还剩 '+left+' 题，约 9 分钟',href:left?'#/drill/0':'#/drill',done:left===0});}
- var ad=auDue();
- if(ad.length)L.push({g:'听力',id:'au',title:'重听没听懂的',sub:ad.length+' 段',href:'#/audio',done:false});
  return L;}
 function runTask(id){
  var P=todayParts();
