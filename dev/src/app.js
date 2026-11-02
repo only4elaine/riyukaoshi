@@ -101,7 +101,7 @@ function exHtml(c,src){var segs=String(src||'').split('／'),h='';segs.forEach(f
 function kgEx(c){
  var segs=String(c.ex||'').split('／'),zh=String(c.zh||''),side={u:[],d:[]};
  zh.split('／').forEach(function(p){var m=/^(尊敬|谦让)：(.*)$/.exec(p);if(m)m[2].split(/[・、]/).forEach(function(w){w=w.trim();if(w)side[m[1]==='尊敬'?'u':'d'].push(w);});});
- function hit(g,L){return L.filter(function(w){var st=w.replace(/(になる|する|る|う|す)$/,'');return st.length>=2?g.indexOf(st)>=0:g.indexOf(w)>=0;});}
+ function hit(g,L){return L.filter(function(w){var st=w.replace(/(になる|する|る|う|す)$/,'');if(w==='おる')return g.indexOf('おり')>=0;return (st.length>=2||/^[\u4e00-\u9fff]$/.test(st))?g.indexOf(st)>=0:g.indexOf(w)>=0;});}
  var h='';segs.forEach(function(g,n){if(!g)return;var z=(segs.length===1&&c.ext)?c.ext:exTr(g),hu=hit(g,side.u),hd=hit(g,side.d),chip='';
   if(hu.length&&!hd.length)chip='<span class="kgt up">尊敬</span>';else if(hd.length&&!hu.length)chip='<span class="kgt dn">谦让</span>';
   h+='<div class=exb><div class=jp>'+chip+esc(g)+'</div>'+(z?'<div class=zhx>'+esc(z)+'</div>':'')+'</div>';});
@@ -112,7 +112,10 @@ var KR={
  k18:[['u','尊敬 · 对方为我做','〜てくださる'],['d','谦让 · 我得到对方做','〜ていただく']],
  k19:[['n','礼貌 · 说物／场所','ございます＝ある'],['n','です 的郑重说法','でございます']],
  k20:[['u','尊敬 · 对方的动作','お探しです／お探しになる'],['d','谦让 · 我的动作','お探しする（お探ししました）']]};
+function kgSx(c){var h='';c.sx.forEach(function(r){var t=r.k==='u'?'up':(r.k==='d'?'dn':'n'),L=r.k==='u'?'尊敬':(r.k==='d'?'谦让':'礼貌');
+ h+='<div class=exb><div class=jp><span class="kgt '+t+'">'+L+'</span><b>'+esc(r.f)+'</b> <span class=note>＝ '+esc(r.m)+'</span></div><div class=jp style="margin-top:6px">'+esc(r.j)+'</div><div class=zhx>'+esc(r.z)+'</div></div>';});return h;}
 function keigoBack(c){
+ if(c.sx){var q=c.ex&&c.o?'<div class=note style="margin-top:10px">📌 真题里的例句</div>'+kgEx(c)+'<div class=note>'+esc(c.srcx||'')+'</div>':'';var nt=c.note&&!/^你的错题/.test(c.note)?'<div class=note>'+esc(c.note)+'</div>':'';var my=/^你的错题：(.*)$/.exec(c.note||'');return kgSx(c)+nt+q+(my?'<div class=note>❌ '+esc(my[1])+'</div>':'');}
  if(KR[c.id]){var rw='';KR[c.id].forEach(function(r){rw+='<div class=kg><span class="kgt '+r[0]+'">'+esc(r[1])+'</span><b>'+esc(r[2])+'</b></div>';});
   var note0=c.note||'',my0='',m0=/^你的错题：(.*)$/.exec(note0);if(m0){my0=m0[1];note0='';}
   var tip={k17:'小提醒：お＋动词ます形＋になる/する 也是同样的规则（お探しになる 尊敬／お探しする 谦让）。变形后看不到「する」，是变成了「し」（お探ししました）。',k20:'小提醒：お探しでしたら＝お探し＋です（尊敬）；お探ししましたら＝お探し＋する（谦让）。区别在后面是です还是する的变形。'}[c.id]||'';
