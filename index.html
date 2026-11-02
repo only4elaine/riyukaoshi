@@ -1205,15 +1205,17 @@ function bar(p,col){return '<div style="height:10px;background:rgba(120,110,100,
 function globalProg(){
  var ps=planStats(),t=dayNum(),rows=[],stableQ=0;
  Object.keys(S.q).forEach(function(i){if(DAILY_IDS[i]&&S.q[i].box>=4)stableQ++;});
- rows.push({n:'真题错题原题（含听力错题、阅读）',a:ps.done,b:ps.total,s:stableQ,sn:'已稳定（间隔≥7天）'});
+ rows.push({n:'真题错题原题（含听力错题、阅读）',a:ps.done,b:ps.total,s:stableQ,sn:'已稳定（间隔≥7天）',href:'#/t/new'});
  var cl=0,cs=0,ct=0,cst=0;
  ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);ct+=st.total;cl+=st.total-st.nw;
   DECKS[k].list.forEach(function(c){var x=S.cards[k+':'+c.id];if(x&&x.box>=4)cst++;});});
- rows.push({n:'背诵卡片（表达·词汇·读音·语法·敬语·自他动词）',a:cl,b:ct,s:cst,sn:'已稳定'});
+ var nk=['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].filter(function(k){var st=DECKS[k]&&deckStat(k);return st&&(st.due||st.nw);})[0];
+ rows.push({n:'背诵卡片（表达·词汇·读音·语法·敬语·自他动词）',a:cl,b:ct,s:cst,sn:'已稳定',href:nk?'#/cards/'+nk:'#/free'});
  var log=S.aulog||{},tot=0,hd=0;DATA.audio.forEach(function(p){p.clips.forEach(function(c){tot++;if(log[p.id+':'+c.k])hd++;});});
- rows.push({n:'听真题录音（已听）',a:hd,b:tot});
+ rows.push({n:'听真题录音（已听）',a:hd,b:tot,href:'#/drill/0'});
  var ls=DATA.lessons||[],lsd=ls.filter(function(x){return S.ls&&S.ls[x.id];}).length;
- rows.push({n:'引导型课程',a:lsd,b:ls.length});
+ var nl=ls.filter(function(x){return !(S.ls&&S.ls[x.id]);})[0];
+ rows.push({n:'引导型课程',a:lsd,b:ls.length,href:nl?'#/lesson/'+nl.id:'#/lessons'});
  var deckDays=0;['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(DECKS[k])deckDays=Math.max(deckDays,Math.ceil(deckStat(k).nw/newCap(k)));});
  var qDays=ps.quota?Math.ceil(ps.unseen.length/ps.quota):0,need=Math.max(deckDays,qDays);
  return {rows:rows,need:need,days:ps.days,ps:ps};}
@@ -1264,14 +1266,14 @@ function home(){
  var RG=[['#d9a5a0','#e6cfa0'],['#9fb5c2','#a9c2ad'],['#b8a6c4','#e0b9b4'],['#a9c2ad','#e6cfa0']];
  h+='<div class=rings>';
  G.rows.forEach(function(r,i){var p=Math.max(0,Math.min(100,100*r.a/Math.max(1,r.b))),C=2*Math.PI*42,g=RG[i%RG.length],nm=String(r.n).replace(/（.*$/,'');
-  h+='<div class=rg><svg viewBox="0 0 100 100" width=118 height=118><defs><linearGradient id=rg'+i+' x1=0 y1=0 x2=1 y2=1><stop offset=0 stop-color="'+g[0]+'"/><stop offset=1 stop-color="'+g[1]+'"/></linearGradient></defs><circle cx=50 cy=50 r=42 fill=none stroke="rgba(120,110,100,.16)" stroke-width=10 /><circle class=rgv cx=50 cy=50 r=42 fill=none stroke="url(#rg'+i+')" stroke-width=10 stroke-linecap=round transform="rotate(-90 50 50)" stroke-dasharray="'+(C*p/100).toFixed(1)+' '+C.toFixed(1)+'"/><text x=50 y=55 text-anchor=middle font-size=20 font-weight=700 fill="currentColor">'+Math.round(p)+'%</text></svg><b>'+esc(nm)+'</b><span class=note>'+r.a+' / '+r.b+(r.s!=null?'<br>'+esc(r.sn)+' '+r.s:'')+'</span></div>';});
+  h+='<a class=rg href="'+(r.href||'#/home')+'" style="text-decoration:none;color:inherit"><svg viewBox="0 0 100 100" width=118 height=118><defs><linearGradient id=rg'+i+' x1=0 y1=0 x2=1 y2=1><stop offset=0 stop-color="'+g[0]+'"/><stop offset=1 stop-color="'+g[1]+'"/></linearGradient></defs><circle cx=50 cy=50 r=42 fill=none stroke="rgba(120,110,100,.16)" stroke-width=10 /><circle class=rgv cx=50 cy=50 r=42 fill=none stroke="url(#rg'+i+')" stroke-width=10 stroke-linecap=round transform="rotate(-90 50 50)" stroke-dasharray="'+(C*p/100).toFixed(1)+' '+C.toFixed(1)+'"/><text x=50 y=55 text-anchor=middle font-size=20 font-weight=700 fill="currentColor">'+Math.round(p)+'%</text></svg><b>'+esc(nm)+'</b><span class=note>'+r.a+' / '+r.b+(r.s!=null?'<br>'+esc(r.sn)+' '+r.s:'')+'<br><b style="color:var(--ok)">'+(r.a>=r.b?'已全部学过 ›':'点这里开始 ›')+'</b></span></a>';});
  h+='</div>';
  var eta=new Date(Date.now()+G.need*86400000);
  h+='<p>'+(G.need?'按现在每天的节奏，还需 <b>'+G.need+'</b> 天把所有内容至少学一遍（约 '+(eta.getMonth()+1)+'月'+eta.getDate()+'日）':'所有内容都已经学过一遍，接下来以复习为主')+'；考试前还有 '+G.days+' 天，'+(G.days>=G.need?'富余 '+(G.days-G.need)+' 天用来复习巩固。':'<b>时间偏紧，建议每天用“提前做 1 天”追一追。</b>')+'</p>';
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
- h+='<p class=note style="margin-top:24px">版本 1102-2300</p>';
+ h+='<p class=note style="margin-top:24px">版本 1102-2301</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
