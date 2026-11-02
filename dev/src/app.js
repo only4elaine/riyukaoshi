@@ -94,7 +94,7 @@ var DECKS={
  lwords:{name:'听力词汇',list:DATA.lwords,front:function(c){return c.w;},back:cardBack},
  gram:{name:'语法句型',list:DATA.gram,front:function(c){return c.w;},back:cardBack},
  keigo:{name:'敬语对照',list:DATA.keigo,front:function(c){return c.w;},back:keigoBack},
- jita:{name:'自他动词',list:DATA.jita,front:function(c){return c.w;},back:cardBack}
+ jita:{name:'自他动词',list:DATA.jita,front:function(c){return c.w;},back:jitaBack}
 };
 function exTr(seg){var n=nz(seg),X=window.DATA&&DATA.extr;if(X&&X[n])return X[n];
  var O=window.DATA&&DATA.orig||[],i,o,f;for(i=0;i<O.length;i++){o=O[i];f=nz(o.q.replace('（　）',o.o[o.a]));if(f===n||(n.length>8&&(f.indexOf(n)>=0||n.indexOf(f)>=0&&f.length>8))){return (DATA.qz&&DATA.qz[o.id])||'';}}return '';}
@@ -118,6 +118,22 @@ var KGDV={"k16|お待ちです": "待つ → 待ち（ます形）→ お待ち�
 function kgTag(c,r){var dv=KGDV[c.id+'|'+r.f];if(dv)return '<div class=dv><span class=dvt>句型变形</span> '+esc(dv)+'</div>';if(KGFIX.indexOf(r.f)>=0)return '<div class=dv><span class=dvt fx>专用词</span> 直接背，不是变形来的</div>';return '';}
 function kgSx(c){var h='',ord={u:0,d:1,n:2,x:3},rows=c.sx.map(function(r,i){return [r,i];}).sort(function(a,b){return (ord[a[0].k]-ord[b[0].k])||(a[1]-b[1]);}).map(function(x){return x[0];});rows.forEach(function(r){var t=r.k==='u'?'up':(r.k==='d'?'dn':'n'),L=r.k==='u'?'尊敬':(r.k==='d'?'谦让':'丁寧 · 不抬高也不压低');
  h+='<div class=exb><div class=jp><span class="kgt '+t+'">'+L+'</span><b>'+esc(r.f)+'</b> <span class=note>＝ '+esc(r.m)+'</span></div>'+kgTag(c,r)+'<div class=jp style="margin-top:6px"><button class="btn small kgp" data-s="'+esc(String(r.j).replace(/^[AB][：:]/,''))+'">🔊</button> '+esc(r.j)+'</div><div class=zhx>'+esc(r.z)+'</div></div>';});return h;}
+
+function jxHl(g,ks){var idx=-1;(ks||[]).forEach(function(k){var i=g.indexOf(k);if(i>=0&&(idx<0||i<idx))idx=i;});if(idx<0)return esc(g);var j=-1;for(var a=idx-1;a>=0&&idx-a<=6;a--){if('がをにはも'.indexOf(g.charAt(a))>=0){j=a;break;}}if(j<0)return esc(g);return esc(g.slice(0,j))+'<b class=pt>'+esc(g.charAt(j))+'</b>'+esc(g.slice(j+1));}
+function jxBox(side,v,list){var zi=side==='zi',P=zi?'が':'を';
+ var h='<div class=exb><div class=jp><span class="kgt '+(zi?'zi':'ta')+'">'+(zi?'自动词':'他动词')+'</span><b>'+esc(v.w)+'</b> <span class=note>'+esc(v.r)+' ＝ '+esc(v.m)+'</span></div>'
+ +'<div class=dv><span class=dvt>'+(zi?'句型':'句型')+'</span> '+(zi?'东西 <b class=pt>が</b> '+esc(v.w)+'（事情自己发生，没有“谁去做”）':'人 が 东西 <b class=pt>を</b> '+esc(v.w)+'（有人有意去做）')+'</div>';
+ var ex=[['原创例句',v.ex,v.z]].concat(list);
+ ex.forEach(function(e){h+='<div class=jp style="margin-top:8px"><button class="btn small kgp" data-s="'+esc(e[1])+'">🔊</button> '+(e[0]==='原创例句'?jxHl(e[1],v.k):jxHl(e[1],v.k))+(e[0]==='原创例句'?'':' <span class=dvt>真题</span>')+'</div>'+(e[2]?'<div class=zhx>'+esc(e[2])+'</div>':'')+(e[3]?'<div class=note>'+esc(e[3])+'</div>':'');});
+ return h+'</div>';}
+function jitaBack(c){var x=(DATA.jx||{})[c.id];if(!x)return cardBack(c);
+ var real=String(c.ex||'').split('／').filter(Boolean),L={zi:[],ta:[]},srcs=String(c.srcx||'').split('、');
+ real.forEach(function(g,i){var zi=false,ta=false,pz=-1,pt=-1;x.zi.k.forEach(function(k){var p=g.indexOf(k);if(p>=0&&(pz<0||p<pz))pz=p;});x.ta.k.forEach(function(k){var p=g.indexOf(k);if(p>=0&&(pt<0||p<pt))pt=p;});
+  var side=(pz>=0&&(pt<0||pz<pt))?'zi':(pt>=0?'ta':null);if(!side)return;L[side].push(['真题',g,(x.rz||{})[g]||'',srcs[i]||'']);});
+ var h=jxBox('zi',x.zi,L.zi)+jxBox('ta',x.ta,L.ta);
+ if(x.sp)h+='<div class=exb><div class=jp><span class="kgt n" style="background:#c7a24a">⚠ 特殊</span> '+esc(x.sp)+'</div></div>';
+ var my=/^你的错题：(.*)$/.exec(c.note||'');if(my)h+='<div class=note>❌ '+esc(my[1])+'</div>';
+ return h;}
 function keigoBack(c){
  if(c.sx){var q=c.ex&&c.o?'<div class=note style="margin-top:10px">📌 真题里的例句</div>'+kgEx(c)+'<div class=note>'+esc(c.srcx||'')+'</div>':'';var nt=c.note&&!/^你的错题/.test(c.note)?'<div class=note>'+esc(c.note)+'</div>':'';var my=/^你的错题：(.*)$/.exec(c.note||'');return kgSx(c)+nt+q+(my?'<div class=note>❌ '+esc(my[1])+'</div>':'');}
  if(KR[c.id]){var rw='';KR[c.id].forEach(function(r){rw+='<div class=kg><span class="kgt '+r[0]+'">'+esc(r[1])+'</span><b>'+esc(r[2])+'</b></div>';});
@@ -347,7 +363,7 @@ function cards(k,extra){
   (function one(){
    if(i>=items.length){test(items.slice(),0);return;}
    var c=items[i];
-   var ds0=deckStat(k);render('<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+'（每组学完并测试后才算“已学”）</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>'+(k==='keigo'?'看懂了，下一个':'记住了，下一个')+'</button>');
+   var ds0=deckStat(k);render('<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+(S.cards[k+':'+c.id]?'　· 这张以前学过，今天到期复习':'（每组学完并测试后才算“已学”）')+'</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>'+(k==='keigo'?'看懂了，下一个':'记住了，下一个')+'</button>');
    var say=speakable(c),ex=c.line||c.ctx||c.ex;
    $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
    [].forEach.call(document.querySelectorAll('.kgp'),function(b){b.onclick=function(){speak(b.getAttribute('data-s'));};});
