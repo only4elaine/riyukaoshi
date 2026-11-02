@@ -112,7 +112,7 @@ var KR={
  k18:[['u','尊敬 · 对方为我做','〜てくださる'],['d','谦让 · 我得到对方做','〜ていただく']],
  k19:[['n','礼貌 · 说物／场所','ございます＝ある'],['n','です 的郑重说法','でございます']],
  k20:[['u','尊敬 · 对方的动作','お探しです／お探しになる'],['d','谦让 · 我的动作','お探しする（お探ししました）']]};
-function kgSx(c){var h='';c.sx.forEach(function(r){var t=r.k==='u'?'up':(r.k==='d'?'dn':'n'),L=r.k==='u'?'尊敬':(r.k==='d'?'谦让':'丁寧 · 不抬高也不压低');
+function kgSx(c){var h='',ord={u:0,d:1,n:2,x:3},rows=c.sx.map(function(r,i){return [r,i];}).sort(function(a,b){return (ord[a[0].k]-ord[b[0].k])||(a[1]-b[1]);}).map(function(x){return x[0];});rows.forEach(function(r){var t=r.k==='u'?'up':(r.k==='d'?'dn':'n'),L=r.k==='u'?'尊敬':(r.k==='d'?'谦让':'丁寧 · 不抬高也不压低');
  h+='<div class=exb><div class=jp><span class="kgt '+t+'">'+L+'</span><b>'+esc(r.f)+'</b> <span class=note>＝ '+esc(r.m)+'</span></div><div class=jp style="margin-top:6px"><button class="btn small kgp" data-s="'+esc(String(r.j).replace(/^[AB][：:]/,''))+'">🔊</button> '+esc(r.j)+'</div><div class=zhx>'+esc(r.z)+'</div></div>';});return h;}
 function keigoBack(c){
  if(c.sx){var q=c.ex&&c.o?'<div class=note style="margin-top:10px">📌 真题里的例句</div>'+kgEx(c)+'<div class=note>'+esc(c.srcx||'')+'</div>':'';var nt=c.note&&!/^你的错题/.test(c.note)?'<div class=note>'+esc(c.note)+'</div>':'';var my=/^你的错题：(.*)$/.exec(c.note||'');return kgSx(c)+nt+q+(my?'<div class=note>❌ '+esc(my[1])+'</div>':'');}
