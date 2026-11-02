@@ -1,6 +1,7 @@
 (function(){
 'use strict';
-var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15;
+var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15, NEWCAP={keigo:8};
+function newCap(k){return NEWCAP[k]||NEW_PER_DAY;}
 /* ===== FSRS-5（默认参数）间隔重复 ===== */
 var FW=[0.4072,1.1829,3.1262,15.4722,7.2102,0.5316,1.0651,0.0234,1.616,0.1544,1.0824,1.9813,0.0953,0.2975,2.2042,0.2407,2.9466,0.5034,0.6567],FF=19/81,FC=-0.5;
 function fsD0(g){return Math.min(10,Math.max(1,FW[4]-Math.exp(FW[5]*(g-1))+1));}
@@ -146,7 +147,6 @@ function buildSets(){
  sets.qListenWrong={name:'错题原题（听力·配原录音）',items:(DATA.lq||[]).map(function(x){return {id:x.id,q:x.q,o:x.o,a:x.a,e:x.e,wx:x.wx,pk:x.pick?x.pick-1:-1,clip:x.f,hide:x.hide,sc:x.s,lz:window.DATA.lqzh&&DATA.lqzh[x.id],secn:x.secn,s:x.src+(x.pick?' · 你当时选了 '+x.pick:'')};})};
  
  
- sets.qKeigoReal={name:'敬语真题（补充）',items:(DATA.kreal||[]).map(function(x){return {id:x.id,q:x.q,o:x.o,a:x.a,wx:x.wx,qz:x.qz,s:x.src+' · 敬語'};})};
  sets.qGram={name:'语法填空（真题）',items:DATA.qGram.filter(function(x){return /^\d{4}\./.test(x.s||'');})};
  return sets;}
 var SETS=buildSets();
@@ -219,7 +219,7 @@ function globalProg(){
  rows.push({n:'听真题录音（已听）',a:hd,b:tot});
  var ls=DATA.lessons||[],lsd=ls.filter(function(x){return S.ls&&S.ls[x.id];}).length;
  rows.push({n:'引导型课程',a:lsd,b:ls.length});
- var deckDays=0;['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(DECKS[k])deckDays=Math.max(deckDays,Math.ceil(deckStat(k).nw/NEW_PER_DAY));});
+ var deckDays=0;['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(DECKS[k])deckDays=Math.max(deckDays,Math.ceil(deckStat(k).nw/newCap(k)));});
  var qDays=ps.quota?Math.ceil(ps.unseen.length/ps.quota):0,need=Math.max(deckDays,qDays);
  return {rows:rows,need:need,days:ps.days,ps:ps};}
 function estMin(){var P=todayParts(),m=P.nw.length*0.8+P.due.length*0.5,t=0;
@@ -324,11 +324,12 @@ function jitaQ(c){
  c._jk=n;c._jq={id:id,q:q,o:o,a:a,sec:'自他'};return c._jq;}
 var KQ={};(function(){var I={"k2": {"q": "（会社で）社長は明日、大阪へ（　）そうです。", "o": ["いらっしゃる", "参る", "伺う", "行く"], "qz": "听说社长明天要去大阪。", "ex": ["✔ 「いらっしゃる」＝「行く」的尊敬语（空格里接「そうです」，用原形）。去大阪的是社长，是别人（地位高的人）的动作，所以用尊敬语抬高他。三步判断：①谁做动作＝社长（对方）→ ②要抬高 → ③用尊敬语。", "「参る」＝「行く／来る」的谦让语。谦让语是压低自己，只能说“我／我方”的动作。这里去的是社长，用谦让语等于贬低社长，所以错。", "「伺う」＝谦让语，意思是“拜访、询问”（去别人那里），也只能用于自己，而且不是单纯的“去”，所以错。", "「行く」＝普通说法，句子本身没错，但没有表达对社长的敬意，在这里不够礼貌，所以不选。"]}, "k3": {"q": "（お客様に）私が明日、お宅へ（　）ます。", "o": ["参り", "いらっしゃい", "お越しになり", "来られ"], "qz": "我明天去府上拜访。", "ex": ["✔ 「参り」＋ます＝「参る」的ます形（参ります）。「参る」是「行く／来る」的谦让语，说我自己去拜访，用谦让语压低自己。空格后面的「ます」前要用ます形，所以选项是「参り」，不是「参る」。", "「いらっしゃい」＋ます＝「いらっしゃる」的ます形（いらっしゃいます），尊敬语。说自己的动作却抬高自己，所以错。（提示：「いらっしゃる」后接ます要变成「いらっしゃい」，所以看到选项是「〜い」要想到原形。）", "「お越しになり」＋ます＝お越しになる，是「お＋ます形＋になる」的尊敬语句型，只能说对方的动作，不能说自己。", "「来られ」＋ます＝「来られる」（来る的れる形），也是尊敬语，用于对方，不能说自己。"]}, "k4": {"q": "（お客様に）山田先生は今、研究室に（　）。", "o": ["いらっしゃいます", "おります", "あります", "ございます"], "qz": "山田老师现在在研究室。", "ex": ["✔ 「いらっしゃいます」＝「いる」的尊敬语（いらっしゃる→ます形いらっしゃい→いらっしゃいます）。这里“在研究室”的是山田先生，是对方要尊敬的人，用尊敬语抬高他。", "「おります」＝「おる」，是「いる」的谦让语，只能说自己或己方的人。山田先生是需要抬高的人，所以不能用。", "「あります」＝「ある」，只能用于物品，不能用于人，所以错。", "「ございます」＝「ある」的郑重说法（丁寧语），用于物或场所，说人不能用，所以错。"]}, "k6": {"q": "（先生に）先生のご著書を（　）ました。", "o": ["拝見し", "ご覧になり", "見られ", "見せ"], "qz": "我拜读了老师的大作。", "ex": ["✔ 「拝見し」＋ました＝「拝見する」的ます形（拝見します→拝見しました）。「拝見する」＝「見る」的谦让语，我看老师的作品，用谦让语压低自己、抬高老师。你看不到「する」，是因为变成了「し」。", "「ご覧になり」＋ました＝「ご覧になる」的ます形，是「見る」的尊敬语，说的是对方看；这句看的人是“我”，所以错。", "「見られ」＋ました＝「見られる」，可以是可能（能看到）或被动（被看），不是这里要的谦让语。", "「見せ」＋ました＝「見せる」（给人看），方向相反，意思也不对。"]}, "k7": {"q": "（会議で）来週の予定について、私からご説明（　）ます。", "o": ["いたし", "なさい", "され", "になり"], "qz": "关于下周的安排，由我来说明。", "ex": ["✔ 「いたし」＋ます＝「いたす」的ます形（いたします）。「いたす」＝「する」的谦让语。「ご説明いたします」是固定的谦让表达（ご＋名词＋いたす），我来说明自己的动作，用谦让语。", "「なさい」＋ます＝「なさる」的ます形（なさいます），是「する」的尊敬语，只能说对方的动作。这里是“我”来说明，所以错。", "「され」＋ます＝「される」（する的れる形），也是尊敬语，用于对方，所以错。", "「になり」＋ます＝「ご説明になります」，是「ご＋名词＋になる」的尊敬句型，只能说对方的动作，用在自己身上不对。"]}, "k10": {"q": "（先生に）先生から貴重なお話を（　）ました。", "o": ["いただき", "くださり", "もらい", "差し上げ"], "qz": "我听到了老师宝贵的话。", "ex": ["✔ 「いただき」＋ました＝「いただく」的ます形的过去（いただきました）。「いただく」＝「もらう」的谦让语。这句是“我从老师那里得到了宝贵的话”，格式是「先生から〜いただく」（我从对方得到），用谦让语。", "「くださり」＋ました＝「くださる」的ます形的过去，「くださる」＝「くれる」的尊敬语。格式是「先生が〜くださる」（对方给我），主语是老师，和这里的「先生から」不搭。「から」常与「いただく」搭配，「が」与「くださる」搭配。", "「もらい」＋ました＝「もらう」，普通形，对老师不够恭敬。", "「差し上げ」＋ました＝「差し上げる」，是「あげる」的谦让语，方向是“我给对方”，和这句“我从老师那里得到”相反。"]}, "k13": {"q": "（先生に）先生に一つ（　）たいことがあるのですが。", "o": ["伺い", "お聞きになり", "聞かれ", "聞き"], "qz": "有一件事想请教老师。", "ex": ["✔ 「伺い」＋たい＝「伺う」的ます形去掉ます后接たい（伺いたい）。「伺う」＝「聞く（询问）」的谦让语，我想请教老师，是自己的动作，用谦让语。", "「お聞きになり」＋たい＝「お聞きになる」，是「お＋ます形＋になる」的尊敬语，说老师听／问，不能用于自己。", "「聞かれ」＋たい＝「聞かれる」，是尊敬语（也可以是被动），用于对方，不是自己的动作。", "「聞き」＋たい＝「聞く」，普通形，对老师没有敬意。"]}};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};Object.keys(I).forEach(function(k){var x=I[k],id='kq_'+k;DATA.ox[id]=x.ex;DATA.qz[id]=x.qz;KQ[k]={id:id,q:x.q,o:x.o,a:0,sec:'敬語'};});})();
 (function(){var X=DATA.kqx||{};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};Object.keys(X).forEach(function(k){var x=X[k],id='kq_'+k;DATA.ox[id]=x.ex;DATA.qz[id]=x.qz;KQ[k]={id:id,q:x.q,o:x.o,a:0,sec:'敬語'};});})();
+(function(){(DATA.kreal||[]).forEach(function(x){var id='kr_'+x.id;DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};DATA.ox[id]=x.wx;DATA.qz[id]=x.qz;KQ[x.card]={id:id,q:x.q,o:x.o,a:x.a,sec:'敬語',src:x.src};});})();
 function origFb(o){var it={wx:DATA.ox[o.id],o:o.o,a:o.a,pk:(o.pick||0)-1,qz:DATA.qz&&DATA.qz[o.id]};return (it.qz?'<div class=noteb><b>题干译文：</b><br>'+esc(it.qz)+'</div>':'')+wxHtml(it)+gramHtml(o.id);}
 function cards(k,extra){
  var d=DECKS[k],t=dayNum(),due=[],nw=[],seen=[];
  d.list.forEach(function(c){var s=S.cards[k+':'+c.id];if(!s)nw.push(c);else{seen.push(c);if(s.due<=t)due.push(c);}});
- var batch=extra==='review'?seen.sort(function(a,b){return S.cards[k+':'+a.id].box-S.cards[k+':'+b.id].box;}).slice(0,NEW_PER_DAY):shuffle(due).concat(nw.slice(0,NEW_PER_DAY*(1+aheadN())));
+ var batch=extra==='review'?seen.sort(function(a,b){return S.cards[k+':'+a.id].box-S.cards[k+':'+b.id].box;}).slice(0,NEW_PER_DAY):shuffle(due).concat(nw.slice(0,newCap(k)*(1+aheadN())));
  var BS=5,queue=[],total=batch.length,doneN=0;
  function front(c){return d.front(c);}
  function ans(c){var q=OQ(c);if(q)return q.o[q.a];return k==='read'?c.r:(c.zh||c.r||'');}
@@ -458,7 +459,7 @@ function pickSb(){
  if(!td.sb){td.sb=shuffle(SETS.sBuild.items.map(function(i){return i.id;})).slice(0,8);save();}
  return td.sb;}
 function wrongOther(){return wrongDue().filter(function(i){return !DAILY_IDS[i];});}
-function deckNeed(k){var s=deckStat(k);return s.due+Math.min(s.nw,NEW_PER_DAY*(1+aheadN()));}
+function deckNeed(k){var s=deckStat(k);return s.due+Math.min(s.nw,newCap(k)*(1+aheadN()));}
 function taskList(){
  var P=todayParts(),L=[],t=dayNum();
  var log=S.aulog||{};
