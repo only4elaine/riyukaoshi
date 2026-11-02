@@ -358,12 +358,13 @@ function cards(k,extra){
  var MORE="<p><a class=btn href=\"#/today\">回今日任务</a> <button id=m1 class=btn>再学 15 个新的</button> <button id=m2 class=btn>加练已学过的</button></p>";
  function wireMore(){var a=$('#m1'),b=$('#m2');if(a)a.onclick=function(){cards(k);};if(b)b.onclick=function(){cards(k,'review');};}
  function frontHtml(c){return '<div class=front>'+esc(front(c))+'</div>'+(c.r&&k!=='read'?'<div class=rd>'+esc(c.r)+'</div>':'');}
+ function prog(){var g=typeof gi==='number'?gi:1,G=typeof groups!=='undefined'?groups.length:1,dn=Math.min(total,(g-1)*BS);return '<div class=pg><div class=pgb style="width:'+Math.round(100*dn/Math.max(1,total))+'%"></div></div><p class=note>今日任务 '+dn+' / '+total+' 张完成 · 第 '+g+' / '+G+' 组</p>';}
  function learn(items){
   var i=0;
   (function one(){
    if(i>=items.length){test(items.slice(),0);return;}
    var c=items[i];
-   var ds0=deckStat(k);render('<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+(S.cards[k+':'+c.id]?'　· 这张以前学过，今天到期复习':'（每组学完并测试后才算“已学”）')+'</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>'+(k==='keigo'?'看懂了，下一个':'记住了，下一个')+'</button>');
+   var ds0=deckStat(k);render(prog()+'<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+(S.cards[k+':'+c.id]?'　· 这张以前学过，今天到期复习':'（每组学完并测试后才算“已学”）')+'</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>'+(k==='keigo'?'看懂了，下一个':'记住了，下一个')+'</button>');
    var say=speakable(c),ex=c.line||c.ctx||c.ex;
    $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
    [].forEach.call(document.querySelectorAll('.kgp'),function(b){b.onclick=function(){speak(b.getAttribute('data-s'));};});
@@ -376,7 +377,7 @@ function cards(k,extra){
   var c=list.shift();if(/^j\d+$/.test(c.id))c._jq=null;
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var ds1=deckStat(k),h='<p class=note>这个卡组已学 '+(ds1.total-ds1.nw)+' / '+ds1.total+'</p><h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?'敬语：选出正确的说法':'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
+  var ds1=deckStat(k),h=prog()+'<p class=note>这个卡组已学 '+(ds1.total-ds1.nw)+' / '+ds1.total+'</p><h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?'敬语：选出正确的说法':'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
   $('#skip').onclick=function(){test(list,n);};
