@@ -274,7 +274,7 @@ function freeRows(){
  ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
   h+=r('#/cards/'+k,esc(DECKS[k].name),(st.due?'待复习 '+st.due+' 张 · ':'')+'已学 '+(st.total-st.nw)+' / '+st.total);});
  h+='</div><p class=note style="margin:14px 0 0">单独做某一套题（全部题）</p><div class=g2>';
- for(var k in SETS)h+=r('#/quiz/'+k,esc(SETS[k].name)+(SETS[k].listen?' 🔊':''),SETS[k].items.length+' 题');
+ for(var k in SETS){if(/^qConj/.test(k))continue;h+=r('#/quiz/'+k,esc(SETS[k].name)+(SETS[k].listen?' 🔊':''),SETS[k].items.length+' 题');}
  return h+'</div>';}
 function home(){
  var d=Math.ceil((new Date(S.exam+'T00:00:00')-new Date())/86400000);
