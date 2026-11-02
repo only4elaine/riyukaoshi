@@ -1051,7 +1051,7 @@ function freeRows(){
  h+=r('#/lessons','📖 引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
  h+='<p class=note style="margin:14px 0 0">单独刷某一类卡片</p><div class=g2>';
  ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
-  h+=r('#/cards/'+k,esc(DECKS[k].name),(st.due?'待复习 '+st.due+' 张':'共 '+st.total+' 张'));});
+  h+=r('#/cards/'+k,esc(DECKS[k].name),(st.due?'待复习 '+st.due+' 张 · ':'')+'已学 '+(st.total-st.nw)+' / '+st.total);});
  h+='</div><p class=note style="margin:14px 0 0">单独做某一套题（全部题）</p><div class=g2>';
  for(var k in SETS)h+=r('#/quiz/'+k,esc(SETS[k].name)+(SETS[k].listen?' 🔊':''),SETS[k].items.length+' 题');
  return h+'</div>';}
@@ -1087,12 +1087,12 @@ function home(){
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
- h+='<p class=note style="margin-top:24px">版本 1102-2103</p>';
+ h+='<p class=note style="margin-top:24px">版本 1102-2105</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
  ['lexp','lwords','read','vocab','gram','keigo','jita'].forEach(function(k){var s=deckStat(k);
-  h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>'+(s.due?'待复习 '+s.due+' 张':'共 '+s.total+' 张')+'</span></a>';});
+  h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>'+(s.due?'待复习 '+s.due+' 张 · ':'')+'已学 '+(s.total-s.nw)+' / '+s.total+'</span></a>';});
  h+='</div><h2>再做（测验，全部题）</h2><div class=grid>';
  for(var k in SETS)h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>共 '+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';
  h+='</div>'+dlBlock(1,'例句和词的朗读（约16MB）')+'<p><a class=btn href="#/home">回首页</a></p>';
@@ -1157,7 +1157,7 @@ function cards(k,extra){
   (function one(){
    if(i>=items.length){test(items.slice(),0);return;}
    var c=items[i];
-   render('<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>记住了，下一个</button>');
+   var ds0=deckStat(k);render('<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+'（每组学完并测试后才算“已学”）</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>记住了，下一个</button>');
    var say=speakable(c),ex=c.line||c.ctx||c.ex;
    $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
    [].forEach.call(document.querySelectorAll('.kgp'),function(b){b.onclick=function(){speak(b.getAttribute('data-s'));};});
@@ -1170,7 +1170,7 @@ function cards(k,extra){
   var c=list.shift();if(/^j\d+$/.test(c.id))c._jq=null;
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var h='<h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?'敬语：选出正确的说法':'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
+  var ds1=deckStat(k),h='<p class=note>这个卡组已学 '+(ds1.total-ds1.nw)+' / '+ds1.total+'</p><h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?'敬语：选出正确的说法':'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
   $('#skip').onclick=function(){test(list,n);};
