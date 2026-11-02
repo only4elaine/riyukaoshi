@@ -586,25 +586,42 @@ function audioPaper(id){
     var u=p.clips[n].f;
     ca.match(u).then(function(r){ if(r)return; return fetch(u).then(function(rs){if(rs.ok)return ca.put(u,rs);}); }).then(function(){n++;$('#dlst').textContent=n+' / '+p.clips.length;nx();}).catch(function(){$('#dlst').textContent='下载失败，请检查网络后重试（已下 '+n+'）';});
    })();});};}
-function splitOpts(c){
- var L=(c.s||'').split('\n'),o=[],rest=[],i;
- if(c.sec!==1&&c.sec!==2)return {o:[],s:c.s||''};
- for(i=0;i<L.length;i++){
-  if(i<10&&/^\s*[1-4１-４][\.．]/.test(L[i])&&!/^\s*[1-4１-４][\.．]\s*$/.test(L[i]))o.push(L[i].replace(/([^\x00-\x7f])\s+(?=[^\x00-\x7f])/g,'$1').trim());
-  else if(i<10&&o.length&&o.length<4&&i>0&&/^\s*[1-4１-４][\.．]/.test(L[i-1]||'')===false&&o.length&&0){}
-  else rest.push(L[i]);}
- if(!o.length)return {o:[],s:c.s||''};
- return {o:o,s:rest.join('\n').replace(/^\s*\.\s*\n/,'')};}
+function splitOpts(c,id){
+ var sec=String(c.sec),cp=(window.DATA&&DATA.copt&&id&&DATA.copt[id+'/'+c.k])||null;
+ if(sec!=='1'&&sec!=='2')return {o:[],s:c.s||''};
+ var FW={'１':1,'２':2,'３':3,'４':4};
+ var L=(c.s||'').split('\n'),i=0;
+ while(i<L.length&&/^\s*\.?\s*$/.test(L[i]))i++;
+ var cand={},used={},lim=Math.min(L.length,i+12),k,mm,line;
+ for(k=i;k<lim;k++){
+  line=L[k];
+  // 行内可能有多个选项：「1 A 2 B」
+  var parts=line.replace(/[１-４]/g,function(x){return FW[x];}).split(/(?:^|\s)(?=[1-4][\s\.．、]*[^\s\d])/);
+  var got=0;
+  parts.forEach(function(p){mm=/^([1-4])([\s\.．、]*)(.+)$/.exec(p.trim());if(!mm)return;
+   var n=+mm[1],txt=mm[3].replace(/([^\x00-\x7f])\s+(?=[^\x00-\x7f])/g,'$1').trim();if(!txt)return;
+   var dot=/\./.test(mm[2])||/^\s*[1-4]\./.test(line);
+   if(!cand[n]||(dot&&!cand[n].dot))cand[n]={t:txt,dot:dot,line:k};
+   got++;});
+  if(got)used[k]=1;
+ }
+ var o=[];for(k=1;k<=4;k++){if(cand[k])o.push(cand[k].t);else break;}
+ if(o.length<3&&cp)return {o:cp.slice(),s:c.s||''};
+ if(o.length<3)return {o:[],s:c.s||''};
+ var rest=[];for(k=0;k<L.length;k++){if(k>=i&&k<lim&&used[k])continue;if(k<i&&/^\s*\.?\s*$/.test(L[k]))continue;rest.push(L[k]);}
+ // 去掉夹在选项之间的读音假名行
+ rest=rest.filter(function(l,idx){return !(idx<4&&/^\s*[１-４1-4]\s+[ぁ-ん\s]+$/.test(l));});
+ return {o:cp&&cp.length>=3?cp.slice():o,s:rest.join('\n').replace(/^\s*\.\s*\n/,'')};}
 var CZ=null;
 function czOf(id,k){if(!CZ){CZ={};var D=window.DATA||{};(D.lq||[]).forEach(function(q){var z=D.lqzh&&D.lqzh[q.id];if(!z)return;var m=/audio\/(\w+)\/([\d-]+)\.mp3/.exec(q.f);if(m)CZ[m[1]+'/'+m[2]]=(z.o&&z.o.length?z.o.map(function(x,i){return (i+1)+'. '+x;}).join('\n')+'\n':'')+(z.s||'');});var X=D.cz||{};for(var kk in X)CZ[kk]=X[kk];}return CZ[id+'/'+k]||'';}
 function clipView(id,k){
  var p=getPaper(id),i=p?p.clips.map(function(c){return c.k;}).indexOf(k):-1;
  if(i<0){audioHome();return;}
- var c=p.clips[i],prev=p.clips[i-1],next=p.clips[i+1],sp=splitOpts(c);
+ var c=p.clips[i],prev=p.clips[i-1],next=p.clips[i+1],sp=splitOpts(c,id);
  var dr=DRILL&&DRILL.q[DRILL.i]===id+':'+k;if(dr){prev=next=null;}
  var h=(dr?'<p class=note>🎯 专项 '+(DRILL.i+1)+' / '+DRILL.q.length+' · 先听一遍，不看原文；听完点下面按钮对原文</p>':'')+'<h1>'+p.name+' '+SECN[c.sec]+' 第'+c.q+'题</h1><audio id=au controls preload=auto style="width:100%"></audio>'+
   '<p><button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button> <button class="btn small" id=f5>5秒 ⏩</button></p>'+
-  (sp.o.length?'<div class=noteb><b>试卷上的选项</b><br>'+sp.o.map(esc).join('<br>')+'</div>':'')+'<div id=pk><p class=note>听完先选：你觉得答案是哪一个？</p>'+[1,2,3,4].slice(0,(c.sec==='4'||c.sec===4)?3:4).map(function(n){return '<button class="btn pkb" data-n="'+n+'">'+n+'</button> ';}).join('')+'<div id=pkr class=note></div></div>'+'<p><button id=sc class=btn'+(dr?' disabled':'')+'>'+(dr?'听完了，对原文':'显示原文')+'</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
+  '<div id=pk><p class=note>'+(sp.o.length?'试卷上的选项：听完选一个':'这题试卷上没有印选项，选项会在录音里念出来；听完选序号')+'</p>'+(sp.o.length?sp.o:[1,2,3,4].slice(0,(c.sec==='4'||c.sec===4)?3:4)).map(function(t,i){var n=i+1;return sp.o.length?'<div><button class="btn pkb" style="width:100%;text-align:left" data-n="'+n+'">'+n+'. '+esc(t)+'</button></div>':'<button class="btn pkb" data-n="'+n+'">'+n+'</button> ';}).join('')+'<div id=pkr class=note></div></div>'+'<p><button id=sc class=btn'+(dr?' disabled':'')+'>'+(dr?'听完了，对原文':'显示原文')+'</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
   '<p><button id=ok class="btn good">听懂了</button> <button id=no class="btn bad">没听懂，加入重听</button></p>'+
   '<p>'+(prev?'<a class=btn href="#/clip/'+id+'/'+prev.k+'">← 上一题</a>':'')+' <a class=btn href="#/audio/'+id+'">目录</a> '+(next?'<a class=btn href="#/clip/'+id+'/'+next.k+'">下一题 →</a>':'')+'</p>';
  render(h);
