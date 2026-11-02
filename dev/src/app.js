@@ -604,7 +604,7 @@ function clipView(id,k){
  var dr=DRILL&&DRILL.q[DRILL.i]===id+':'+k;if(dr){prev=next=null;}
  var h=(dr?'<p class=note>🎯 专项 '+(DRILL.i+1)+' / '+DRILL.q.length+' · 先听一遍，不看原文；听完点下面按钮对原文</p>':'')+'<h1>'+p.name+' '+SECN[c.sec]+' 第'+c.q+'题</h1><audio id=au controls preload=auto style="width:100%"></audio>'+
   '<p><button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button> <button class="btn small" id=f5>5秒 ⏩</button></p>'+
-  (sp.o.length?'<div class=noteb><b>试卷上的选项</b><br>'+sp.o.map(esc).join('<br>')+'</div>':'')+'<p><button id=sc class=btn>'+(dr?'听完了，对原文':'显示原文')+'</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
+  (sp.o.length?'<div class=noteb><b>试卷上的选项</b><br>'+sp.o.map(esc).join('<br>')+'</div>':'')+'<div id=pk><p class=note>听完先选：你觉得答案是哪一个？</p>'+[1,2,3,4].slice(0,(c.sec==='4'||c.sec===4)?3:4).map(function(n){return '<button class="btn pkb" data-n="'+n+'">'+n+'</button> ';}).join('')+'<div id=pkr class=note></div></div>'+'<p><button id=sc class=btn'+(dr?' disabled':'')+'>'+(dr?'听完了，对原文':'显示原文')+'</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
   '<p><button id=ok class="btn good">听懂了</button> <button id=no class="btn bad">没听懂，加入重听</button></p>'+
   '<p>'+(prev?'<a class=btn href="#/clip/'+id+'/'+prev.k+'">← 上一题</a>':'')+' <a class=btn href="#/audio/'+id+'">目录</a> '+(next?'<a class=btn href="#/clip/'+id+'/'+next.k+'">下一题 →</a>':'')+'</p>';
  render(h);
@@ -614,6 +614,12 @@ function clipView(id,k){
  [].forEach.call(document.querySelectorAll('[data-r]'),function(b){b.onclick=function(){au.playbackRate=+b.getAttribute('data-r');};});
  $('#b5').onclick=function(){au.currentTime=Math.max(0,au.currentTime-5);};
  $('#f5').onclick=function(){au.currentTime=au.currentTime+5;};
+ var ckey=id+'/'+k,known=(function(){var L=(window.DATA&&DATA.lq)||[];for(var j=0;j<L.length;j++)if(L[j].f==='audio/'+ckey+'.mp3'&&typeof L[j].a==='number')return L[j].a+1;return 0;})();
+ S.clipPick=S.clipPick||{};
+ function showPick(n){[].forEach.call(document.querySelectorAll('.pkb'),function(b){b.className='btn pkb'+(+b.getAttribute('data-n')===n?(known?(n===known?' right':' wrong'):' sel'):(known&&+b.getAttribute('data-n')===known?' right':''));});
+  $('#pkr').innerHTML=known?(n===known?'<span class=ok>✔ 选对了</span>':'<span class=ng>✘ 你选了 '+n+'，正确答案是 '+known+'</span>'):'已记录你选了 '+n+'，再对原文确认。';
+  var sc=$('#sc');if(sc)sc.disabled=false;}
+ [].forEach.call(document.querySelectorAll('.pkb'),function(b){b.onclick=function(){var n=+b.getAttribute('data-n');S.clipPick[ckey]=n;save();showPick(n);};});
  $('#sc').onclick=function(){var e=$('#scb');e.className=e.className==='hide'?'noteb':'hide';};
  var key='au:'+id+':'+k;
  $('#ok').onclick=function(){S.aulog=S.aulog||{};S.aulog[id+':'+k]=1;var w=S.wrong[key];if(w){fsrs(w,true,dayNum());}bump('au');save();this.textContent='已记录 ✓';if(dr){DRILL.ok++;setTimeout(drillNext,500);}};
