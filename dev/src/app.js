@@ -102,9 +102,10 @@ function kgEx(c){
  var segs=String(c.ex||'').split('／'),zh=String(c.zh||''),side={u:[],d:[]};
  zh.split('／').forEach(function(p){var m=/^(尊敬|谦让)：(.*)$/.exec(p);if(m)m[2].split(/[・、]/).forEach(function(w){w=w.trim();if(w)side[m[1]==='尊敬'?'u':'d'].push(w);});});
  function hit(g,L){return L.filter(function(w){var st=w.replace(/(になる|する|る|う|す)$/,'');if(w==='おる')return g.indexOf('おり')>=0;return (st.length>=2||/^[\u4e00-\u9fff]$/.test(st))?g.indexOf(st)>=0:g.indexOf(w)>=0;});}
- var h='';segs.forEach(function(g,n){if(!g)return;var z=(segs.length===1&&c.ext)?c.ext:exTr(g),hu=hit(g,side.u),hd=hit(g,side.d),chip='';
-  if(hu.length&&!hd.length)chip='<span class="kgt up">尊敬</span>';else if(hd.length&&!hu.length)chip='<span class="kgt dn">谦让</span>';
-  h+='<div class=exb><div class=jp>'+chip+'<button class="btn small kgp" data-s="'+esc(g)+'">🔊</button> '+esc(g)+'</div>'+(z?'<div class=zhx>'+esc(z)+'</div>':'')+'</div>';});
+ var items=[];segs.forEach(function(g,n){if(!g)return;var z=(segs.length===1&&c.ext)?c.ext:exTr(g),hu=hit(g,side.u),hd=hit(g,side.d),chip='',o=2;
+  if(hu.length&&!hd.length){chip='<span class="kgt up">尊敬</span>';o=0;}else if(hd.length&&!hu.length){chip='<span class="kgt dn">谦让</span>';o=1;}
+  items.push([o,n,'<div class=exb><div class=jp>'+chip+'<button class="btn small kgp" data-s="'+esc(g)+'">🔊</button> '+esc(g)+'</div>'+(z?'<div class=zhx>'+esc(z)+'</div>':'')+'</div>']);});
+ items.sort(function(a,b){return (a[0]-b[0])||(a[1]-b[1]);});var h='';items.forEach(function(x){h+=x[2];});
  return h;}
 var KR={
  k16:[['u','尊敬 · 对方在等','お待ちです'],['d','谦让 · 我在等对方','お待ちしております']],
