@@ -21,8 +21,8 @@ def known():
     # 已经在 App 里有语音的文本（从当前 index.html 读出）
     out = subprocess.run(['node', '-e', """const {JSDOM}=require('jsdom');const fs=require('fs');
 const d=new JSDOM(fs.readFileSync('%s/index.html','utf8'),{runScripts:'dangerously',url:'http://localhost/'});
-setTimeout(()=>{const D=d.window.DATA;console.log(JSON.stringify({tts:Object.keys(D.tts),wtts:Object.keys(D.wtts||{})}));process.exit(0)},500)""" % root], capture_output=True, text=True, cwd=root/'dev/tools').stdout
-    return json.loads(out.strip().splitlines()[-1])
+setTimeout(()=>{const D=d.window.DATA;fs.writeFileSync('/tmp/_known.json',JSON.stringify({tts:Object.keys(D.tts),wtts:Object.keys(D.wtts||{})}));process.exit(0)},500)""" % root], capture_output=True, text=True, cwd=root/'dev/tools').stdout
+    return json.load(open('/tmp/_known.json', encoding='utf8'))
 kn = known(); have_t = set(kn['tts']); have_w = set(kn['wtts'])
 def synth(text, speed, key):
     clean = re.sub(r'\s+', '、', text.replace('／', '。').replace('「', '、').replace('」', '、').replace('（', '、').replace('）', '、').strip())

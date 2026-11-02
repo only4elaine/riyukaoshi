@@ -104,7 +104,7 @@ function kgEx(c){
  function hit(g,L){return L.filter(function(w){var st=w.replace(/(になる|する|る|う|す)$/,'');if(w==='おる')return g.indexOf('おり')>=0;return (st.length>=2||/^[\u4e00-\u9fff]$/.test(st))?g.indexOf(st)>=0:g.indexOf(w)>=0;});}
  var h='';segs.forEach(function(g,n){if(!g)return;var z=(segs.length===1&&c.ext)?c.ext:exTr(g),hu=hit(g,side.u),hd=hit(g,side.d),chip='';
   if(hu.length&&!hd.length)chip='<span class="kgt up">尊敬</span>';else if(hd.length&&!hu.length)chip='<span class="kgt dn">谦让</span>';
-  h+='<div class=exb><div class=jp>'+chip+esc(g)+'</div>'+(z?'<div class=zhx>'+esc(z)+'</div>':'')+'</div>';});
+  h+='<div class=exb><div class=jp>'+chip+'<button class="btn small kgp" data-s="'+esc(g)+'">🔊</button> '+esc(g)+'</div>'+(z?'<div class=zhx>'+esc(z)+'</div>':'')+'</div>';});
  return h;}
 var KR={
  k16:[['u','尊敬 · 对方在等','お待ちです'],['d','谦让 · 我在等对方','お待ちしております']],
@@ -112,8 +112,8 @@ var KR={
  k18:[['u','尊敬 · 对方为我做','〜てくださる'],['d','谦让 · 我得到对方做','〜ていただく']],
  k19:[['n','礼貌 · 说物／场所','ございます＝ある'],['n','です 的郑重说法','でございます']],
  k20:[['u','尊敬 · 对方的动作','お探しです／お探しになる'],['d','谦让 · 我的动作','お探しする（お探ししました）']]};
-function kgSx(c){var h='';c.sx.forEach(function(r){var t=r.k==='u'?'up':(r.k==='d'?'dn':'n'),L=r.k==='u'?'尊敬':(r.k==='d'?'谦让':'礼貌');
- h+='<div class=exb><div class=jp><span class="kgt '+t+'">'+L+'</span><b>'+esc(r.f)+'</b> <span class=note>＝ '+esc(r.m)+'</span></div><div class=jp style="margin-top:6px">'+esc(r.j)+'</div><div class=zhx>'+esc(r.z)+'</div></div>';});return h;}
+function kgSx(c){var h='';c.sx.forEach(function(r){var t=r.k==='u'?'up':(r.k==='d'?'dn':'n'),L=r.k==='u'?'尊敬':(r.k==='d'?'谦让':'丁寧 · 不抬高也不压低');
+ h+='<div class=exb><div class=jp><span class="kgt '+t+'">'+L+'</span><b>'+esc(r.f)+'</b> <span class=note>＝ '+esc(r.m)+'</span></div><div class=jp style="margin-top:6px"><button class="btn small kgp" data-s="'+esc(String(r.j).replace(/^[AB][：:]/,''))+'">🔊</button> '+esc(r.j)+'</div><div class=zhx>'+esc(r.z)+'</div></div>';});return h;}
 function keigoBack(c){
  if(c.sx){var q=c.ex&&c.o?'<div class=note style="margin-top:10px">📌 真题里的例句</div>'+kgEx(c)+'<div class=note>'+esc(c.srcx||'')+'</div>':'';var nt=c.note&&!/^你的错题/.test(c.note)?'<div class=note>'+esc(c.note)+'</div>':'';var my=/^你的错题：(.*)$/.exec(c.note||'');return kgSx(c)+nt+q+(my?'<div class=note>❌ '+esc(my[1])+'</div>':'');}
  if(KR[c.id]){var rw='';KR[c.id].forEach(function(r){rw+='<div class=kg><span class="kgt '+r[0]+'">'+esc(r[1])+'</span><b>'+esc(r[2])+'</b></div>';});
@@ -345,6 +345,7 @@ function cards(k,extra){
    render('<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>记住了，下一个</button>');
    var say=speakable(c),ex=c.line||c.ctx||c.ex;
    $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
+   [].forEach.call(document.querySelectorAll('.kgp'),function(b){b.onclick=function(){speak(b.getAttribute('data-s'));};});
    $('#nx').onclick=function(){i++;one();};
    if($('#pv'))$('#pv').onclick=function(){i--;one();};
   })();}
@@ -692,7 +693,7 @@ function lessonsView(){
  render(h+'</div>'+dlBlock(1,'课程和卡片里例句、词的朗读（约16MB）'));dlWire();}
 
 function lsayOK(t){return /[\u3040-\u30ff]/.test(t)&&!/[=→，状态做好形含义结尾]/.test(t);}
-function lsay(t){return String(t).replace(/[・\/／]/g,'、').replace(/[〜～（）()「」]/g,' ').replace(/\s+/g,' ').trim();}
+function lsay(t){return String(t).replace(/^[AB][：:]/,'').replace(/[・\/／]/g,'、').replace(/[〜～（）()「」]/g,' ').replace(/\s+/g,' ').trim();}
 function lessonView(id){
  var L=DATA.lessons.filter(function(x){return x.id===id;})[0];
  if(!L){lessonsView();return;}
