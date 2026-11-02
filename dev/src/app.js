@@ -92,12 +92,18 @@ var DECKS={
  lexp:{name:'听力表达（先背）',list:DATA.lexp,front:function(c){return c.expr;},back:function(c){return '<div class=big>'+esc(c.zh)+'</div><div class=ex>'+esc(c.line)+'</div>'+(c.lzh?'<div class=note>译：'+esc(c.lzh)+'</div>':'')+'<div class=note>'+(c.o?'📌 真题原句 · '+esc(c.srcx):'✏️ 示例句（非真题原句，是按常见用法编的）')+'</div>'+(c.opts?'<div class=note>原题选项：'+esc(c.opts)+'</div>'+(c.ozh?'<div class=note>译：'+esc(c.ozh)+'</div>':''):'')+'<div>✅ '+esc(c.right)+'</div>'+(c.trap?'<div class=note>⚠️ '+esc(c.trap)+'</div>':'')+(c.tip?'<div class=note>'+esc(c.tip)+'</div>':'');}},
  lwords:{name:'听力词汇',list:DATA.lwords,front:function(c){return c.w;},back:cardBack},
  gram:{name:'语法句型',list:DATA.gram,front:function(c){return c.w;},back:cardBack},
- keigo:{name:'敬语对照',list:DATA.keigo,front:function(c){return c.w;},back:cardBack},
+ keigo:{name:'敬语对照',list:DATA.keigo,front:function(c){return c.w;},back:keigoBack},
  jita:{name:'自他动词',list:DATA.jita,front:function(c){return c.w;},back:cardBack}
 };
 function exTr(seg){var n=nz(seg),X=window.DATA&&DATA.extr;if(X&&X[n])return X[n];
  var O=window.DATA&&DATA.orig||[],i,o,f;for(i=0;i<O.length;i++){o=O[i];f=nz(o.q.replace('（　）',o.o[o.a]));if(f===n||(n.length>8&&(f.indexOf(n)>=0||n.indexOf(f)>=0&&f.length>8))){return (DATA.qz&&DATA.qz[o.id])||'';}}return '';}
 function exHtml(c,src){var segs=String(src||'').split('／'),h='';segs.forEach(function(g){if(!g)return;var z=(segs.length===1&&c.ext)?c.ext:exTr(g);h+='<div class=ex>'+esc(g)+'</div>'+(z?'<div class=note>译：'+esc(z)+'</div>':'');});return h;}
+function keigoBack(c){
+ var parts=String(c.zh||'').split('／'),rows='',ok=parts.length>0&&parts.every(function(p){return /^(尊敬|谦让)：/.test(p);});
+ if(ok)parts.forEach(function(p){var m=/^(尊敬|谦让)：(.*)$/.exec(p),u=m[1]==='尊敬';rows+='<div class=kg><span class="kgt '+(u?'up':'dn')+'">'+(u?'尊敬 · 抬高对方':'谦让 · 压低自己')+'</span><b>'+esc(m[2])+'</b></div>';});
+ else parts.forEach(function(p){rows+='<div class=kgl>'+esc(p)+'</div>';});
+ var note=c.note||'',my='';var mm=/^你的错题：(.*)$/.exec(note);if(mm){my=mm[1];note='';}
+ return rows+(note?'<div class=note>'+esc(note)+'</div>':'')+exHtml(c,c.ex)+(c.o&&c.ex?'<div class=note>📌 真题 · '+esc(c.srcx||c.src||'')+'</div>':'')+((c.my||my)?'<div class=note>❌ '+esc(c.my||my)+'</div>':'');}
 function cardBack(c){return (c.r?'<div class=big>'+esc(c.r)+'</div>':'')+'<div>'+esc(c.zh)+'</div>'+(c.con?'<div class=note>接续：'+esc(c.con)+'</div>':'')+exHtml(c,c.ex)+(c.o&&c.ex?'<div class=note>📌 真题原句 · '+esc(c.srcx||c.src||'')+'</div>':'')+(c.note?'<div class=note>'+esc(c.note)+'</div>':'')+(c.my?'<div class=note>❌ '+esc(c.my)+'</div>':'');}
 function gramHtml(id){var c=null;(DATA.gram||[]).forEach(function(g){if(g.oid===id)c=g;});if(!c)return '';return '<div class=noteb><b>📘 语法要点：'+esc(c.w)+'</b><br>'+esc(c.zh)+(c.con?'<br><span class=note>接续：'+esc(c.con)+'</span>':'')+(c.note?'<br><span class=note>'+esc(c.note)+'</span>':'')+'</div>';}
 function deckStat(k){var d=DECKS[k],t=dayNum(),due=0,nw=0;
