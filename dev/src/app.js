@@ -98,12 +98,30 @@ var DECKS={
 function exTr(seg){var n=nz(seg),X=window.DATA&&DATA.extr;if(X&&X[n])return X[n];
  var O=window.DATA&&DATA.orig||[],i,o,f;for(i=0;i<O.length;i++){o=O[i];f=nz(o.q.replace('（　）',o.o[o.a]));if(f===n||(n.length>8&&(f.indexOf(n)>=0||n.indexOf(f)>=0&&f.length>8))){return (DATA.qz&&DATA.qz[o.id])||'';}}return '';}
 function exHtml(c,src){var segs=String(src||'').split('／'),h='';segs.forEach(function(g){if(!g)return;var z=(segs.length===1&&c.ext)?c.ext:exTr(g);h+='<div class=ex>'+esc(g)+'</div>'+(z?'<div class=note>译：'+esc(z)+'</div>':'');});return h;}
+function kgEx(c){
+ var segs=String(c.ex||'').split('／'),zh=String(c.zh||''),side={u:[],d:[]};
+ zh.split('／').forEach(function(p){var m=/^(尊敬|谦让)：(.*)$/.exec(p);if(m)m[2].split(/[・、]/).forEach(function(w){w=w.trim();if(w)side[m[1]==='尊敬'?'u':'d'].push(w);});});
+ function hit(g,L){return L.filter(function(w){var st=w.replace(/(になる|する|る|う|す)$/,'');return st.length>=2?g.indexOf(st)>=0:g.indexOf(w)>=0;});}
+ var h='';segs.forEach(function(g,n){if(!g)return;var z=(segs.length===1&&c.ext)?c.ext:exTr(g),hu=hit(g,side.u),hd=hit(g,side.d),chip='';
+  if(hu.length&&!hd.length)chip='<span class="kgt up">尊敬</span>';else if(hd.length&&!hu.length)chip='<span class="kgt dn">谦让</span>';
+  h+='<div class=exb><div class=jp>'+chip+esc(g)+'</div>'+(z?'<div class=zhx>'+esc(z)+'</div>':'')+'</div>';});
+ return h;}
+var KR={
+ k16:[['u','尊敬 · 对方在等','お待ちです'],['d','谦让 · 我在等对方','お待ちしております']],
+ k17:[['u','尊敬 · 抬高对方','ご＋汉语词＋になる（ご利用になる）'],['d','谦让 · 压低自己','ご＋汉语词＋する（ご相談する）']],
+ k18:[['u','尊敬 · 对方为我做','〜てくださる'],['d','谦让 · 我得到对方做','〜ていただく']],
+ k19:[['n','礼貌 · 说物／场所','ございます＝ある'],['n','です 的郑重说法','でございます']],
+ k20:[['u','尊敬 · 对方的动作','お探しです／お探しになる'],['d','谦让 · 我的动作','お探しする（お探ししました）']]};
 function keigoBack(c){
+ if(KR[c.id]){var rw='';KR[c.id].forEach(function(r){rw+='<div class=kg><span class="kgt '+r[0]+'">'+esc(r[1])+'</span><b>'+esc(r[2])+'</b></div>';});
+  var note0=c.note||'',my0='',m0=/^你的错题：(.*)$/.exec(note0);if(m0){my0=m0[1];note0='';}
+  var tip={k17:'小提醒：お＋动词ます形＋になる/する 也是同样的规则（お探しになる 尊敬／お探しする 谦让）。变形后看不到「する」，是变成了「し」（お探ししました）。',k20:'小提醒：お探しでしたら＝お探し＋です（尊敬）；お探ししましたら＝お探し＋する（谦让）。区别在后面是です还是する的变形。'}[c.id]||'';
+  return rw+(tip?'<div class=note>'+esc(tip)+'</div>':'')+(note0?'<div class=note>'+esc(note0)+'</div>':'')+kgEx(c)+(c.o&&c.ex?'<div class=note>📌 真题 · '+esc(c.srcx||c.src||'')+'</div>':'')+(my0?'<div class=note>❌ '+esc(my0)+'</div>':'');}
  var parts=String(c.zh||'').split('／'),rows='',ok=parts.length>0&&parts.every(function(p){return /^(尊敬|谦让)：/.test(p);});
  if(ok)parts.forEach(function(p){var m=/^(尊敬|谦让)：(.*)$/.exec(p),u=m[1]==='尊敬';rows+='<div class=kg><span class="kgt '+(u?'up':'dn')+'">'+(u?'尊敬 · 抬高对方':'谦让 · 压低自己')+'</span><b>'+esc(m[2])+'</b></div>';});
  else parts.forEach(function(p){rows+='<div class=kgl>'+esc(p)+'</div>';});
  var note=c.note||'',my='';var mm=/^你的错题：(.*)$/.exec(note);if(mm){my=mm[1];note='';}
- return rows+(note?'<div class=note>'+esc(note)+'</div>':'')+exHtml(c,c.ex)+(c.o&&c.ex?'<div class=note>📌 真题 · '+esc(c.srcx||c.src||'')+'</div>':'')+((c.my||my)?'<div class=note>❌ '+esc(c.my||my)+'</div>':'');}
+ return rows+(note?'<div class=note>'+esc(note)+'</div>':'')+kgEx(c)+(c.o&&c.ex?'<div class=note>📌 真题 · '+esc(c.srcx||c.src||'')+'</div>':'')+((c.my||my)?'<div class=note>❌ '+esc(c.my||my)+'</div>':'');}
 function cardBack(c){return (c.r?'<div class=big>'+esc(c.r)+'</div>':'')+'<div>'+esc(c.zh)+'</div>'+(c.con?'<div class=note>接续：'+esc(c.con)+'</div>':'')+exHtml(c,c.ex)+(c.o&&c.ex?'<div class=note>📌 真题原句 · '+esc(c.srcx||c.src||'')+'</div>':'')+(c.note?'<div class=note>'+esc(c.note)+'</div>':'')+(c.my?'<div class=note>❌ '+esc(c.my)+'</div>':'');}
 function gramHtml(id){var c=null;(DATA.gram||[]).forEach(function(g){if(g.oid===id)c=g;});if(!c)return '';return '<div class=noteb><b>📘 语法要点：'+esc(c.w)+'</b><br>'+esc(c.zh)+(c.con?'<br><span class=note>接续：'+esc(c.con)+'</span>':'')+(c.note?'<br><span class=note>'+esc(c.note)+'</span>':'')+'</div>';}
 function deckStat(k){var d=DECKS[k],t=dayNum(),due=0,nw=0;
