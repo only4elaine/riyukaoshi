@@ -325,6 +325,7 @@ function freeView(){
  render(h);dlWire();}
 
 function TESTSAY(c){return (c.line&&window.DATA&&DATA.tts&&DATA.tts[c.line])?c.line:speakable(c);}
+function sortcSay(c){return String(c.w||'').replace(/[A-ZＡ-Ｚ]+/g,'').replace(/[（）()]/g,'').replace(/[〜～]/g,'').replace(/＋/g,'、').replace(/[／\/]/g,'、').replace(/\s+/g,'').replace(/^、+|、+$/g,'');}
 function speakable(c){return String(c.r&&c.r.indexOf('↔')<0&&c.r.indexOf('／')<0?c.r:(c.w||c.expr||'')).replace(/[〜～（）()「」\/／↔]/g,' ');}
 function origFill(o){if(String(o.q).indexOf('（　）')<0&&o.sec==='用法')return String(o.o[o.a]);return String(o.q).replace('（　）',o.o[o.a]).replace(/\n/g,'').replace(/[【】]/g,'');}
 (function(){var O=DATA.orig||[];(DATA.vocab||[]).forEach(function(c){if(c.oid||!c.ex)return;var n=nz(c.ex);for(var i=0;i<O.length;i++){var f=nz(origFill(O[i]));if(f===n||(n.length>8&&f.indexOf(n)>=0)){c.oid=O[i].id;break;}}});})();
@@ -388,7 +389,8 @@ function cards(k,extra){
    var c=items[i];
    var ds0=deckStat(k);render(prog()+'<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+(S.cards[k+':'+c.id]?'　· 这张以前学过，今天到期复习':'（每组学完并测试后才算“已学”）')+'</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>'+(k==='keigo'?'看懂了，下一个':'记住了，下一个')+'</button>');
    var say=speakable(c),ex=c.line||c.ctx||c.ex;
-   $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
+   if(k==='sortc')$('#sp').onclick=function(){stopTTS();speakSeq([sortcSay(c)].concat(String(c.ex||'').split('／').filter(Boolean)));};
+   else $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
    [].forEach.call(document.querySelectorAll('.kgp'),function(b){b.onclick=function(){speak(b.getAttribute('data-s'));};});
    $('#nx').onclick=function(){i++;one();};
    if($('#pv'))$('#pv').onclick=function(){i--;one();};
@@ -599,9 +601,20 @@ function audioPaper(id){
     var u=p.clips[n].f;
     ca.match(u).then(function(r){ if(r)return; return fetch(u).then(function(rs){if(rs.ok)return ca.put(u,rs);}); }).then(function(){n++;$('#dlst').textContent=n+' / '+p.clips.length;nx();}).catch(function(){$('#dlst').textContent='下载失败，请检查网络后重试（已下 '+n+'）';});
    })();});};}
+var NOREAD=/^audio\/B2023G\//;
+function tailOpts(c){
+ var sec=String(c.sec);if(!NOREAD.test(c.f||'')||(sec!=='3'&&sec!=='5'))return [];
+ var L=String(c.s||'').split('\n').filter(function(l){return l.trim();}),e=L.length-1,b=e,FW={'１':1,'２':2,'３':3,'４':4};
+ var st=function(l){return /^\s*[1-4１-４][\.．]/.test(l);};
+ if(e<0||!st(L[e]))return [];
+ while(b>0&&st(L[b-1]))b--;
+ var t=L.slice(b).join(' ').replace(/[１-４]/g,function(x){return FW[x];}),o=[],m,re=/([1-4])[\.．]\s*([\s\S]*?)(?=\s+[1-4][\.．]|$)/g;
+ while((m=re.exec(t))){if(+m[1]!==o.length+1)break;o.push(m[2].replace(/([1-9])\s*つ/g,function(_,d){return '一二三四五六七八九'.charAt(d-1)+'つ';}).replace(/([^\x00-\x7f])\s+(?=[^\x00-\x7f])/g,'$1').replace(/\s+/g,' ').trim());}
+ return o.length>=3?o:[];}
+function optsSay(o){var N='一二三四';return o.map(function(t,i){return N.charAt(i)+'番、'+t.replace(/[『』]/g,'');});}
 function splitOpts(c,id){
  var sec=String(c.sec),cp=(window.DATA&&DATA.copt&&id&&DATA.copt[id+'/'+c.k])||null;
- if(sec!=='1'&&sec!=='2')return {o:[],s:c.s||''};
+ if(sec!=='1'&&sec!=='2'){var to=tailOpts(c);return {o:to,s:c.s||'',tail:to.length>=3};}
  var FW={'１':1,'２':2,'３':3,'４':4};
  var L=(c.s||'').split('\n'),i=0;
  while(i<L.length&&/^\s*\.?\s*$/.test(L[i]))i++;
@@ -634,11 +647,12 @@ function clipView(id,k){
  var dr=DRILL&&DRILL.q[DRILL.i]===id+':'+k;if(dr){prev=next=null;}
  var h=(dr?'<p class=note>🎯 专项 '+(DRILL.i+1)+' / '+DRILL.q.length+' · 先听一遍，不看原文；听完点下面按钮对原文</p>':'')+'<h1>'+p.name+' '+SECN[c.sec]+' 第'+c.q+'题</h1><audio id=au controls preload=auto style="width:100%"></audio>'+
   '<p><button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button> <button class="btn small" id=f5>5秒 ⏩</button></p>'+
-  '<div id=pk><p class=note>'+(sp.o.length?'试卷上的选项：听完选一个':'这题试卷上没有印选项，选项会在录音里念出来；听完选序号')+'</p>'+(sp.o.length?sp.o:[1,2,3,4].slice(0,(c.sec==='4'||c.sec===4)?3:4)).map(function(t,i){var n=i+1;return sp.o.length?'<div><button class="btn pkb" style="width:100%;text-align:left" data-n="'+n+'">'+n+'. '+esc(t)+'</button></div>':'<button class="btn pkb" data-n="'+n+'">'+n+'</button> ';}).join('')+'<div id=pkr class=note></div></div>'+'<p><button id=sc class=btn'+(dr?' disabled':'')+'>'+(dr?'听完了，对原文':'显示原文')+'</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
+  '<div id=pk><p class=note>'+(sp.tail?'这份录音没有念选项，选项直接写在这里：听完选一个 <button id=rdo class="btn small">🔊 读选项</button>':sp.o.length?'试卷上的选项：听完选一个':'这题试卷上没有印选项，选项会在录音里念出来；听完选序号')+'</p>'+(sp.o.length?sp.o:[1,2,3,4].slice(0,(c.sec==='4'||c.sec===4)?3:4)).map(function(t,i){var n=i+1;return sp.o.length?'<div><button class="btn pkb" style="width:100%;text-align:left" data-n="'+n+'">'+n+'. '+esc(t)+'</button></div>':'<button class="btn pkb" data-n="'+n+'">'+n+'</button> ';}).join('')+'<div id=pkr class=note></div></div>'+'<p><button id=sc class=btn'+(dr?' disabled':'')+'>'+(dr?'听完了，对原文':'显示原文')+'</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
   '<p><button id=ok class="btn good">听懂了</button> <button id=no class="btn bad">没听懂，加入重听</button></p>'+
   '<p>'+(prev?'<a class=btn href="#/clip/'+id+'/'+prev.k+'">← 上一题</a>':'')+' <a class=btn href="#/audio/'+id+'">目录</a> '+(next?'<a class=btn href="#/clip/'+id+'/'+next.k+'">下一题 →</a>':'')+'</p>';
  render(h);
  var au=$('#au');
+ if($('#rdo'))$('#rdo').onclick=function(){stopTTS();try{au.pause();}catch(e){}speakSeq(optsSay(sp.o));};
  function setSrc(url){au.src=url;}
  if(window.caches){caches.open('n2audio').then(function(ca){return ca.match(c.f);}).then(function(r){if(r)return r.blob().then(function(b){setSrc(URL.createObjectURL(b));});setSrc(c.f);}).catch(function(){setSrc(c.f);});}else setSrc(c.f);
  [].forEach.call(document.querySelectorAll('[data-r]'),function(b){b.onclick=function(){au.playbackRate=+b.getAttribute('data-r');};});
