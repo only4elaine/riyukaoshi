@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15, NEWCAP={keigo:8,sortc:8};
+var KEY='n2app_v1', INT=[0,1,2,4,7,15], NEW_PER_DAY=15, NEWCAP={keigo:8,sortc:8,part:6};
 function newCap(k){return NEWCAP[k]||NEW_PER_DAY;}
 /* ===== FSRS-5（默认参数）间隔重复 ===== */
 var FW=[0.4072,1.1829,3.1262,15.4722,7.2102,0.5316,1.0651,0.0234,1.616,0.1544,1.0824,1.9813,0.0953,0.2975,2.2042,0.2407,2.9466,0.5034,0.6567],FF=19/81,FC=-0.5;
@@ -103,7 +103,8 @@ var DECKS={
  gram:{name:'语法句型',list:DATA.gram,front:function(c){return c.w;},back:cardBack},
  keigo:{name:'敬语对照',list:DATA.keigo,front:function(c){return c.w;},back:keigoBack},
  jita:{name:'自他动词',list:DATA.jita,front:function(c){return c.w;},back:jitaBack},
- sortc:{name:'排序搭配',list:DATA.sortc||[],front:function(c){return c.w;},back:function(c){return sortcBack(c);}}
+ sortc:{name:'排序搭配',list:DATA.sortc||[],front:function(c){return c.w;},back:function(c){return sortcBack(c);}},
+ part:{name:'助词专项',list:DATA.partc||[],front:function(c){return c.w;},back:function(c){return sortcBack(c);}}
 };
 function exTr(seg){var n=nz(seg),X=window.DATA&&DATA.extr;if(X&&X[n])return X[n];
  var O=window.DATA&&DATA.orig||[],i,o,f;for(i=0;i<O.length;i++){o=O[i];f=nz(o.q.replace('（　）',o.o[o.a]));if(f===n||(n.length>8&&(f.indexOf(n)>=0||n.indexOf(f)>=0&&f.length>8))){return (DATA.qz&&DATA.qz[o.id])||'';}}return '';}
@@ -144,7 +145,7 @@ function jitaBack(c){var x=(DATA.jx||{})[c.id];if(!x)return cardBack(c);
  var my=/^你的错题：(.*)$/.exec(c.note||'');if(my)h+='<div class=note>❌ '+esc(my[1])+'</div>';
  return h;}
 function sortcBack(c){var ex=String(c.ex||'').split('／'),zs=c.zx||[],ss=c.sx||[],h='<div>'+esc(c.zh)+'</div>'+(c.con?'<div class=note>接续：'+esc(c.con)+'</div>':'');
- ex.forEach(function(e,i){if(!e)return;h+='<div class=exb><div class=jp><button class="kgp btn small" data-s="'+esc(e)+'">🔊</button> '+esc(e).replace(esc(c.w.replace(/[〜（）()]|[AVN]|る$/g,'')),function(m){return m;})+'</div>'+(zs[i]?'<div class=zhx>'+esc(zs[i])+'</div>':'')+'<div class=note>📌 真题排序题 · '+esc(ss[i]||'')+'</div></div>';});
+ ex.forEach(function(e,i){if(!e)return;h+='<div class=exb><div class=jp><button class="kgp btn small" data-s="'+esc(e)+'">🔊</button> '+esc(e).replace(esc(c.w.replace(/[〜（）()]|[AVN]|る$/g,'')),function(m){return m;})+'</div>'+(zs[i]?'<div class=zhx>'+esc(zs[i])+'</div>':'')+'<div class=note>📌 '+esc(c.srcl||'真题排序题')+' · '+esc(ss[i]||'')+'</div></div>';});
  if(c.tip)h+='<div class=noteb><b>排序时怎么抓：</b>'+esc(c.tip)+'</div>';
  return h;}
 function keigoBack(c){
@@ -242,20 +243,20 @@ function globalProg(){
  Object.keys(S.q).forEach(function(i){if(DAILY_IDS[i]&&S.q[i].box>=4)stableQ++;});
  rows.push({n:'真题错题原题（含听力错题、阅读）',a:ps.done,b:ps.total,s:stableQ,sn:'已稳定（间隔≥7天）',href:'#/t/new'});
  var cl=0,cs=0,ct=0,cst=0;
- ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);ct+=st.total;cl+=st.total-st.nw;
+ ['lexp','lwords','read','vocab','gram','keigo','jita','sortc','part'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);ct+=st.total;cl+=st.total-st.nw;
   DECKS[k].list.forEach(function(c){var x=S.cards[k+':'+c.id];if(x&&x.box>=4)cst++;});});
- var nk=['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].filter(function(k){var st=DECKS[k]&&deckStat(k);return st&&(st.due||st.nw);})[0];
+ var nk=['lexp','lwords','read','vocab','gram','keigo','jita','sortc','part'].filter(function(k){var st=DECKS[k]&&deckStat(k);return st&&(st.due||st.nw);})[0];
  rows.push({n:'背诵卡片（表达·词汇·读音·语法·敬语·自他动词）',a:cl,b:ct,s:cst,sn:'已稳定',href:nk?'#/cards/'+nk:'#/free'});
  var log=S.aulog||{},tot=0,hd=0;DATA.audio.forEach(function(p){p.clips.forEach(function(c){tot++;if(log[p.id+':'+c.k])hd++;});});
  rows.push({n:'听真题录音（已听）',a:hd,b:tot,href:'#/drill/0'});
  var ls=DATA.lessons||[],lsd=ls.filter(function(x){return S.ls&&S.ls[x.id];}).length;
  var nl=ls.filter(function(x){return !(S.ls&&S.ls[x.id]);})[0];
  rows.push({n:'引导型课程',a:lsd,b:ls.length,href:nl?'#/lesson/'+nl.id:'#/lessons'});
- var deckDays=0;['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(DECKS[k])deckDays=Math.max(deckDays,Math.ceil(deckStat(k).nw/newCap(k)));});
+ var deckDays=0;['lexp','lwords','read','vocab','gram','keigo','jita','sortc','part'].forEach(function(k){if(DECKS[k])deckDays=Math.max(deckDays,Math.ceil(deckStat(k).nw/newCap(k)));});
  var qDays=ps.quota?Math.ceil(ps.unseen.length/ps.quota):0,need=Math.max(deckDays,qDays);
  return {rows:rows,need:need,days:ps.days,ps:ps};}
 function estMin(){var P=todayParts(),m=P.nw.length*0.8+P.due.length*0.5,t=0;
- ['lexp','lwords','vocab','read','gram','keigo','jita','sortc'].forEach(function(k){if(DECKS[k])t+=deckNeed(k);});
+ ['lexp','lwords','vocab','read','gram','keigo','jita','sortc','part'].forEach(function(k){if(DECKS[k])t+=deckNeed(k);});
  var cl=(S.td&&S.td.clips||[]).length;return Math.round(m+t*0.4+8*0.6+cl*4);}
 function aheadAdd(){
  var t=dayNum(),st=planStats();todayView();
@@ -271,7 +272,7 @@ function freeRows(){
  h+=r('#/audio','🎧 听力真题（原录音）','可看原文、调速、离线下载'+(auDue().length?' · 待重听 '+auDue().length:''));
  h+=r('#/conj','✍️ 动词变形练习','教材基础①②的变形作业 · 11 种变形')+r('#/lessons','📖 引导型课程','自他动词 · 敬语 · 动词变形')+'</div>';
  h+='<p class=note style="margin:14px 0 0">单独刷某一类卡片</p><div class=g2>';
- ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
+ ['lexp','lwords','read','vocab','gram','keigo','jita','sortc','part'].forEach(function(k){if(!DECKS[k])return;var st=deckStat(k);
   h+=r('#/cards/'+k,esc(DECKS[k].name),(st.due?'待复习 '+st.due+' 张 · ':'')+'已学 '+(st.total-st.nw)+' / '+st.total);});
  h+='</div><p class=note style="margin:14px 0 0">单独做某一套题（全部题）</p><div class=g2>';
  for(var k in SETS){if(/^qConj/.test(k))continue;h+=r('#/quiz/'+k,esc(SETS[k].name)+(SETS[k].listen?' 🔊':''),SETS[k].items.length+' 题');}
@@ -316,7 +317,7 @@ function conjView(){
  render(h+'</div><p><a class=btn href="#/free">回自由练习</a> <a class=btn href="#/lesson/L3">看动词变形课程</a></p>');}
 function freeView(){
  var h='<h1>自由练习</h1><p class=note>这里是全部内容的入口，随便刷；日常进度以首页“今天要做”为准。</p><h2>先背（卡片）</h2><div class=grid>';
- ['lexp','lwords','read','vocab','gram','keigo','jita','sortc'].forEach(function(k){var s=deckStat(k);
+ ['lexp','lwords','read','vocab','gram','keigo','jita','sortc','part'].forEach(function(k){var s=deckStat(k);
   h+='<a class=card href="#/cards/'+k+'"><b>'+DECKS[k].name+'</b><span>'+(s.due?'待复习 '+s.due+' 张 · ':'')+'已学 '+(s.total-s.nw)+' / '+s.total+'</span></a>';});
  h+='</div><h2>再做（测验，全部题）</h2><div class=grid>';
  var cjn=0;for(var k in SETS){if(/^qConj/.test(k)){cjn+=SETS[k].items.length;continue;}h+='<a class=card href="#/quiz/'+k+'"><b>'+SETS[k].name+'</b><span>共 '+SETS[k].items.length+' 题'+(SETS[k].listen?' · 🔊':'')+'</span></a>';}
@@ -364,6 +365,7 @@ var KQ={};(function(){var I={"k2": {"q": "（会社で）社長は明日、大�
 (function(){var X=DATA.kqx||{};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};Object.keys(X).forEach(function(k){var x=X[k],id='kq_'+k;DATA.ox[id]=x.ex;DATA.qz[id]=x.qz;KQ[k]={id:id,q:x.q,o:x.o,a:0,sec:'敬語'};});})();
 (function(){(DATA.kreal||[]).forEach(function(x){var id='kr_'+x.id;DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};DATA.ox[id]=x.wx;DATA.qz[id]=x.qz;KQ[x.card]={id:id,q:x.q,o:x.o,a:x.a,sec:'敬語',src:x.src};});})();
 (function(){var X=DATA.sortq||{};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};(DATA.sortc||[]).forEach(function(c){var x=X[c.id];if(!x)return;var id='sq_'+c.id;DATA.ox[id]=x.ex;DATA.qz[id]=c.qz||'';KQ[c.id]={id:id,q:x.q,o:x.o,a:x.a,sec:'排序搭配',src:(c.sx&&c.sx[0]||'')};});})();
+(function(){var X=DATA.partq||{};DATA.ox=DATA.ox||{};DATA.qz=DATA.qz||{};(DATA.partc||[]).forEach(function(c){var x=X[c.id];if(!x)return;var id='pq_'+c.id;DATA.ox[id]=x.ex;DATA.qz[id]=c.qz||'';KQ[c.id]={id:id,q:x.q,o:x.o,a:x.a,sec:'助词',src:'教材助词卡'};});})();
 function origFb(o){var it={wx:DATA.ox[o.id],o:o.o,a:o.a,pk:(o.pick||0)-1,qz:DATA.qz&&DATA.qz[o.id]};return (it.qz?'<div class=noteb><b>题干译文：</b><br>'+esc(it.qz)+'</div>':'')+wxHtml(it)+gramHtml(o.id);}
 function cards(k,extra){
  var d=DECKS[k],t=dayNum(),due=[],nw=[],seen=[];
@@ -389,6 +391,7 @@ function cards(k,extra){
    var c=items[i];
    var ds0=deckStat(k);render(prog()+'<h1>'+d.name+' · 学习 <small>'+(i+1)+'/'+items.length+'</small></h1><p class=note>这个卡组已学 '+(ds0.total-ds0.nw)+' / '+ds0.total+(S.cards[k+':'+c.id]?'　· 这张以前学过，今天到期复习':'（每组学完并测试后才算“已学”）')+'</p><div class=flash>'+frontHtml(c)+(k==='read'?'<div class=rd>'+esc(c.r)+'</div>':'')+'<div>'+d.back(c)+'</div></div>'+ttsWarn()+'<button id=sp class=btn>🔊 发音</button> '+(i>0?'<button id=pv class=btn>← 上一个</button> ':'')+'<button id=nx class=btn>'+(k==='keigo'?'看懂了，下一个':'记住了，下一个')+'</button>');
    var say=speakable(c),ex=c.line||c.ctx||c.ex;
+   if(k==='part')$('#sp').onclick=function(){stopTTS();speakSeq(String(c.ex||'').split('／').filter(Boolean));};
    if(k==='sortc')$('#sp').onclick=function(){stopTTS();speakSeq([sortcSay(c)].concat(String(c.ex||'').split('／').filter(Boolean)));};
    else $('#sp').onclick=function(){speak(say,function(){if(ex)speak(ex);});};
    [].forEach.call(document.querySelectorAll('.kgp'),function(b){b.onclick=function(){speak(b.getAttribute('data-s'));};});
@@ -401,7 +404,7 @@ function cards(k,extra){
   var c=list.shift();if(/^j\d+$/.test(c.id))c._jq=null;
   var o=shuffle([ans(c)].concat(distract(c)));
   var LISTEN=(k==='lexp'||k==='lwords');
-  var ds1=deckStat(k),h=prog()+'<p class=note>这个卡组已学 '+(ds1.total-ds1.nw)+' / '+ds1.total+'</p><h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?(/^sc\d+$/.test(c.id)?'排序搭配：选出填入空格的搭配':'敬语：选出正确的说法'):'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
+  var ds1=deckStat(k),h=prog()+'<p class=note>这个卡组已学 '+(ds1.total-ds1.nw)+' / '+ds1.total+'</p><h1>'+d.name+' · 测试</h1><div class=flash>'+(LISTEN?'<div class=front>🔊 ？</div><p class=note>'+(k==='lexp'&&c.line?'先听例句，再选句中那个表达的意思':'先听，再选意思')+'</p>':(OQ(c)?'<p class=q style="text-align:left">'+esc(OQ(c).q).replace(/\n/g,'<br>')+'</p>':(k==='read'&&c.ctx?'<p class=q style="text-align:left">'+esc(c.ctx).replace(esc(c.w),'<u>'+esc(c.w)+'</u>')+'</p>':frontHtml(c))))+'</div><p class=note>'+(OQ(c)?(/^j\d+$/.test(c.id)?'自他动词：选出正确的助词／动词形式':(KQ[c.id]?(/^pt\d+$/.test(c.id)?'助词：选出填入空格的助词':/^sc\d+$/.test(c.id)?'排序搭配：选出填入空格的搭配':'敬语：选出正确的说法'):'真题原题：选出正确选项')):(k==='read'?'画线词的读法是哪个？':(stemEx(c)?'听例句，选出正确意思':'选出正确意思')))+'</p><div class=opts>';
   o.forEach(function(x,i){h+='<button class=opt data-v="'+esc(x)+'">'+(i+1)+'. '+esc(x)+'</button>';});
   render(h+'</div><div id=fb></div><p><button id=skip class=btn>跳过这个</button></p>');
   $('#skip').onclick=function(){test(list,n);};
@@ -505,7 +508,7 @@ function taskList(){
  var P=todayParts(),L=[],t=dayNum();
  var log=S.aulog||{};
  // 学习
- [['lexp','听力表达'],['lwords','听力词汇'],['vocab','词汇'],['read','汉字读音'],['gram','语法句型'],['keigo','敬语'],['jita','自他动词'],['sortc','排序搭配']].forEach(function(a){
+ [['lexp','听力表达'],['lwords','听力词汇'],['vocab','词汇'],['read','汉字读音'],['gram','语法句型'],['keigo','敬语'],['jita','自他动词'],['sortc','排序搭配'],['part','助词专项']].forEach(function(a){
   var n=deckNeed(a[0]);if(!DECKS[a[0]])return;
   L.push({g:'学习',id:'c:'+a[0],title:'背 · '+DECKS[a[0]].name,sub:n?('今天 '+n+' 个（先学再测）'):'今天没有要学的',href:'#/cards/'+a[0],done:isF('c:'+a[0])||n===0});});
  var ls=(DATA.lessons||[]).filter(function(x){return !(S.ls&&S.ls[x.id]);})[0];
