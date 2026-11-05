@@ -781,10 +781,10 @@ function lessonView(id){
   if(b.t==='h')h+='<h2>'+esc(b.x)+'</h2>';
   else if(b.t==='p')h+='<p>'+b.x+'</p>';
   else if(b.t==='ul')h+='<ul>'+b.xs.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
-  else if(b.t==='table')h+='<div class=tw><table>'+b.rows.map(function(r,i){return '<tr>'+r.map(function(c){return i?(lsayOK(c)?'<td class=tsp data-say="'+esc(lsay(c))+'">🔊 '+esc(c)+'</td>':'<td>'+esc(c)+'</td>'):'<th>'+esc(c)+'</th>';}).join('')+'</tr>';}).join('')+'</table></div>';
+  else if(b.t==='table')h+='<div class=tw><table>'+b.rows.map(function(r,i){return '<tr>'+r.map(function(c){return i?(lsayOK(c)&&!L.nospk?'<td class=tsp data-say="'+esc(lsay(c))+'">🔊 '+esc(c)+'</td>':'<td>'+esc(c)+'</td>'):'<th>'+esc(c)+'</th>';}).join('')+'</tr>';}).join('')+'</table></div>';
   else if(b.t==='note')h+='<div class=noteb>'+esc(b.x)+'</div>';
   else if(b.t==='think')h+='<div class=think><b>想一想：</b>'+esc(b.q)+'<br><button class="btn small rv" data-n="'+n+'">看答案</button><div class=hide id="a'+n+'">'+esc(b.a)+'</div></div>';
-  else if(b.t==='mcq'){h+='<div class=mcq data-n="'+n+'"><p><b>'+esc(b.q)+'</b> <button class="btn small lsp" data-say="'+esc(lsay(b.q.replace('（　）','、')))+'">🔊</button></p>';b.o.forEach(function(o,i){h+='<div class=orow><button class="opt" data-n="'+n+'" data-i="'+i+'">'+esc(o)+'</button><button class="btn small lsp" data-say="'+esc(lsay(o))+'">🔊</button></div>';});h+='<div class=note id="m'+n+'"></div></div>';}
+  else if(b.t==='mcq'){h+='<div class=mcq data-n="'+n+'"><p><b>'+esc(b.q)+'</b>'+(L.nospk?'':' <button class="btn small lsp" data-say="'+esc(lsay(b.q.replace('（　）','、')))+'">🔊</button>')+'</p>';b.o.forEach(function(o,i){h+='<div class=orow><button class="opt" data-n="'+n+'" data-i="'+i+'">'+esc(o)+'</button>'+(L.nospk?'':'<button class="btn small lsp" data-say="'+esc(lsay(o))+'">🔊</button>')+'</div>';});h+='<div class=note id="m'+n+'"></div></div>';}
   else if(b.t==='goh')h+='<a class=btn href="'+b.h+'">'+esc(b.x)+'</a>';
   else if(b.t==='go')h+='<a class=btn href="#/quiz/'+b.set+'">'+esc(b.x)+'</a>';});
  h+='<p><button id=lsdone class="btn good">✔ 这一课学完了</button> <a class=btn href="#/today">回今日任务</a></p>';

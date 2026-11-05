@@ -118,5 +118,5 @@ B.push({t:'goh',x:'练习：基础②「変形練習」10 页（共 '+(PAGES.len
 B.push({t:'mcq',q:'「知る」→ 否定形（ない形）',o:['知らない','知ない'],a:0,e:'知る是特殊五段：る→ら＋ない。'});
 B.push({t:'mcq',q:'「食べる」→ 使役形',o:['食べさせる','食べらせる'],a:0,e:'一段：る→させる。'});
 B.push({t:'mcq',q:'「来る」→ 可能形',o:['こられる','これる'],a:0,e:'来る→こられる（规范说法）。'});
-var L=(DATA.lessons||[]);for(var j=0;j<L.length;j++)if(L[j].id==='L3'){L[j]={id:'L3',title:'动词变形（教材基础①②）',sub:'ます・て・ない・た → 变形练习 11 种',blocks:B};}
+var L=(DATA.lessons||[]);for(var j=0;j<L.length;j++)if(L[j].id==='L3'){L[j]={id:'L3',title:'动词变形（教材基础①②）',sub:'ます・て・ない・た → 变形练习 11 种',nospk:true,blocks:B};}
 })();
