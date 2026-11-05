@@ -776,28 +776,43 @@ function lessonsView(){
 
 function lsayOK(t){return /[\u3040-\u30ff]/.test(t)&&!/[=→，状态做好形含义结尾]/.test(t);}
 function lsay(t){return String(t).replace(/^[AB][：:]/,'').replace(/[・\/／]/g,'、').replace(/[〜～（）()「」]/g,' ').replace(/\s+/g,' ').trim();}
+var LSTEP={},LSOK={};
 function lessonView(id){
  var L=DATA.lessons.filter(function(x){return x.id===id;})[0];
  if(!L){lessonsView();return;}
+ var segs=[],vis=[],cur=0,guided=L.blocks.some(function(b){return b.t==='step';});
+ if(guided){L.blocks.forEach(function(b,n){if(b.t==='step')segs.push({t:b.x,ns:[]});else if(segs.length)segs[segs.length-1].ns.push(n);});
+  cur=Math.min(LSTEP[id]||0,segs.length-1);vis=segs[cur].ns;}
+ else vis=L.blocks.map(function(b,n){return n;});
  var h='<h1>'+esc(L.title)+'</h1><p class=sub>'+esc(L.sub)+'</p>';
- L.blocks.forEach(function(b,n){
+ if(guided){h+='<div class=lsbar>'+segs.map(function(x,i){return '<i class="'+(i<cur?'dn':(i===cur?'on':''))+'"></i>';}).join('')+'</div><p class=note>第 '+(cur+1)+' / '+segs.length+' 步 · <b>'+esc(segs[cur].t)+'</b></p>';}
+ var need=0;
+ vis.forEach(function(n){var b=L.blocks[n];
   if(b.t==='h')h+='<h2>'+esc(b.x)+'</h2>';
   else if(b.t==='p')h+='<p>'+b.x+'</p>';
   else if(b.t==='ul')h+='<ul>'+b.xs.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
   else if(b.t==='table')h+='<div class=tw><table>'+b.rows.map(function(r,i){return '<tr>'+r.map(function(c){return i?(lsayOK(c)&&!L.nospk?'<td class=tsp data-say="'+esc(lsay(c))+'">🔊 '+esc(c)+'</td>':'<td>'+esc(c)+'</td>'):'<th>'+esc(c)+'</th>';}).join('')+'</tr>';}).join('')+'</table></div>';
+  else if(b.t==='fold'){h+='<details class=fold><summary>📋 '+esc(b.x)+'<small>（点开查表）</small></summary>';(b.blocks||[]).forEach(function(c){if(c.t==='table')h+='<div class=tw><table>'+c.rows.map(function(r,i){return '<tr>'+r.map(function(d){return i?'<td>'+esc(d)+'</td>':'<th>'+esc(d)+'</th>';}).join('')+'</tr>';}).join('')+'</table></div>';else if(c.t==='p')h+='<p>'+c.x+'</p>';else if(c.t==='note')h+='<div class=noteb>'+esc(c.x)+'</div>';else if(c.t==='ul')h+='<ul>'+c.xs.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';else if(c.t==='h')h+='<h2>'+esc(c.x)+'</h2>';});h+='</details>';}
   else if(b.t==='note')h+='<div class=noteb>'+esc(b.x)+'</div>';
   else if(b.t==='think')h+='<div class=think><b>想一想：</b>'+esc(b.q)+'<br><button class="btn small rv" data-n="'+n+'">看答案</button><div class=hide id="a'+n+'">'+esc(b.a)+'</div></div>';
-  else if(b.t==='mcq'){h+='<div class=mcq data-n="'+n+'"><p><b>'+esc(b.q)+'</b>'+(L.nospk?'':' <button class="btn small lsp" data-say="'+esc(lsay(b.q.replace('（　）','、')))+'">🔊</button>')+'</p>';b.o.forEach(function(o,i){h+='<div class=orow><button class="opt" data-n="'+n+'" data-i="'+i+'">'+esc(o)+'</button>'+(L.nospk?'':'<button class="btn small lsp" data-say="'+esc(lsay(o))+'">🔊</button>')+'</div>';});h+='<div class=note id="m'+n+'"></div></div>';}
-  else if(b.t==='goh')h+='<a class=btn href="'+b.h+'">'+esc(b.x)+'</a>';
-  else if(b.t==='go')h+='<a class=btn href="#/quiz/'+b.set+'">'+esc(b.x)+'</a>';});
- h+='<p><button id=lsdone class="btn good">✔ 这一课学完了</button> <a class=btn href="#/today">回今日任务</a></p>';
+  else if(b.t==='mcq'){if(!LSOK[id+n])need++;h+='<div class=mcq data-n="'+n+'"><p><b>'+esc(b.q)+'</b>'+(L.nospk?'':' <button class="btn small lsp" data-say="'+esc(lsay(b.q.replace('（　）','、')))+'">🔊</button>')+'</p>';b.o.forEach(function(o,i){h+='<div class=orow><button class="opt" data-n="'+n+'" data-i="'+i+'">'+esc(o)+'</button>'+(L.nospk?'':'<button class="btn small lsp" data-say="'+esc(lsay(o))+'">🔊</button>')+'</div>';});h+='<div class=note id="m'+n+'"></div></div>';}
+  else if(b.t==='goh')h+='<a class=btn href="'+b.h+'">'+esc(b.x)+'</a> ';
+  else if(b.t==='go')h+='<a class=btn href="#/quiz/'+b.set+'">'+esc(b.x)+'</a> ';});
+ var last=!guided||cur===segs.length-1;
+ if(guided)h+='<p class=lsnav>'+(cur>0?'<button id=lsprev class=btn>← 上一步</button> ':'')+(last?'':'<button id=lsnext class=btn'+(need?' disabled':'')+'>下一步 →</button> <span class=note id=lshint>'+(need?'先答对本步的选择题再往下':'')+'</span>')+'</p>';
+ if(last)h+='<p><button id=lsdone class="btn good">✔ 这一课学完了</button> <a class=btn href="#/today">回今日任务</a></p>';
  render(h);
- $('#lsdone').onclick=function(){S.ls=S.ls||{};S.ls[id]=1;flag('lesson');this.textContent='已记录 ✓';if(dr){DRILL.ok++;setTimeout(drillNext,500);}};
+ if(last)$('#lsdone').onclick=function(){S.ls=S.ls||{};S.ls[id]=1;flag('lesson');this.textContent='已记录 ✓';if(dr){DRILL.ok++;setTimeout(drillNext,500);}};
+ function go(d){LSTEP[id]=cur+d;lessonView(id);window.scrollTo(0,0);}
+ if($('#lsprev'))$('#lsprev').onclick=function(){go(-1);};
+ if($('#lsnext'))$('#lsnext').onclick=function(){go(1);};
  [].forEach.call(document.querySelectorAll('.tsp,.lsp'),function(b){b.onclick=function(e){e.stopPropagation();speak(b.getAttribute('data-say'));};});
  [].forEach.call(document.querySelectorAll('.rv'),function(b){b.onclick=function(){$('#a'+b.getAttribute('data-n')).className='note';};});
  [].forEach.call(document.querySelectorAll('.mcq .opt'),function(b){b.onclick=function(){
   var n=+b.getAttribute('data-n'),i=+b.getAttribute('data-i'),bl=L.blocks[n];
-  $('#m'+n).innerHTML=(i===bl.a?'✔ ':'✘ ')+esc(bl.e);b.className+=(i===bl.a?' right':' wrong');speak(lsay(bl.q.indexOf('（　）')>=0?bl.q.replace('（　）',bl.o[bl.a]):bl.o[bl.a]));};});}
+  $('#m'+n).innerHTML=(i===bl.a?'✔ ':'✘ ')+esc(bl.e);b.className+=(i===bl.a?' right':' wrong');
+  if(i===bl.a&&guided){LSOK[id+n]=1;var rest=vis.filter(function(m){return L.blocks[m].t==='mcq'&&!LSOK[id+m];}).length;var nb=$('#lsnext');if(nb&&!rest){nb.disabled=false;$('#lshint').textContent='全对了，继续 ↓';}}
+  if(!L.nospk)speak(lsay(bl.q.indexOf('（　）')>=0?bl.q.replace('（　）',bl.o[bl.a]):bl.o[bl.a]));};});}
 
 var _blobs={};
 function cachedUrl(url,cb){
