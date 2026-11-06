@@ -1381,7 +1381,7 @@ function home(){
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
- h+='<p class=note style="margin-top:24px">版本 1105-1526</p>';
+ h+='<p class=note style="margin-top:24px">版本 1106-1536</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function conjView(){
  var h='<h1>动词变形练习</h1><p class=note>按教材《基础①》《基础②》每课下方的变形作业出的题。</p><div class=grid>';
@@ -1911,11 +1911,26 @@ function dlWire(){[['1',ttsUrls],['2',clipUrls],['3',wordUrls]].forEach(function
   cacheCount(u,function(c){if(c>=0)st.textContent='已存 '+c+' / '+u.length+(c===u.length?' ✓':'');});
   b.onclick=function(){dlAll(u,st);};});}
 function settings(){
- var h='<h1>设置</h1><label>考试日期 <input type=date id=exam value="'+S.exam+'"></label><p><button id=exp class=btn>导出进度</button> <button id=imp class=btn>导入进度</button></p><textarea id=ta rows=5></textarea><h2>离线语音下载</h2>'+dlBlock(1,'例句和词的朗读（约16MB）')+dlBlock(2,'全部真题录音（约76MB）')+dlBlock(3,'听力和阅读里所有词的朗读（约38MB）')+'<p class=note>这些按钮在需要语音的页面里也有。</p><p class=note>下载完会显示“已全部下载 ✓”。建议在 Wi‑Fi 下进行，下载时不要关页面。iPhone 对网站存储有上限，长期不打开可能被系统清理，出发前再打开确认一次。</p><p><button id=rst class="btn bad">重置</button></p>';
+ var h='<h1>设置</h1><label>考试日期 <input type=date id=exam value="'+S.exam+'"></label><h2>进度备份</h2><p class=note>推荐用文件：导出得到一个 .json 文件，可存到“文件”、隔空投送或发给自己；换设备时选这个文件导入，不用复制粘贴。</p><p><button id=expf class=btn>⬇ 导出为文件</button> <label class=btn style="display:inline-block">⬆ 从文件导入<input type=file id=impf accept=".json,application/json,text/plain" style="display:none"></label></p><p id=bkmsg class=note></p><details class=fold><summary>文字方式（复制／粘贴）</summary><p><button id=exp class=btn>生成并复制</button> <button id=imp class=btn>从下面的文字导入</button></p><textarea id=ta rows=4></textarea></details><h2>离线语音下载</h2>'+dlBlock(1,'例句和词的朗读（约16MB）')+dlBlock(2,'全部真题录音（约76MB）')+dlBlock(3,'听力和阅读里所有词的朗读（约38MB）')+'<p class=note>这些按钮在需要语音的页面里也有。</p><p class=note>下载完会显示“已全部下载 ✓”。建议在 Wi‑Fi 下进行，下载时不要关页面。iPhone 对网站存储有上限，长期不打开可能被系统清理，出发前再打开确认一次。</p><p><button id=rst class="btn bad">重置</button></p>';
  render(h);dlWire();
  $('#exam').onchange=function(){S.exam=this.value;save();};
- $('#exp').onclick=function(){$('#ta').value=JSON.stringify(S);};
- $('#imp').onclick=function(){try{S=JSON.parse($('#ta').value);save();alert('已导入');}catch(e){alert('格式错误');}};
+ function bkmsg(t){$('#bkmsg').textContent=t;}
+ function applyData(txt){var o;try{o=JSON.parse(txt);}catch(e){bkmsg('✘ 文件内容不是有效的进度数据');return;}
+  if(!o||typeof o!=='object'||!(o.cards||o.exam||o.ls||o.vb)){bkmsg('✘ 这不像本应用导出的进度');return;}
+  var n=Object.keys(o.cards||{}).length;
+  if(!confirm('导入后会覆盖这台设备现在的进度（文件里有 '+n+' 张卡的记录）。确定吗？'))return;
+  S=o;save();bkmsg('✔ 已导入，正在刷新…');setTimeout(function(){location.reload();},600);}
+ $('#expf').onclick=function(){
+  var txt=JSON.stringify(S),d=new Date(),pad=function(x){return (x<10?'0':'')+x;},
+   name='n2进度-'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'.json';
+  var blob=new Blob([txt],{type:'application/json'});
+  try{var f=new File([blob],name,{type:'application/json'});
+   if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'N2进度'}).then(function(){bkmsg('✔ 已分享／保存');}).catch(function(){});return;}}catch(e){}
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},500);
+  bkmsg('✔ 已导出 '+name+'（约 '+Math.round(txt.length/1024)+' KB）');};
+ $('#impf').onchange=function(){var f=this.files&&this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){applyData(String(r.result));};r.readAsText(f);};
+ $('#exp').onclick=function(){var t=JSON.stringify(S);$('#ta').value=t;try{navigator.clipboard.writeText(t).then(function(){bkmsg('✔ 已复制到剪贴板');},function(){bkmsg('已生成在下面的框里，请手动全选复制');});}catch(e){bkmsg('已生成在下面的框里，请手动全选复制');}};
+ $('#imp').onclick=function(){applyData($('#ta').value);};
  $('#rst').onclick=function(){if(confirm('确定重置？')){S=null;try{localStorage.removeItem(KEY);}catch(e){}load();save();route();}};}
 
 /* ===== 生词本 ===== */
