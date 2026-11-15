@@ -131,3 +131,4 @@ th{background:rgba(255,255,255,.35)}table{border-radius:14px;overflow:hidden}
 .lsbar{display:flex;gap:4px;margin:8px 0}.lsbar i{flex:1;height:6px;border-radius:3px;background:var(--bd)}.lsbar i.dn{background:#7aa874}.lsbar i.on{background:#c0707a}
 details.fold{margin:10px 0;border:1px solid var(--bd);border-radius:12px;padding:8px 12px;background:var(--card)}details.fold summary{cursor:pointer;font-weight:600}details.fold summary small{font-weight:400;opacity:.6}
 .lsnav{margin-top:16px}.lsnav button[disabled]{opacity:.4}
+.stk{position:sticky;z-index:15;background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--bd);border-radius:14px;padding:6px 10px 0;margin:6px 0;box-shadow:0 6px 16px rgba(88,76,64,.12)}.stk p{margin:6px 0}
