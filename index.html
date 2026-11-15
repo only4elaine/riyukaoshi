@@ -137,7 +137,8 @@ th{background:rgba(255,255,255,.35)}table{border-radius:14px;overflow:hidden}
 .lsbar{display:flex;gap:4px;margin:8px 0}.lsbar i{flex:1;height:6px;border-radius:3px;background:var(--bd)}.lsbar i.dn{background:#7aa874}.lsbar i.on{background:#c0707a}
 details.fold{margin:10px 0;border:1px solid var(--bd);border-radius:12px;padding:8px 12px;background:var(--card)}details.fold summary{cursor:pointer;font-weight:600}details.fold summary small{font-weight:400;opacity:.6}
 .lsnav{margin-top:16px}.lsnav button[disabled]{opacity:.4}
-.stk{position:sticky;z-index:15;background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--bd);border-radius:14px;padding:6px 10px 0;margin:6px 0;box-shadow:0 6px 16px rgba(88,76,64,.12)}.stk p{margin:6px 0}
+
+.stk{position:sticky;z-index:15;background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:6px 8px;margin:8px 0;box-shadow:0 6px 16px rgba(88,76,64,.12);display:flex;flex-wrap:wrap;gap:6px;align-items:center}.stk .btn{margin:0}
 </style></head>
 <body><div id="app"></div>
 <script>window.DATA = window.DATA || {};
@@ -1382,7 +1383,7 @@ function home(){
  h+='<p class=note>每天的新内容量：原题 '+G.ps.quota+' 题 + 每类卡片 '+NEW_PER_DAY+' 个。复习的内容按 1→2→4→7→15 天的间隔自动回来。</p></div>';
  h+='<h2>🎈 自由练习</h2><div class=noteb>'+freeRows()+'</div>';
  h+=dlBlock(1,'例句和词的朗读（约16MB）');
- h+='<p class=note style="margin-top:24px">版本 1115-0921</p>';
+ h+='<p class=note style="margin-top:24px">版本 1115-0923</p>';
  render(h);dlWire();$('#howb').onclick=function(){var e=$('#howbox');e.className=e.className==='hide'?'':'hide';};}
 function conjView(){
  var h='<h1>动词变形练习</h1><p class=note>按教材《基础①》《基础②》每课下方的变形作业出的题。</p><div class=grid>';
@@ -1515,7 +1516,7 @@ function loadClip(au,url){
  function setSrc(u){au.src=u;}
  if(window.caches){caches.open('n2audio').then(function(ca){return ca.match(url);}).then(function(r){if(r)return r.blob().then(function(b){setSrc(URL.createObjectURL(b));});setSrc(url);}).catch(function(){setSrc(url);});}else setSrc(url);}
 function clipHtml(it){
- return '<div class=stk><audio id=au controls preload=auto style="width:100%"></audio><p><button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button></p></div>'+(it.hide?'<p class=note>'+esc(it.secn)+'：先听录音，再选（选项在录音里念）。</p>':'<p class=note>'+esc(it.secn)+'</p><p class=q>'+esc(it.q)+'</p>');}
+ return '<audio id=au controls preload=auto style="width:100%"></audio><p class=stk><button class="btn small" id=pp>⏯</button> <button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button></p>'+(it.hide?'<p class=note>'+esc(it.secn)+'：先听录音，再选（选项在录音里念）。</p>':'<p class=note>'+esc(it.secn)+'</p><p class=q>'+esc(it.q)+'</p>');}
 function wireClip(it){
  var au=$('#au');stkFix();loadClip(au,it.clip);
  [].forEach.call(document.querySelectorAll('[data-r]'),function(b){b.onclick=function(){au.playbackRate=+b.getAttribute('data-r');};});
@@ -1716,14 +1717,14 @@ function splitOpts(c,id){
  return {o:cp&&cp.length>=3?cp.slice():o,s:rest.join('\n').replace(/^\s*\.\s*\n/,'')};}
 var CZ=null;
 function czOf(id,k){if(!CZ){CZ={};var D=window.DATA||{};(D.lq||[]).forEach(function(q){var z=D.lqzh&&D.lqzh[q.id];if(!z)return;var m=/audio\/(\w+)\/([\d-]+)\.mp3/.exec(q.f);if(m)CZ[m[1]+'/'+m[2]]=(z.o&&z.o.length?z.o.map(function(x,i){return (i+1)+'. '+x;}).join('\n')+'\n':'')+(z.s||'');});var X=D.cz||{};for(var kk in X)CZ[kk]=X[kk];}return CZ[id+'/'+k]||'';}
-function stkFix(){var n=document.querySelector('nav'),e=document.querySelector('.stk');if(e&&n)e.style.top=(n.offsetHeight-1)+'px';}
+function stkFix(){var n=document.querySelector('nav'),e=document.querySelector('.stk'),a=$('#au');if(e&&n)e.style.top=(n.offsetHeight-1)+'px';if(a&&$('#pp'))$('#pp').onclick=function(){if(a.paused)a.play();else a.pause();};}
 function clipView(id,k){
  var p=getPaper(id),i=p?p.clips.map(function(c){return c.k;}).indexOf(k):-1;
  if(i<0){audioHome();return;}
  var c=p.clips[i],prev=p.clips[i-1],next=p.clips[i+1],sp=splitOpts(c,id);
  var dr=DRILL&&DRILL.q[DRILL.i]===id+':'+k;if(dr){prev=next=null;}
- var h=(dr?'<p class=note>🎯 专项 '+(DRILL.i+1)+' / '+DRILL.q.length+' · 先听一遍，不看原文；听完点下面按钮对原文</p>':'')+'<h1>'+p.name+' '+SECN[c.sec]+' 第'+c.q+'题</h1><div class=stk><audio id=au controls preload=auto style="width:100%"></audio>'+
-  '<p><button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button> <button class="btn small" id=f5>5秒 ⏩</button></p></div>'+
+ var h=(dr?'<p class=note>🎯 专项 '+(DRILL.i+1)+' / '+DRILL.q.length+' · 先听一遍，不看原文；听完点下面按钮对原文</p>':'')+'<h1>'+p.name+' '+SECN[c.sec]+' 第'+c.q+'题</h1><audio id=au controls preload=auto style="width:100%"></audio>'+
+  '<p class=stk><button class="btn small" id=pp>⏯</button> <button class="btn small" data-r=0.8>0.8×</button><button class="btn small" data-r=1>1×</button><button class="btn small" data-r=1.2>1.2×</button> <button class="btn small" id=b5>⏪ 5秒</button> <button class="btn small" id=f5>5秒 ⏩</button></p>'+
   '<div id=pk><p class=note>'+(sp.tail?'这份录音没有念选项，选项直接写在这里：听完选一个 <button id=rdo class="btn small">🔊 读选项</button>':sp.o.length?'试卷上的选项：听完选一个':'这题试卷上没有印选项，选项会在录音里念出来；听完选序号')+'</p>'+(sp.o.length?sp.o:[1,2,3,4].slice(0,(c.sec==='4'||c.sec===4)?3:4)).map(function(t,i){var n=i+1;return sp.o.length?'<div><button class="btn pkb" style="width:100%;text-align:left" data-n="'+n+'">'+n+'. '+esc(t)+'</button></div>':'<button class="btn pkb" data-n="'+n+'">'+n+'</button> ';}).join('')+'<div id=pkr class=note></div></div>'+'<p><button id=sc class=btn'+(dr?' disabled':'')+'>'+(dr?'听完了，对原文':'显示原文')+'</button></p><div id=scb class=hide><p class=note>💡 用手指划选词句，可加入生词本</p>'+(sp.s?esc(sp.s).replace(/\n/g,'<br>'):'（这一题的原文暂缺）')+(czOf(id,k)?'<div class=noteb lang=zh><b>中文译文</b><br>'+esc(czOf(id,k)).replace(/\n/g,'<br>')+'</div>':'')+'</div>'+
   '<p><button id=ok class="btn good">听懂了</button> <button id=no class="btn bad">没听懂，加入重听</button></p>'+
   '<p>'+(prev?'<a class=btn href="#/clip/'+id+'/'+prev.k+'">← 上一题</a>':'')+' <a class=btn href="#/audio/'+id+'">目录</a> '+(next?'<a class=btn href="#/clip/'+id+'/'+next.k+'">下一题 →</a>':'')+'</p>';
